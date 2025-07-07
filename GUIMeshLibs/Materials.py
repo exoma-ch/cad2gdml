@@ -92,7 +92,7 @@ def Load_Material(path_to_material):
         #Accept or not the material
         if error_check==0:
                 print(lines[0]+" was imported successfully.")
-                tkinter.messagebox.showinfo("Message", lines[0]+" was imported successfully.")
+                #tkinter.messagebox.showinfo("Message", lines[0]+" was imported successfully.")
                 return Material(lines[0], float(lines[1]),int(lines[2]),elements)
         else:
                 print(lines[0]+" was not imported due to format errors.")
@@ -147,7 +147,7 @@ def Load_Materials():
                         mat_db.append(Material(lines[0], float(lines[1]),int(lines[2]),elements))
                 else:
                         print (lines[0]+" was not imported due to format errors.")
-        tkinter.messagebox.showinfo("Message", "Material Database loaded. Check log for errors.")
+        #tkinter.messagebox.showinfo("Message", "Material Database loaded. Check log for errors.")
         print("Material Database loaded. Check log for errors.")
         return mat_db
 
@@ -169,5 +169,5 @@ def Save_Materials(Mat_List):
                         else:
                                 f.write(str(i.ElementFractions[j]))
                 f.close()
-        tkinter.messagebox.showinfo("Message", "Material Database saved.")
+        #tkinter.messagebox.showinfo("Message", "Material Database saved.")
         print("Material Database saved.")

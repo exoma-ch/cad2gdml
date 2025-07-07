@@ -1,27 +1,53 @@
-# GUIMesh
-Copyright (c) 2018  Marco Gui Alves Pinto  mail:mgpinto11@gmail.com
 
-This program is distributed under the terms of the GNU General Public License 3
+This project is based on [GUIMesh3](https://github.com/MPintoSpace/GUIMesh3), originally developed by Marco Gui Alves Pinto. It is now a command line interface that converts STEP geometries to GDML format.
 
-### Software Description
-GUIMesh is a Graphical User Interface that converts STEP geometries to GDML format allowing
-to import this geometries into Geant4
+## Dependencies
 
-### Dependencies
-GUIMesh requires:
+You can build a containerized environment using Podman.
 
-* UNIX distribution or Windows (R) 
-* [Python 3.8](https://www.python.org/downloads/release/python-368/) with TKinter extension
-* [FreeCAD](www.freecadweb.org) v0.19
-* [Geant4](https://geant4.web.cern.ch/) - although Geant4 is not necessary to run GUIMesh, its output are intended to be imported by it. Versions >10 are recomended.
+Build an image: 
 
-Note: Since GUIMesh is a python script only its dependencies must be installed.
+```bash
+podman build -t <imagename> .
+```
+Start a container with bind mount to your git repository:
+```bash
+podman run -it \
+  --name <containername> \
+  -v <pathto>/CADtoGeant4:/mnt/guimesh \
+  <imagename>
+  ```
+  Re-enter the container:
+  ```bash
+  podman start -ai guimesh-container
+  ```
 
-### File description
-* GUIMesh.py - Main and only source code
-* Documents - Folder with "GUIMesh User Manual.pdf", a guide on how to run GUIMesh found in the Documents directory
-* GUIMeshLibs - folder containing libraries used in GUIMesh
-* Materials - folder which should be used to save materials in a database
-* STEP Files - folder with STEP geometries used in all tests
-* COPYING - License disclosure
+
+## How to run
+```bash
+python GUIMeshCLI.py \
+  --step "STEP files/<stepfile.step>" \
+  --load-material "Materials/<material.txt>" \
+  --load-props <properties.csv> \
+  --output-dir gdml/
+  ```
+  
+## Files description
+* `GUIMeshCLI.py` - Main source code for command line interface - for our purposes (GUIMesh.py - original source code for GUI)
+* `Documents/` - Folder with "GUIMesh User Manual.pdf", a guide on how to run GUIMesh found in the Documents directory
+* `GUIMeshLibs/` - folder containing libraries used in GUIMesh
+* `Materials/` - folder which should be used to save materials in a database
+* `STEP Files/` - folder with STEP geometries used in all tests
+* `gdml/` - folder for the gdml output
+* `COPYING` - License disclosure
+
+
+
+
+
+
+## Licence  
+Licensed under the [GNU General Public License v3.0](https://www.gnu.org/licenses/gpl-3.0.html).
+
+See the `COPYING` file for license details.
 

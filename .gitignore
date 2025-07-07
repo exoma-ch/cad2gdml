@@ -1,0 +1,13 @@
+# Ignore all output folders
+/output*/
+/log*.txt
+/*.csv
+
+# Ignore everything inside 'STEP files'
+/STEP files/*
+/gdml/*
+
+# (Optional) Ignore Python cache and backup files
+__pycache__/
+*.pyc
+*~

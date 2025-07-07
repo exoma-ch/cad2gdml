@@ -22,6 +22,7 @@
 ##########################Libraries##############################
 #################################################################
 import sys
+sys.path.append('/home/irene/dev/Programs/squashfs-root/usr/lib')
 import os.path
 import time
 import math
@@ -340,8 +341,8 @@ Material_List=[]
 root = tk.Tk()
 s_w = root.winfo_screenwidth()
 s_h = root.winfo_screenheight()
-p_w = s_w/1366.
-p_h = s_h/768.
+p_w = min(s_w / 1366., 1.0)
+p_h = min(s_h / 768., 1.0)
 buttons_width=int(18*p_w)
 buttons_height=int(2*p_h)
 pos_x=0.1
