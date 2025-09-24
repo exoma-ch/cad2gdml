@@ -45,6 +45,8 @@ import sys
 import os
 import argparse
 from pathlib import Path
+import time
+import threading
 
 # Add FreeCAD path
 #sys.path.append('/home/irene/dev/Programs/squashfs-root/usr/lib')
@@ -78,6 +80,7 @@ class GUIMeshCLI:
         self.Element_List = Materials.Load_Elements()
         self.Material_List = []
         self.file_status = 0
+        self.verbose = False
 
     def load_custom_material(self, material_file):
         """Load a custom material from a file"""
@@ -111,6 +114,11 @@ class GUIMeshCLI:
             return False
 
         try:
+            if self.verbose:
+                print(f"Starting STEP import: {step_file}")
+                print("Note: Large STEP files may take several minutes to import...")
+            start_time = time.time()
+            
             if self.file_status:
                 FreeCAD.closeDocument("Unnamed")
                 print("Previous document closed")
@@ -118,20 +126,31 @@ class GUIMeshCLI:
             FreeCAD.newDocument("Unnamed")
             FreeCAD.setActiveDocument("Unnamed")
             
+            # This is the blocking call - no way to show progress during import
             Import.insert(step_file, "Unnamed")
-            print("File read successfully")
+            
+            elapsed = time.time() - start_time
+            print(f"File read successfully in {elapsed:.1f}s")
             
             self.list_of_objects = []
-            for obj in FreeCAD.ActiveDocument.Objects:
+            all_objs = FreeCAD.ActiveDocument.Objects
+            part_objs = [obj for obj in all_objs if obj.TypeId == "Part::Feature"]
+            total_parts = len(part_objs)
+            if self.verbose:
+                print(f"Found {total_parts} solid parts in {len(all_objs)} total objects")
+            for idx, obj in enumerate(part_objs, start=1):
                 try:
-                    if obj.TypeId == "Part::Feature":
-                        obj.Label = obj.Label.replace(" ", "_")
-                        obj.Label = obj.Label.replace(".", "_")
-                        obj.Label = obj.Label.replace("---", "_")
-                        self.list_of_objects.append(Volumes.Volume(obj, self.Element_List[13], 0.1, 1))
-                        print(f"Added object: {obj.Label}")
-                except:
+                    obj.Label = obj.Label.replace(" ", "_")
+                    obj.Label = obj.Label.replace(".", "_")
+                    obj.Label = obj.Label.replace("---", "_")
+                    self.list_of_objects.append(Volumes.Volume(obj, self.Element_List[13], 0.1, 1))
+                    #print(f"Added object: {obj.Label}")
+                except Exception as e:
+                    if self.verbose:
+                        print(f"Error processing part {idx}: {obj.Label} - {str(e)}")
                     continue
+                if self.verbose and (idx % 500 == 0 or idx == total_parts):
+                    print(f"Processed {idx}/{total_parts} parts")
             
             self.file_status = 1
             print(f"Loaded {len(self.list_of_objects)} objects from STEP file")
@@ -272,6 +291,7 @@ def main():
     parser.add_argument('--load-props', help='Load properties from CSV file')
     parser.add_argument('--output-dir', help='Output directory for GDML files')
     parser.add_argument('--load-material', action='append', help='Load a custom material file. Can be used multiple times.')
+    parser.add_argument('--verbose', action='store_true', help='Enable verbose logging and progress messages')
     
     args = parser.parse_args()
 
@@ -280,6 +300,7 @@ def main():
         return
 
     mesh = GUIMeshCLI()
+    mesh.verbose = bool(args.verbose)
 
     if args.step:
         if not mesh.load_step_file(args.step):
