@@ -47,12 +47,26 @@ World dimensions automatically set to: 0.51m x 0.53m x 0.51m
 ==============================
 ```
 
-### Complete Workflow Example
+### Single-Pass Workflow (Recommended)
+Import STEP once, assign materials in-memory, and write GDML in a single command:
+
+```bash
+python GUIMeshCLI.py \
+  --verbose \
+  --step "STEPfiles/ring_radial_12_axial_1.step" \
+  --assign-materials \
+  --load-material "Materials/LYSO.txt" \
+  --output-dir gdml_output/
+```
+
+### Multi-Pass Workflow (Legacy)
+If you need to save/load properties as CSV:
+
 ```bash
 # 1. Load STEP file and save properties (with automatic world size)
 python GUIMeshCLI.py \
   --verbose \
-  --step "STEP files/ring_radial_12_axial_1.step" \
+  --step "STEPfiles/ring_radial_12_axial_1.step" \
   --save-props properties.csv
 
 # 2. Assign materials based on volume names
@@ -61,7 +75,7 @@ python assign_materials.py properties.csv properties-with-materials.csv
 # 3. Generate GDML with proper materials
 python GUIMeshCLI.py \
   --verbose \
-  --step "STEP files/ring_radial_12_axial_1.step" \
+  --step "STEPfiles/ring_radial_12_axial_1.step" \
   --load-material "Materials/LYSO.txt" \
   --load-props properties-with-materials.csv \
   --output-dir gdml_output/
@@ -69,7 +83,7 @@ python GUIMeshCLI.py \
   
 ## Material Assignment
 
-The `assign_materials.py` script automatically assigns materials based on volume names:
+Materials are assigned based on volume name patterns. The same rules apply whether you use the single-pass `--assign-materials` flag or the standalone `assign_materials.py` script:
 
 - `_detector_lyso_*` → LYSO (custom material)
 - `sipm_si*` → G4_Si (pure silicon)

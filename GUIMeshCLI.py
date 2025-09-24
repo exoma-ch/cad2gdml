@@ -4,20 +4,11 @@
 """ # Show help
 python GUIMeshCLI.py --help
 
-# Load a STEP file and write GDML
-python GUIMeshCLI.py --step input.step --output-dir output/
+# Single-pass (recommended): load STEP once, assign materials, write GDML
+python GUIMeshCLI.py --step STEPfiles/your.step --assign-materials --load-material Materials/LYSO.txt --output-dir gdml_output/
 
-# Set world dimensions
-python GUIMeshCLI.py --world-size 2.0 2.0 2.0
-
-# Save properties to CSV
-python GUIMeshCLI.py --save-props properties.csv
-
-# Load properties from CSV
-python GUIMeshCLI.py --load-props properties.csv
-
-# Full workflow example
-python GUIMeshCLI.py --step input.step --world-size 2.0 2.0 2.0 --save-props props.csv --output-dir output/ """
+# Optional: save properties to CSV (for auditing)
+python GUIMeshCLI.py --step STEPfiles/your.step --assign-materials --save-props props.csv --output-dir gdml_output/ """
 
 #########################################################################################################
 #    GUIMeshCLI v1                                                                                      #
@@ -162,6 +153,54 @@ class GUIMeshCLI:
         except Exception as e:
             print(f"Error reading file: {str(e)}")
             return False
+
+    def assign_materials_from_names(self):
+        """Assign materials to volumes based on their label/name patterns."""
+        if not self.list_of_objects:
+            print("Error: No volumes loaded to assign materials")
+            return False
+
+        def choose_material_name(label_lower: str) -> str:
+            # Mapping rules based on current project conventions
+            if 'lyso' in label_lower:
+                return 'LYSO'  # custom material, must be loaded via --load-material
+            if 'sipm' in label_lower:
+                return 'G4_Si'  # pure silicon
+            if 'pcb' in label_lower:
+                return 'G4_POLYETHYLENE'  # PCB approximation
+            if 'plastic' in label_lower:
+                return 'G4_POLYETHYLENE'
+            if 'al' in label_lower or 'aluminum' in label_lower:
+                return 'G4_Al'
+            # Fallback
+            return 'G4_Si'
+
+        # Build quick lookup for available materials/elements
+        name_to_material = {}
+        for ele in self.Element_List:
+            name_to_material[ele.Name] = ele
+        for mat in self.Material_List:
+            name_to_material[mat.Name] = mat
+
+        assignments_count = {}
+
+        for obj in self.list_of_objects:
+            label_lower = str(obj.VolumeCAD.Label).lower()
+            mat_name = choose_material_name(label_lower)
+            mat_obj = name_to_material.get(mat_name)
+            if mat_obj is None:
+                print(f"Warning: Material '{mat_name}' not found for volume {obj.VolumeCAD.Label}. Load it via --load-material.")
+                continue
+            obj.VolumeMaterial = mat_obj
+            assignments_count[mat_name] = assignments_count.get(mat_name, 0) + 1
+
+        if assignments_count:
+            print("Material assignments summary:")
+            for k, v in sorted(assignments_count.items(), key=lambda x: (-x[1], x[0])):
+                print(f"  {k}: {v} volumes")
+        else:
+            print("No materials were assigned.")
+        return True
 
     def auto_set_world_size(self):
         """Calculate optimal world size based on geometry bounding box and ask for confirmation"""
@@ -350,6 +389,7 @@ def main():
     parser.add_argument('--output-dir', help='Output directory for GDML files')
     parser.add_argument('--load-material', action='append', help='Load a custom material file. Can be used multiple times.')
     parser.add_argument('--verbose', action='store_true', help='Enable verbose logging and progress messages')
+    parser.add_argument('--assign-materials', action='store_true', help='Assign materials based on volume name patterns (single-pass workflow)')
     
     args = parser.parse_args()
 
@@ -375,6 +415,11 @@ def main():
 
     if args.load_props:
         if not mesh.load_properties(args.load_props):
+            return
+
+    # Single-pass material assignment (only if properties were not explicitly loaded)
+    if args.assign_materials and not args.load_props:
+        if not mesh.assign_materials_from_names():
             return
 
     if args.save_props:
