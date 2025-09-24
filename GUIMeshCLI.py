@@ -154,11 +154,69 @@ class GUIMeshCLI:
             
             self.file_status = 1
             print(f"Loaded {len(self.list_of_objects)} objects from STEP file")
+            
+            # Calculate and set optimal world size
+            self.auto_set_world_size()
             return True
 
         except Exception as e:
             print(f"Error reading file: {str(e)}")
             return False
+
+    def auto_set_world_size(self):
+        """Calculate optimal world size based on geometry bounding box and ask for confirmation"""
+        if not self.list_of_objects:
+            return
+        
+        try:
+            # Calculate bounding box for all loaded objects
+            min_x = min_y = min_z = float('inf')
+            max_x = max_y = max_z = float('-inf')
+            
+            for obj in self.list_of_objects:
+                try:
+                    bbox = obj.VolumeCAD.Shape.BoundBox
+                    min_x = min(min_x, bbox.XMin)
+                    min_y = min(min_y, bbox.YMin)
+                    min_z = min(min_z, bbox.ZMin)
+                    max_x = max(max_x, bbox.XMax)
+                    max_y = max(max_y, bbox.YMax)
+                    max_z = max(max_z, bbox.ZMax)
+                except Exception as e:
+                    if self.verbose:
+                        print(f"Warning: Could not process {obj.VolumeCAD.Label}: {str(e)}")
+                    continue
+            
+            # Calculate dimensions
+            width = max_x - min_x
+            height = max_y - min_y
+            depth = max_z - min_z
+            
+            # Add some margin (20% on each side)
+            margin = 0.2
+            world_x = width * (1 + 2 * margin)
+            world_y = height * (1 + 2 * margin)
+            world_z = depth * (1 + 2 * margin)
+            
+            # Convert from mm to meters
+            world_x /= 1000.0
+            world_y /= 1000.0
+            world_z /= 1000.0
+            
+            print(f"\n=== Geometry Analysis ===")
+            print(f"Bounding box: {width:.1f}mm x {height:.1f}mm x {depth:.1f}mm")
+            print(f"Center: ({min_x + width/2:.1f}, {min_y + height/2:.1f}, {min_z + depth/2:.1f}) mm")
+            print(f"Calculated world size: {world_x:.2f}m x {world_y:.2f}m x {world_z:.2f}m")
+            
+            # Set the calculated world size
+            self.world_dimensions = [world_x, world_y, world_z]
+            print(f"World dimensions automatically set to: {world_x:.2f}m x {world_y:.2f}m x {world_z:.2f}m")
+            print("=" * 30)
+            
+        except Exception as e:
+            if self.verbose:
+                print(f"Warning: Could not calculate world size: {str(e)}")
+            print("Using default world size: 1.0m x 1.0m x 1.0m")
 
     def set_world_size(self, x, y, z):
         """Set the world dimensions"""
