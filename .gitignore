@@ -4,7 +4,7 @@
 /*.csv
 
 # Ignore everything inside 'STEP files'
-/STEP files/*
+/STEPfiles/*
 /gdml/*
 
 # (Optional) Ignore Python cache and backup files
