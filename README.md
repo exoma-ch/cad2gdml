@@ -51,12 +51,12 @@ World dimensions automatically set to: 0.51m x 0.53m x 0.51m
 Import STEP once, assign materials in-memory, and write GDML in a single command:
 
 ```bash
-python GUIMeshCLI.py \
+python src/GUIMeshCLI.py \
   --verbose \
-  --step "STEPfiles/ring_radial_12_axial_1.step" \
+  --step "data/STEPfiles/ring_radial_12_axial_1.step" \
   --assign-materials \
-  --load-material "Materials/LYSO.txt" \
-  --output-dir gdml_output/
+  --load-material "data/Materials/LYSO.txt" \
+  --output-dir output/gdml/
 ```
 
 ### Multi-Pass Workflow (Legacy)
@@ -64,26 +64,23 @@ If you need to save/load properties as CSV:
 
 ```bash
 # 1. Load STEP file and save properties (with automatic world size)
-python GUIMeshCLI.py \
+python src/GUIMeshCLI.py \
   --verbose \
-  --step "STEPfiles/ring_radial_12_axial_1.step" \
-  --save-props properties.csv
+  --step "data/STEPfiles/ring_radial_12_axial_1.step" \
+  --save-props output/properties/properties.csv
 
-# 2. Assign materials based on volume names
-python assign_materials.py properties.csv properties-with-materials.csv
-
-# 3. Generate GDML with proper materials
-python GUIMeshCLI.py \
+# 2. Generate GDML with proper materials
+python src/GUIMeshCLI.py \
   --verbose \
-  --step "STEPfiles/ring_radial_12_axial_1.step" \
-  --load-material "Materials/LYSO.txt" \
-  --load-props properties-with-materials.csv \
-  --output-dir gdml_output/
+  --step "data/STEPfiles/ring_radial_12_axial_1.step" \
+  --load-material "data/Materials/LYSO.txt" \
+  --load-props output/properties/properties.csv \
+  --output-dir output/gdml/
 ```
   
 ## Material Assignment
 
-Materials are assigned based on volume name patterns. The same rules apply whether you use the single-pass `--assign-materials` flag or the standalone `assign_materials.py` script:
+Materials are automatically assigned based on volume name patterns when using the `--assign-materials` flag. The assignment rules are defined in `material_mappings.json`:
 
 - `_detector_lyso_*` → LYSO (custom material)
 - `sipm_si*` → G4_Si (pure silicon)
@@ -91,21 +88,56 @@ Materials are assigned based on volume name patterns. The same rules apply wheth
 - `pcb-sipm_pcb*` → G4_POLYETHYLENE (PCB material)
 - `unit-cover_plastic*` → G4_POLYETHYLENE (plastic)
 
-Usage:
+### Custom Material Mappings
+
+You can customize material assignments by editing `material_mappings.json` or providing your own configuration file:
+
 ```bash
-python assign_materials.py input_properties.csv output_properties.csv
+python src/GUIMeshCLI.py \
+  --step "data/STEPfiles/your.step" \
+  --assign-materials \
+  --material-config "src/my_custom_mappings.json" \
+  --load-material "data/Materials/LYSO.txt" \
+  --output-dir output/gdml/
+```
+
+The JSON format allows you to:
+- Define custom material patterns
+- Add descriptions for each material
+- Specify which materials require custom loading
+- Set fallback materials for unmatched volumes
+
+## Project Structure
+```
+/mnt/guimesh/
+├── src/                          # Source code
+│   ├── GUIMeshCLI.py            # Main CLI script
+│   ├── GUIMesh.py               # Original GUI version
+│   └── material_mappings.json   # Material configuration
+├── libs/                        # Libraries
+│   └── GUIMeshLibs/            # GUIMesh libraries
+├── data/                        # Input data
+│   ├── STEPfiles/              # STEP geometry files
+│   └── Materials/              # Material definitions
+├── output/                      # Generated outputs
+│   ├── gdml/                   # GDML files
+│   ├── properties/             # CSV property files
+│   └── analysis/               # Analysis results
+├── docs/                        # Documentation
+│   └── Documents/              # User manual and guides
+├── examples/                    # Example files
+└── build/                       # Build artifacts
 ```
 
 ## Files description
-* `GUIMeshCLI.py` - Main source code for command line interface - for our purposes (GUIMesh.py - original source code for GUI)
-* `assign_materials.py` - Script to automatically assign materials based on volume names
-* `calculate_world_size.py` - Standalone script to calculate optimal world size (now integrated into main CLI)
-* `Documents/` - Folder with "GUIMesh User Manual.pdf", a guide on how to run GUIMesh found in the Documents directory
-* `GUIMeshLibs/` - folder containing libraries used in GUIMesh
-* `Materials/` - folder which should be used to save materials in a database
-* `STEP Files/` - folder with STEP geometries used in all tests
-* `gdml/` - folder for the gdml output
-* `COPYING` - License disclosure
+* `src/GUIMeshCLI.py` - Main source code for command line interface
+* `src/material_mappings.json` - JSON configuration file defining material assignment rules
+* `docs/Documents/` - Folder with "GUIMesh User Manual.pdf", a guide on how to run GUIMesh
+* `libs/GUIMeshLibs/` - folder containing libraries used in GUIMesh
+* `data/Materials/` - folder which should be used to save materials in a database
+* `data/STEPfiles/` - folder with STEP geometries used in all tests
+* `output/gdml/` - folder for the gdml output
+* `COPYING.txt` - License disclosure
 
 
 
