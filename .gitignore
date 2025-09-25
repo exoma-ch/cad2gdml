@@ -1,7 +1,13 @@
 # Ignore all output folders
-/output/*
+/output/gdml/*
+/output/analysis/*
+/output/properties/*
 /log*.txt
 /*.csv
+
+# But always keep .gitkeep files everywhere
+!*.gitkeep
+!/output/**/*.gitkeep
 
 # Ignore everything inside 'STEP files'
 /data/STEPfiles/*
