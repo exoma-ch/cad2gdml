@@ -229,10 +229,22 @@ class GUIMeshCLI:
 
         assignments_count = {}
         custom_materials_needed = set()
+        fallback_used = set()
 
         for obj in self.list_of_objects:
             label_lower = str(obj.VolumeCAD.Label).lower()
             mat_name, description, requires_custom = choose_material_name(label_lower)
+            
+            # Check if this was a fallback assignment
+            if mat_name == fallback["material"]:
+                # Check if any pattern actually matched
+                pattern_matched = False
+                for pattern in mappings.keys():
+                    if pattern in label_lower:
+                        pattern_matched = True
+                        break
+                if not pattern_matched:
+                    fallback_used.add(obj.VolumeCAD.Label)
             
             if requires_custom:
                 custom_materials_needed.add(mat_name)
@@ -253,8 +265,23 @@ class GUIMeshCLI:
             print(f"\nCustom materials needed: {', '.join(custom_materials_needed)}")
             print("  Load them using --load-material flag")
         
+        if fallback_used:
+            print(f"\n ERROR: {len(fallback_used)} volumes have unmatched names and would use fallback material '{fallback['material']}':")
+            # Show first few examples
+            examples = list(fallback_used)[:10]
+            for example in examples:
+                print(f"  - {example}")
+            if len(fallback_used) > 10:
+                print(f"  ... and {len(fallback_used) - 10} more")
+            print(f"\nTo fix this:")
+            print(f"  1. Add patterns to src/material_mappings.json for these volume names")
+            print(f"  2. Or use --load-props with a CSV file that has explicit material assignments")
+            print(f"  3. Or modify the fallback_material in material_mappings.json if this is intentional")
+            return False
+        
         if not assignments_count:
             print("No materials were assigned.")
+            return False
         
         return True
 
