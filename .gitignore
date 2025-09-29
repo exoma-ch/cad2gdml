@@ -1,9 +1,10 @@
 # Ignore all output folders
 /output/gdml/*
-/output/analysis/*
-/output/properties/*
+*.gdml
 /log*.txt
-/*.csv
+*.csv
+*.png
+*.step
 
 # But always keep .gitkeep files everywhere
 !*.gitkeep

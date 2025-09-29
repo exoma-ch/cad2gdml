@@ -77,6 +77,20 @@ class GUIMeshCLI:
         self.Material_List = []
         self.file_status = 0
         self.verbose = False
+        self.vertex_counts = []  # Track vertex counts for statistics
+        self.use_direct_edge_analysis = True  # Use direct edge vector analysis by default
+
+    def set_orientation_analysis_method(self, use_direct_edge=True):
+        """Set the method for calculating crystal orientations
+        
+        Args:
+            use_direct_edge (bool): If True, use direct edge vector analysis (recommended for 8-vertex crystals)
+                                  If False, use PCA analysis (better for complex shapes with many vertices)
+        """
+        self.use_direct_edge_analysis = use_direct_edge
+        method = "Direct Edge Vector Analysis" if use_direct_edge else "PCA Analysis"
+        if self.verbose:
+            print(f"Orientation analysis method set to: {method}")
 
     def load_custom_material(self, material_file):
         """Load a custom material from a file"""
@@ -266,7 +280,7 @@ class GUIMeshCLI:
             print("  Load them using --load-material flag")
         
         if fallback_used:
-            print(f"\n ERROR: {len(fallback_used)} volumes have unmatched names and would use fallback material '{fallback['material']}':")
+            print(f"\n❌ ERROR: {len(fallback_used)} volumes have unmatched names and would use fallback material '{fallback['material']}':")
             # Show first few examples
             examples = list(fallback_used)[:10]
             for example in examples:
@@ -282,6 +296,432 @@ class GUIMeshCLI:
         if not assignments_count:
             print("No materials were assigned.")
             return False
+        
+        return True
+
+    def extract_crystal_number(self, volume_label):
+        """Extract crystal number from volume label and check for duplicates"""
+        import re
+        
+        # Try to extract number from various patterns
+        # Common patterns: "_detector_lyso_123", "Part_123", "Crystal_456", etc.
+        patterns = [
+            r'_detector_lyso_(\d+)',  # _detector_lyso_123
+            r'Part_(\d+)',           # Part_123
+            r'Crystal_(\d+)',        # Crystal_456  
+            r'LYSO_(\d+)',           # LYSO_789
+            r'(\d+)$',               # Number at end of string
+            r'(\d+)',                # Any number (fallback)
+        ]
+        
+        # Special case: _detector_lyso_ (no number) should be crystal 0
+        if volume_label == '_detector_lyso_':
+            return 0
+        
+        for pattern in patterns:
+            match = re.search(pattern, volume_label)
+            if match:
+                return int(match.group(1))
+        
+        # If no number found, return None (will be handled later)
+        return None
+
+    def extract_crystal_centers(self, output_file=None):
+        """Extract center coordinates of LYSO crystals only and optionally save to CSV"""
+        if not self.list_of_objects:
+            print("Error: No volumes loaded")
+            return False
+        
+        crystal_centers = []
+        lyso_count = 0
+        used_crystal_ids = set()
+        
+        print(f"\n=== LYSO Crystal Center Analysis ===")
+        method = "Direct Edge Vector Analysis" if self.use_direct_edge_analysis else "PCA Analysis"
+        print(f"Using orientation analysis method: {method}")
+        print(f"Scanning {len(self.list_of_objects)} volumes for LYSO crystals...")
+        
+        # Debug: Show first few volume names
+        if self.verbose:
+            print("First 10 volume names:")
+            for i, obj in enumerate(self.list_of_objects[:10]):
+                print(f"  {i}: {obj.VolumeCAD.Label} (material: {obj.VolumeMaterial.Name if obj.VolumeMaterial else 'Unknown'})")
+        
+        for i, obj in enumerate(self.list_of_objects):
+            try:
+                # Get volume label and material name
+                volume_label = obj.VolumeCAD.Label
+                material_name = obj.VolumeMaterial.Name if obj.VolumeMaterial else "Unknown"
+                
+                # Only process LYSO crystals (check both volume name and material)
+                if "lyso" not in volume_label.lower() and material_name != "LYSO":
+                    continue
+                
+                lyso_count += 1
+                
+                # Get the bounding box of the volume
+                bbox = obj.VolumeCAD.Shape.BoundBox
+                
+                # Calculate center coordinates from bounding box
+                bbox_center_x = (bbox.XMin + bbox.XMax) / 2.0
+                bbox_center_y = (bbox.YMin + bbox.YMax) / 2.0
+                bbox_center_z = (bbox.ZMin + bbox.ZMax) / 2.0
+                
+                # Calculate crystal orientation from its actual geometric shape
+                import math
+                
+                try:
+                    # Get the tessellated vertices of the crystal shape
+                    # This gives us the actual geometric data, not just bounding box
+                    precision = 0.1  # Use a reasonable precision for orientation calculation
+                    triangles = obj.VolumeCAD.Shape.tessellate(precision)
+                    vertices = triangles[0]  # Get the vertices
+                    
+                    if len(vertices) > 0:
+                        # Print vertex count for debugging and track for statistics
+                        vertex_count = len(vertices)
+                        self.vertex_counts.append(vertex_count)
+                        if self.verbose:
+                            print(f"  Crystal {obj.VolumeCAD.Label}: {vertex_count} vertices")
+                        
+                        # Analyze the crystal's orientation using the selected method
+                        if self.use_direct_edge_analysis:
+                            # DIRECT EDGE VECTOR ANALYSIS (improved for 8-vertex rectangular crystals)
+                            # Find the main axis by analyzing edge patterns, not just longest edge
+                            
+                            # For rectangular crystals, we want to find the main axis
+                            # This should be the direction with the most significant edge length
+                            edge_vectors = []
+                            edge_lengths = []
+                            
+                            # Check all possible edge combinations (8 choose 2 = 28 combinations)
+                            for i in range(len(vertices)):
+                                for j in range(i+1, len(vertices)):
+                                    edge_vector = [vertices[j][k] - vertices[i][k] for k in range(3)]
+                                    edge_length = math.sqrt(sum(v**2 for v in edge_vector))
+                                    
+                                    edge_vectors.append(edge_vector)
+                                    edge_lengths.append(edge_length)
+                            
+                            # Find the main axis by looking for the most significant direction
+                            # Group edges by direction (using dot product similarity)
+                            main_axis_vector = None
+                            max_axis_strength = 0
+                            
+                            # For each edge, check how many other edges align with it
+                            for i, edge_vec in enumerate(edge_vectors):
+                                if edge_lengths[i] < 1.0:  # Skip very short edges
+                                    continue
+                                    
+                                # Normalize this edge
+                                edge_len = edge_lengths[i]
+                                if edge_len > 0:
+                                    normalized_edge = [v / edge_len for v in edge_vec]
+                                    
+                                    # Count how many other significant edges align with this direction
+                                    alignment_strength = 0
+                                    for j, other_edge in enumerate(edge_vectors):
+                                        if i != j and edge_lengths[j] > 1.0:  # Only consider significant edges
+                                            other_len = edge_lengths[j]
+                                            if other_len > 0:
+                                                other_normalized = [v / other_len for v in other_edge]
+                                                # Calculate alignment (dot product)
+                                                alignment = abs(sum(normalized_edge[k] * other_normalized[k] for k in range(3)))
+                                                if alignment > 0.8:  # Strongly aligned
+                                                    alignment_strength += edge_lengths[j]
+                                    
+                                    if alignment_strength > max_axis_strength:
+                                        max_axis_strength = alignment_strength
+                                        main_axis_vector = normalized_edge
+                            
+                            # Normalize the main axis vector and calculate angles
+                            if main_axis_vector:
+                                length = math.sqrt(sum(v**2 for v in main_axis_vector))
+                                if length > 0:
+                                    main_axis_vector = [v / length for v in main_axis_vector]
+                                    
+                                    # Calculate azimuth angle (rotation in XZ plane)
+                                    azimuth_angle = math.degrees(math.atan2(main_axis_vector[2], main_axis_vector[0]))
+                                    
+                                    # Calculate elevation angle (tilt relative to XZ plane)
+                                    elevation_angle = math.degrees(math.atan2(main_axis_vector[1], 
+                                                                            math.sqrt(main_axis_vector[0]**2 + main_axis_vector[2]**2)))
+                                else:
+                                    # Fallback to radial direction
+                                    azimuth_angle = math.degrees(math.atan2(bbox_center_z, bbox_center_x))
+                                    elevation_angle = math.degrees(math.atan2(bbox_center_y, bbox_center_x))
+                            else:
+                                # Fallback to radial direction
+                                azimuth_angle = math.degrees(math.atan2(bbox_center_z, bbox_center_x))
+                                elevation_angle = math.degrees(math.atan2(bbox_center_y, bbox_center_x))
+                        else:
+                            # PCA ANALYSIS (better for complex shapes with many vertices)
+                            # Extract all coordinates
+                            x_coords = [v[0] for v in vertices]
+                            y_coords = [v[1] for v in vertices]
+                            z_coords = [v[2] for v in vertices]
+                            
+                            # Calculate means
+                            x_mean = sum(x_coords) / len(x_coords)
+                            y_mean = sum(y_coords) / len(y_coords)
+                            z_mean = sum(z_coords) / len(z_coords)
+                            
+                            # Calculate covariance matrix for 3D orientation analysis
+                            # XZ plane (azimuth angle)
+                            xx_var = sum((x - x_mean)**2 for x in x_coords) / len(x_coords)
+                            zz_var = sum((z - z_mean)**2 for z in z_coords) / len(x_coords)
+                            xz_cov = sum((x - x_mean) * (z - z_mean) for x, z in zip(x_coords, z_coords)) / len(x_coords)
+                            
+                            # XY plane (elevation angle)
+                            yy_var = sum((y - y_mean)**2 for y in y_coords) / len(x_coords)
+                            xy_cov = sum((x - x_mean) * (y - y_mean) for x, y in zip(x_coords, y_coords)) / len(x_coords)
+                            
+                            # Calculate azimuth angle (rotation in XZ plane)
+                            if xx_var > 0 and zz_var > 0:
+                                azimuth_angle = math.degrees(math.atan2(2 * xz_cov, xx_var - zz_var) / 2)
+                            else:
+                                # Fallback to radial direction
+                                azimuth_angle = math.degrees(math.atan2(bbox_center_z, bbox_center_x))
+                            
+                            # Calculate elevation angle (tilt in Y direction)
+                            if xx_var > 0 and yy_var > 0:
+                                elevation_angle = math.degrees(math.atan2(2 * xy_cov, xx_var - yy_var) / 2)
+                            else:
+                                # Fallback to Y position
+                                elevation_angle = math.degrees(math.atan2(bbox_center_y, bbox_center_x))
+                        
+                        # OLD PCA CALCULATION - COMMENTED OUT (using direct edge vector analysis above)
+                        """
+                        # Calculate means
+                        x_mean = sum(x_coords) / len(x_coords)
+                        y_mean = sum(y_coords) / len(y_coords)
+                        z_mean = sum(z_coords) / len(z_coords)
+                        
+                        # Calculate covariance matrix for 3D orientation analysis
+                        # XZ plane (azimuth angle)
+                        xx_var = sum((x - x_mean)**2 for x in x_coords) / len(x_coords)
+                        zz_var = sum((z - z_mean)**2 for z in z_coords) / len(z_coords)
+                        xz_cov = sum((x - x_mean) * (z - z_mean) for x, z in zip(x_coords, z_coords)) / len(x_coords)
+                        
+                        # XY plane (elevation angle)
+                        yy_var = sum((y - y_mean)**2 for y in y_coords) / len(y_coords)
+                        xy_cov = sum((x - x_mean) * (y - y_mean) for x, y in zip(x_coords, y_coords)) / len(x_coords)
+                        
+                        # Calculate azimuth angle (rotation in XZ plane)
+                        if xx_var > 0 and zz_var > 0:
+                            azimuth_angle = math.degrees(math.atan2(2 * xz_cov, xx_var - zz_var) / 2)
+                        else:
+                            # Fallback to radial direction
+                            azimuth_angle = math.degrees(math.atan2(bbox_center_z, bbox_center_x))
+                        
+                        # Calculate elevation angle (tilt in Y direction)
+                        if xx_var > 0 and yy_var > 0:
+                            elevation_angle = math.degrees(math.atan2(2 * xy_cov, xx_var - yy_var) / 2)
+                        else:
+                            # Fallback to Y position
+                            elevation_angle = math.degrees(math.atan2(bbox_center_y, bbox_center_x))
+                        """
+                        
+                        # Normalize angles: azimuth to 0-180° (opposite directions are the same), elevation to 0-360°
+                        if azimuth_angle < 0:
+                            azimuth_angle += 360.0
+                        # Use modulo 180° for azimuth, but ensure 0° and 180° are grouped together
+                        azimuth_angle = azimuth_angle % 180.0
+                        # Special case: if angle is exactly 180°, map it to 0° to group with 0°
+                        if azimuth_angle == 180.0:
+                            azimuth_angle = 0.0
+                        
+                        # Normalize elevation angle to 0-360° using modulo 360°
+                        if elevation_angle < 0:
+                            elevation_angle += 360.0
+                        elevation_angle = elevation_angle % 360.0
+                        # Special case: if angle is exactly 360°, map it to 0° to group with 0°
+                        if elevation_angle == 360.0:
+                            elevation_angle = 0.0
+                        
+                        # Round to avoid tiny floating-point precision issues
+                        azimuth_angle = round(azimuth_angle, 1)
+                        elevation_angle = round(elevation_angle, 1)
+                        
+                        # Use bounding box center (verified to be identical to geometric center)
+                        center_x = bbox_center_x
+                        center_y = bbox_center_y
+                        center_z = bbox_center_z
+                    else:
+                        # Fallback if no vertices found
+                        azimuth_angle = math.degrees(math.atan2(bbox_center_z, bbox_center_x))
+                        elevation_angle = math.degrees(math.atan2(bbox_center_y, bbox_center_x))
+                        if azimuth_angle < 0:
+                            azimuth_angle += 360.0
+                        # Use modulo 180° for azimuth, but ensure 0° and 180° are grouped together
+                        azimuth_angle = azimuth_angle % 180.0
+                        # Special case: if angle is exactly 180°, map it to 0° to group with 0°
+                        if azimuth_angle == 180.0:
+                            azimuth_angle = 0.0
+                        
+                        # Normalize elevation angle to 0-360° using modulo 360°
+                        if elevation_angle < 0:
+                            elevation_angle += 360.0
+                        elevation_angle = elevation_angle % 360.0
+                        # Special case: if angle is exactly 360°, map it to 0° to group with 0°
+                        if elevation_angle == 360.0:
+                            elevation_angle = 0.0
+                        
+                        # Round to avoid tiny floating-point precision issues
+                        azimuth_angle = round(azimuth_angle, 1)
+                        elevation_angle = round(elevation_angle, 1)
+                        
+                        center_x = bbox_center_x
+                        center_y = bbox_center_y
+                        center_z = bbox_center_z
+                            
+                except Exception as e:
+                    # Fallback to radial direction if geometric analysis fails
+                    if self.verbose:
+                        print(f"Warning: Could not analyze crystal geometry for {obj.VolumeCAD.Label}: {str(e)}")
+                    azimuth_angle = math.degrees(math.atan2(bbox_center_z, bbox_center_x))
+                    elevation_angle = math.degrees(math.atan2(bbox_center_y, bbox_center_x))
+                    if azimuth_angle < 0:
+                        azimuth_angle += 360.0
+                    if elevation_angle < 0:
+                        elevation_angle += 360.0
+                    center_x = bbox_center_x
+                    center_y = bbox_center_y
+                    center_z = bbox_center_z
+                
+                # Get volume dimensions (store only once for the first crystal)
+                if lyso_count == 0:
+                    self.crystal_width = bbox.XMax - bbox.XMin
+                    self.crystal_height = bbox.YMax - bbox.YMin
+                    self.crystal_depth = bbox.ZMax - bbox.ZMin
+                    print(f"Crystal dimensions: {self.crystal_width:.2f} × {self.crystal_height:.2f} × {self.crystal_depth:.2f} mm")
+                
+                # Extract crystal number from volume label
+                volume_label = obj.VolumeCAD.Label
+                crystal_number = self.extract_crystal_number(volume_label)
+                
+                # Handle duplicate or missing crystal numbers
+                if crystal_number is None:
+                    # No number found in label - this is an error
+                    print(f"\n❌ ERROR: No crystal number found in volume name '{volume_label}'")
+                    print(f"Expected patterns: '_detector_lyso_123', 'Part_456', 'Crystal_789', etc.")
+                    print(f"Found {lyso_count} LYSO crystals before error.")
+                    print(f"\nTo fix this:")
+                    print(f"  1. Check that volume names contain numbers")
+                    print(f"  2. Verify the naming convention in your STEP file")
+                    print(f"  3. Only '_detector_lyso_' (no number) is allowed as crystal 0")
+                    return False
+                elif crystal_number in used_crystal_ids:
+                    # Duplicate found - this is an error
+                    print(f"\n❌ ERROR: Duplicate crystal ID {crystal_number} found in volume name '{volume_label}'")
+                    print(f"Previous volume with same ID was already processed.")
+                    print(f"Found {lyso_count} LYSO crystals before error.")
+                    print(f"\nTo fix this:")
+                    print(f"  1. Check for duplicate volume names in your STEP file")
+                    print(f"  2. Ensure each crystal has a unique number")
+                    print(f"  3. Verify the geometry export from your CAD software")
+                    return False
+                else:
+                    # Valid unique crystal number
+                    final_crystal_id = crystal_number
+                
+                used_crystal_ids.add(final_crystal_id)
+                
+                crystal_info = {
+                    'crystal_id': final_crystal_id,
+                    'volume_name': volume_label,
+                    'center_x': center_x,
+                    'center_y': center_y,
+                    'center_z': center_z,
+                    'azimuth_angle': azimuth_angle,
+                    'elevation_angle': elevation_angle
+                }
+                
+                crystal_centers.append(crystal_info)
+                
+                if self.verbose and lyso_count <= 10:  # Show first 10 LYSO crystals for preview
+                    print(f"  {lyso_count:4d}: {obj.VolumeCAD.Label:30s} | "
+                          f"Center: ({center_x:7.2f}, {center_y:7.2f}, {center_z:7.2f}) mm | "
+                          f"Azimuth: {azimuth_angle:6.1f}° | Elevation: {elevation_angle:6.1f}°")
+                
+            except Exception as e:
+                print(f"Warning: Could not process volume {i+1} ({obj.VolumeCAD.Label}): {str(e)}")
+                continue
+        
+        print(f"Found {lyso_count} LYSO crystals")
+        
+        if self.verbose and lyso_count > 10:
+            print(f"  ... and {lyso_count - 10} more LYSO crystals")
+        
+        # Print summary statistics before CSV operations
+        if crystal_centers:
+            # Calculate overall statistics
+            x_coords = [c['center_x'] for c in crystal_centers]
+            y_coords = [c['center_y'] for c in crystal_centers]
+            z_coords = [c['center_z'] for c in crystal_centers]
+            
+            # Calculate angle statistics
+            azimuth_angles = [c['azimuth_angle'] for c in crystal_centers]
+            elevation_angles = [c['elevation_angle'] for c in crystal_centers]
+            
+            print(f"\n=== LYSO Crystal Summary Statistics ===")
+            print(f"Total LYSO crystals: {len(crystal_centers)}")
+            print(f"X range: {min(x_coords):.2f} to {max(x_coords):.2f} mm (span: {max(x_coords)-min(x_coords):.2f} mm)")
+            print(f"Y range: {min(y_coords):.2f} to {max(y_coords):.2f} mm (span: {max(y_coords)-min(y_coords):.2f} mm)")
+            print(f"Z range: {min(z_coords):.2f} to {max(z_coords):.2f} mm (span: {max(z_coords)-min(z_coords):.2f} mm)")
+            print(f"Azimuth angles: {min(azimuth_angles):.1f}° to {max(azimuth_angles):.1f}° (span: {max(azimuth_angles)-min(azimuth_angles):.1f}°)")
+            print(f"Elevation angles: {min(elevation_angles):.1f}° to {max(elevation_angles):.1f}° (span: {max(elevation_angles)-min(elevation_angles):.1f}°)")
+            
+            # Add vertex count statistics if available
+            if hasattr(self, 'vertex_counts') and self.vertex_counts:
+                vertex_counts = self.vertex_counts
+                print(f"Vertex counts: {min(vertex_counts)} to {max(vertex_counts)} vertices per crystal (avg: {sum(vertex_counts)/len(vertex_counts):.1f})")
+        
+        # Save to CSV if requested
+        if output_file:
+            # If output_file is True (from --extract-centers flag without filename), create method-specific filename
+            if output_file is True:
+                method_suffix = "direct_edge" if self.use_direct_edge_analysis else "pca"
+                # Use the output directory if available, otherwise current directory
+                if hasattr(self, 'output_dir') and self.output_dir:
+                    output_file = os.path.join(self.output_dir, f'lyso_crystal_centers_3d_angles_{method_suffix}.csv')
+                else:
+                    output_file = f'lyso_crystal_centers_3d_angles_{method_suffix}.csv'
+            else:
+                # output_file is a string (filename provided by user)
+                # If output directory is set and filename is not already a full path, prepend it
+                if hasattr(self, 'output_dir') and self.output_dir and not os.path.isabs(output_file) and not os.path.dirname(output_file):
+                    output_file = os.path.join(self.output_dir, output_file)
+            try:
+                import csv
+                with open(output_file, 'w', newline='') as csvfile:
+                    fieldnames = ['crystal_id', 'volume_name', 'center_x', 'center_y', 'center_z', 'azimuth_angle', 'elevation_angle']
+                    writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+                    
+                    writer.writeheader()
+                    for crystal in crystal_centers:
+                        writer.writerow(crystal)
+                
+                    print(f"\nCrystal centers saved to: {output_file}")
+                    
+                    # Save crystal dimensions to a separate file
+                    if hasattr(self, 'crystal_width'):
+                        dim_file = output_file.replace('.csv', '_dimensions.txt')
+                        try:
+                            with open(dim_file, 'w') as f:
+                                f.write(f"Crystal Dimensions\n")
+                                f.write(f"==================\n")
+                                f.write(f"Width:  {self.crystal_width:.2f} mm\n")
+                                f.write(f"Height: {self.crystal_height:.2f} mm\n")
+                                f.write(f"Depth:  {self.crystal_depth:.2f} mm\n")
+                                f.write(f"Volume: {self.crystal_width * self.crystal_height * self.crystal_depth:.2f} mm³\n")
+                            print(f"Crystal dimensions saved to: {dim_file}")
+                        except Exception as e:
+                            print(f"Error saving crystal dimensions: {str(e)}")
+                
+            except Exception as e:
+                print(f"Error saving crystal centers: {str(e)}")
+                return False
         
         return True
 
@@ -474,6 +914,8 @@ def main():
     parser.add_argument('--verbose', action='store_true', help='Enable verbose logging and progress messages')
     parser.add_argument('--assign-materials', action='store_true', help='Assign materials based on volume name patterns (single-pass workflow)')
     parser.add_argument('--material-config', default='material_mappings.json', help='JSON file with material assignment rules (default: material_mappings.json)')
+    parser.add_argument('--extract-centers', nargs='?', const=True, help='Extract crystal center coordinates and save to CSV file. Optionally specify output filename.')
+    parser.add_argument('--use-pca', action='store_true', help='Use PCA analysis instead of direct edge vector analysis for crystal orientation')
     
     args = parser.parse_args()
 
@@ -483,6 +925,12 @@ def main():
 
     mesh = GUIMeshCLI()
     mesh.verbose = bool(args.verbose)
+    
+    # Set output directory for CSV files
+    mesh.output_dir = args.output_dir
+    
+    # Set orientation analysis method
+    mesh.set_orientation_analysis_method(use_direct_edge=not args.use_pca)
 
     if args.step:
         if not mesh.load_step_file(args.step):
@@ -504,6 +952,11 @@ def main():
     # Single-pass material assignment (only if properties were not explicitly loaded)
     if args.assign_materials and not args.load_props:
         if not mesh.assign_materials_from_names(args.material_config):
+            return
+
+    # Extract crystal centers if requested
+    if args.extract_centers:
+        if not mesh.extract_crystal_centers(args.extract_centers):
             return
 
     if args.save_props:
