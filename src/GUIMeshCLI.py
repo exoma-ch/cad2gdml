@@ -387,10 +387,10 @@ class GUIMeshCLI:
                         # Analyze the crystal's orientation using the selected method
                         if self.use_direct_edge_analysis:
                             # DIRECT EDGE VECTOR ANALYSIS (improved for 8-vertex rectangular crystals)
-                            # Find the main axis by analyzing edge patterns, not just longest edge
+                            # Find the main axis by analyzing edge patterns for parallelepipeds
                             
-                            # For rectangular crystals, we want to find the main axis
-                            # This should be the direction with the most significant edge length
+                            # For rectangular crystals (parallelepipeds), we want to find the main axis
+                            # Each edge should have exactly 3 other parallel edges (4 total in that direction)
                             edge_vectors = []
                             edge_lengths = []
                             
@@ -403,35 +403,38 @@ class GUIMeshCLI:
                                     edge_vectors.append(edge_vector)
                                     edge_lengths.append(edge_length)
                             
-                            # Find the main axis by looking for the most significant direction
-                            # Group edges by direction (using dot product similarity)
+                            # Find the main axis by looking for the longest edge with exactly 3 parallel edges
+                            # For a parallelepiped: 12 edges total, 4 edges in each of 3 perpendicular directions
                             main_axis_vector = None
-                            max_axis_strength = 0
+                            max_parallel_count = 0
+                            longest_edge_length = 0
                             
-                            # For each edge, check how many other edges align with it
+                            # For each edge, count how many other edges are parallel to it
                             for i, edge_vec in enumerate(edge_vectors):
-                                if edge_lengths[i] < 1.0:  # Skip very short edges
+                                edge_len = edge_lengths[i]
+                                if edge_len <= 0:  # Skip zero-length edges
                                     continue
                                     
                                 # Normalize this edge
-                                edge_len = edge_lengths[i]
-                                if edge_len > 0:
-                                    normalized_edge = [v / edge_len for v in edge_vec]
-                                    
-                                    # Count how many other significant edges align with this direction
-                                    alignment_strength = 0
-                                    for j, other_edge in enumerate(edge_vectors):
-                                        if i != j and edge_lengths[j] > 1.0:  # Only consider significant edges
-                                            other_len = edge_lengths[j]
-                                            if other_len > 0:
-                                                other_normalized = [v / other_len for v in other_edge]
-                                                # Calculate alignment (dot product)
-                                                alignment = abs(sum(normalized_edge[k] * other_normalized[k] for k in range(3)))
-                                                if alignment > 0.8:  # Strongly aligned
-                                                    alignment_strength += edge_lengths[j]
-                                    
-                                    if alignment_strength > max_axis_strength:
-                                        max_axis_strength = alignment_strength
+                                normalized_edge = [v / edge_len for v in edge_vec]
+                                
+                                # Count how many other edges are parallel to this direction
+                                parallel_count = 0
+                                for j, other_edge in enumerate(edge_vectors):
+                                    if i != j and edge_lengths[j] > 0:  # Don't skip any edges, just zero-length ones
+                                        other_len = edge_lengths[j]
+                                        other_normalized = [v / other_len for v in other_edge]
+                                        # Calculate alignment (dot product)
+                                        alignment = abs(sum(normalized_edge[k] * other_normalized[k] for k in range(3)))
+                                        if alignment > 0.99:  # Nearly parallel (accounting for floating-point precision)
+                                            parallel_count += 1
+                                
+                                # For a parallelepiped, we expect exactly 3 parallel edges (plus itself = 4 total)
+                                # Among edges with 3 parallel edges, choose the longest one
+                                if parallel_count == 3:
+                                    if parallel_count > max_parallel_count or (parallel_count == max_parallel_count and edge_len > longest_edge_length):
+                                        max_parallel_count = parallel_count
+                                        longest_edge_length = edge_len
                                         main_axis_vector = normalized_edge
                             
                             # Normalize the main axis vector and calculate angles

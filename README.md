@@ -13,6 +13,12 @@ This project is based on [GUIMesh3](https://github.com/MPintoSpace/GUIMesh3), or
   - [For Geant4 Simulation Setup](#for-geant4-simulation-setup)
   - [Output Files](#output-files)
   - [Command Line Options](#command-line-options)
+- [Material Assignment](#material-assignment)
+  - [How Material Assignment Works](#how-material-assignment-works)
+  - [Material Mappings Configuration](#material-mappings-configuration)
+  - [Material Assignment Examples](#material-assignment-examples)
+  - [Customizing Material Mappings](#customizing-material-mappings)
+  - [Material Assignment Process](#material-assignment-process)
 - [Technical Details](#technical-details)
   - [How Crystal Centers and Orientations Are Calculated](#how-crystal-centers-and-orientations-are-calculated)
   - [Visualization Tool](#visualization-tool)
@@ -137,6 +143,116 @@ python3 src/GUIMeshCLI.py --step <step_file> --output-dir <output_dir> --extract
 python3 src/GUIMeshCLI.py --help
 ```
 
+## Material Assignment
+
+The system automatically assigns materials to volumes based on their names using pattern matching rules defined in `src/material_mappings.json`. This allows for flexible and customizable material assignment without modifying the code.
+
+### How Material Assignment Works
+
+1. **Volume Name Analysis**: The system examines each volume's name for specific keywords
+2. **Pattern Matching**: Keywords are matched against the material mappings configuration
+3. **Material Assignment**: The corresponding Geant4 material is assigned to the volume
+4. **Custom Material Loading**: Materials marked as `requires_custom: true` are loaded from external files
+
+### Material Mappings Configuration
+
+The material assignment rules are defined in `src/material_mappings.json`:
+
+```json
+{
+  "material_mappings": {
+    "lyso": {
+      "material": "LYSO",
+      "description": "Custom LYSO scintillator material",
+      "requires_custom": true
+    },
+    "sipm": {
+      "material": "G4_Si",
+      "description": "Pure silicon for Silicon Photomultiplier",
+      "requires_custom": false
+    },
+    "pcb": {
+      "material": "G4_POLYETHYLENE",
+      "description": "PCB material (fiberglass/epoxy composite approximation)",
+      "requires_custom": false
+    },
+    "aluminum": {
+      "material": "G4_Al",
+      "description": "Aluminum material",
+      "requires_custom": false
+    }
+  },
+  "fallback_material": {
+    "material": "G4_Si",
+    "description": "Default fallback material",
+    "requires_custom": false
+  },
+  "version": "1.0",
+  "description": "Material assignment rules for GUIMeshCLI"
+}
+```
+
+### Material Assignment Examples
+
+**Volume Name Patterns:**
+- `_detector_lyso_*` → *image.png*LYSO** (custom material, requires `--load-material`)
+- `sipm_si*` → **G4_Si** (pure silicon)
+- `dmod-base_al*` → **G4_Al** (aluminum)
+- `pcb-sipm_pcb*` → **G4_POLYETHYLENE** (PCB material)
+- `unit-cover_plastic*` → **G4_POLYETHYLENE** (plastic)
+
+**Custom Material Loading:**
+```bash
+# Load custom LYSO material properties
+python3 src/GUIMeshCLI.py \
+  --step "data/STEPfiles/ring_radial_12_axial_1.step" \
+  --load-material "data/Materials/LYSO.txt" \
+  --assign-materials \
+  --output-dir output/gdml/
+```
+
+### Customizing Material Mappings
+
+You can customize material assignments by editing `material_mappings.json`:
+
+**Adding New Materials:**
+```json
+{
+  "material_mappings": {
+    "tungsten": {
+      "material": "G4_W",
+      "description": "Tungsten material",
+      "requires_custom": false
+    },
+    "lead": {
+      "material": "G4_Pb",
+      "description": "Lead shielding material",
+      "requires_custom": false
+    }
+  }
+}
+```
+
+**Custom Material Properties:**
+For materials with `"requires_custom": true`, create a material file (e.g., `data/Materials/CUSTOM_MATERIAL.txt`) with Geant4 material definitions and load it using `--load-material`.
+
+### Material Assignment Process
+
+1. **Volume Scanning**: System scans all volumes in the STEP file
+2. **Name Pattern Matching**: Volume names are checked against material mappings
+3. **Material Assignment**: Matching volumes are assigned the corresponding Geant4 material
+4. **Custom Material Loading**: Custom materials are loaded from external files
+5. **GDML Generation**: Materials are included in the generated GDML files
+
+**Assignment Summary Example:**
+```
+Material assignments summary:
+  LYSO: 1728 volumes
+  G4_Si: 336 volumes
+  G4_Al: 12 volumes
+  G4_POLYETHYLENE: 12 volumes
+```
+
 ## Technical Details
 
 ### How Crystal Centers and Orientations Are Calculated
@@ -158,12 +274,12 @@ center_z = (bbox.ZMin + bbox.ZMax) / 2
 
 The system offers **two methods** for extracting crystal orientations:
 
-**Method 1: Direct Edge Vector Analysis (Default - Recommended)**
+**Method 1: Direct Edge Vector Analysis (Default)**
 - **Best for**: 8-vertex rectangular crystals
 - **How it works**: Analyzes edge vectors to find the main crystal axis
 - **Advantage**: More accurate for rectangular geometries
 
-**Method 2: PCA Analysis**
+**Method 2: PCA Analysis (Alternative)**
 - **Best for**: General 3D shapes with many vertices
 - **How it works**: Uses Principal Component Analysis on vertex distribution
 - **Advantage**: Robust statistical method
@@ -182,13 +298,60 @@ y_coords = [v[1] for v in vertices]
 z_coords = [v[2] for v in vertices]
 ```
 
-**Direct Edge Vector Analysis:**
+**Direct Edge Vector Analysis (Default):**
 1. **Edge Vector Collection**: Collect all edge vectors from the crystal vertices
-2. **Main Axis Identification**: Find the direction with strongest edge alignment
+```python
+# Check all possible edge combinations (8 choose 2 = 28 combinations)
+for i in range(len(vertices)):
+    for j in range(i+1, len(vertices)):
+        edge_vector = [vertices[j][k] - vertices[i][k] for k in range(3)]
+        edge_length = math.sqrt(sum(v**2 for v in edge_vector))
+        edge_vectors.append(edge_vector)
+        edge_lengths.append(edge_length)
+```
+
+2. **Main Axis Identification**: Find the longest edge with exactly 3 parallel edges (parallelepiped property)
+```python
+# For each edge, count how many other edges are parallel to it
+for i, edge_vec in enumerate(edge_vectors):
+    edge_len = edge_lengths[i]
+    if edge_len <= 0:  # Skip zero-length edges
+        continue
+        
+    # Normalize this edge
+    normalized_edge = [v / edge_len for v in edge_vec]
+    
+    # Count how many other edges are parallel to this direction
+    parallel_count = 0
+    for j, other_edge in enumerate(edge_vectors):
+        if i != j and edge_lengths[j] > 0:  # Don't skip any edges, just zero-length ones
+            other_normalized = [v / other_len for v in other_edge]
+            # Calculate alignment (dot product)
+            alignment = abs(sum(normalized_edge[k] * other_normalized[k] for k in range(3)))
+            if alignment > 0.99:  # Nearly parallel (accounting for floating-point precision)
+                parallel_count += 1
+    
+    # For a parallelepiped, we expect exactly 3 parallel edges (plus itself = 4 total)
+    # Among edges with 3 parallel edges, choose the longest one
+    if parallel_count == 3:
+        if parallel_count > max_parallel_count or (parallel_count == max_parallel_count and edge_len > longest_edge_length):
+            max_parallel_count = parallel_count
+            longest_edge_length = edge_len
+            main_axis_vector = normalized_edge
+```
+
 3. **Azimuth Calculation**: `azimuth = atan2(main_axis[2], main_axis[0])`
 4. **Elevation Calculation**: `elevation = atan2(main_axis[1], sqrt(main_axis[0]² + main_axis[2]²))`
+```python
+# Calculate azimuth angle (rotation in XZ plane)
+azimuth_angle = math.degrees(math.atan2(main_axis_vector[2], main_axis_vector[0]))
 
-**PCA Analysis:**
+# Calculate elevation angle (tilt relative to XZ plane)
+elevation_angle = math.degrees(math.atan2(main_axis_vector[1], 
+                                        math.sqrt(main_axis_vector[0]**2 + main_axis_vector[2]**2)))
+```
+
+**PCA Analysis (Alternative):**
 1. **Covariance Matrix**: Calculate covariance matrix from vertex distribution
 2. **Principal Components**: Find eigenvectors of the covariance matrix
 3. **Azimuth Calculation**: `azimuth = atan2(2 * xz_cov, xx_var - zz_var) / 2`
