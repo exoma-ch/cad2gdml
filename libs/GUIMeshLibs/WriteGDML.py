@@ -57,7 +57,9 @@ def CreateMother(dir_path,object_list,world):
     for i in range(0,len(object_list)):
         if (object_list[i].VolumeGDMLoption==1):
             F.write('<physvol>\n')
-            F.write('<file name="Volumes/'+str(object_list[i].VolumeCAD.Label)+str(i+1)+'.gdml"/>\n')
+            # Use volume label directly - normalization happens at the end
+            gdml_filename = str(object_list[i].VolumeCAD.Label) + ".gdml"
+            F.write('<file name="Volumes/'+gdml_filename+'"/>\n')
             F.write('<positionref ref="center"/>\n')
             F.write('<rotationref ref="identity"/>\n')
             F.write('</physvol>\n')
@@ -76,7 +78,9 @@ def CreateGDML(obj,vol_numb,path_to_mesh):
     precision=obj.VolumeMMD   
     triangles = obj.VolumeCAD.Shape.tessellate(precision) #the number represents the precision of the tessellation #returns matrix with triangles vertices
     count=0
-    gdml_name=str(obj.VolumeCAD.Label)+str(vol_numb) #gdml file name derives from volume label and number
+    
+    # Use volume label directly - normalization happens at the end
+    gdml_name = str(obj.VolumeCAD.Label)
     #write file
     F=open(str(path_to_mesh)+"/Volumes/"+gdml_name+".gdml","w")
     #write header
@@ -122,6 +126,44 @@ def CreateGDML(obj,vol_numb,path_to_mesh):
     F.write('</gdml>')
     F.close()
 
+# Function to normalize base volume names (add _0 to volumes without numbers)
+def normalize_base_volumes(volumes_dir):
+    import os
+    import re
+    
+    # Find all GDML files in the Volumes directory
+    gdml_files = [f for f in os.listdir(volumes_dir) if f.endswith('.gdml')]
+    
+    for gdml_file in gdml_files:
+        # Check if this is a base volume (no digits in the name)
+        base_name = gdml_file.replace('.gdml', '')
+        if not any(char.isdigit() for char in base_name):
+            # Use simple sequential numbering without padding (0, 1, 2, ...)
+            if base_name.endswith('_'):
+                normalized_name = base_name + "0"  # _detector_lyso_ -> _detector_lyso_0
+            else:
+                normalized_name = base_name + "_0"  # dmod-base_al -> dmod-base_al_0
+            
+            old_path = os.path.join(volumes_dir, gdml_file)
+            new_name = normalized_name + ".gdml"
+            new_path = os.path.join(volumes_dir, new_name)
+            
+            # Rename the file
+            os.rename(old_path, new_path)
+            print(f"Renamed: {gdml_file} -> {new_name}")
+            
+            # Update the content of the GDML file to use the new name
+            with open(new_path, 'r') as f:
+                content = f.read()
+            
+            # Replace the volume name in the content
+            content = content.replace(f'name="{base_name}"', f'name="{normalized_name}"')
+            content = content.replace(f'name="{base_name}_solid"', f'name="{normalized_name}_solid"')
+            content = content.replace(f'name="{base_name}_v', f'name="{normalized_name}_v')
+            
+            with open(new_path, 'w') as f:
+                f.write(content)
+
 #Main function called to write all GDML files
 def Write_Files(obj_list, world_list):
     write_dir=tkinter.filedialog.askdirectory()
@@ -140,5 +182,9 @@ def Write_Files(obj_list, world_list):
         if obj.VolumeGDMLoption==1:
             CreateGDML(obj,counter,write_dir)
         counter+=1
+    
+    # Normalize base volumes at the end
+    normalize_base_volumes(str(write_dir)+"/Volumes")
+    
     tkinter.messagebox.showinfo("Message", 'GDML Files ready.')        
 #Note: A number is added to each volumes label to avoid that two different volumes have the same name. This can be seen in the mother and in the volumes GDMLs
