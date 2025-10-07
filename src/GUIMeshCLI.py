@@ -897,7 +897,7 @@ class GUIMeshCLI:
                 if obj.VolumeGDMLoption == 1:
                     WriteGDML.CreateGDML(obj, i, str(output_path))
 
-            # Normalize base volumes at the end (add _0 to volumes without numbers)
+            # Normalize base volumes at the end (keeping original names)
             WriteGDML.normalize_base_volumes(str(volumes_path))
 
             print(f"GDML files written to {output_dir}")
