@@ -13,6 +13,11 @@ This project is based on [GUIMesh3](https://github.com/MPintoSpace/GUIMesh3), or
   - [For Geant4 Simulation Setup](#for-geant4-simulation-setup)
   - [Output Files](#output-files)
   - [Command Line Options](#command-line-options)
+- [World Size Configuration](#world-size-configuration)
+  - [Automatic World Size Calculation](#automatic-world-size-calculation)
+  - [Manual World Size Setting](#manual-world-size-setting)
+  - [World Size Options](#world-size-options)
+  - [Example Output](#example-output)
 - [Material Assignment](#material-assignment)
   - [How Material Assignment Works](#how-material-assignment-works)
   - [Material Mappings Configuration](#material-mappings-configuration)
@@ -141,6 +146,59 @@ python3 src/GUIMeshCLI.py --step <step_file> --output-dir <output_dir> --extract
 
 # Show help
 python3 src/GUIMeshCLI.py --help
+```
+
+## World Size Configuration
+
+The system automatically calculates the world size based on the geometry's bounding box, but you can also set it manually for specific simulation requirements.
+
+### Automatic World Size Calculation
+
+By default, the system automatically calculates the world size:
+
+```bash
+# Automatic world size (recommended)
+python3 src/GUIMeshCLI.py \
+  --step "data/STEPfiles/ring_radial_12_axial_1.step" \
+  --load-material "data/Materials/LYSO.txt" \
+  --assign-materials \
+  --output-dir output/gdml/
+```
+
+The system will:
+1. Analyze the geometry's bounding box
+2. Add a 10% margin for safety
+3. Display the calculated world dimensions
+4. Use these dimensions in the generated GDML files
+
+### Manual World Size Setting
+
+For specific simulation requirements, you can set custom world dimensions:
+
+```bash
+# Set custom world size (in meters)
+python3 src/GUIMeshCLI.py \
+  --step "data/STEPfiles/ring_radial_12_axial_1.step" \
+  --load-material "data/Materials/LYSO.txt" \
+  --assign-materials \
+  --world-size 1.0 1.0 1.0 \
+  --output-dir output/gdml/
+```
+
+### World Size Options
+
+- **Automatic**: `--world-size auto` (default) - Calculates based on geometry
+- **Custom**: `--world-size <x> <y> <z>` - Set specific dimensions in meters
+- **Cubic**: `--world-size 2.0` - Creates a 2m × 2m × 2m cubic world
+
+### Example Output
+
+```
+=== Geometry Analysis ===
+Bounding box: 366.8mm x 380.0mm x 366.8mm
+Center: (0.0, 150.0, 0.0) mm
+Calculated world size: 0.51m x 0.53m x 0.51m
+World dimensions automatically set to: 0.51m x 0.53m x 0.51m
 ```
 
 ## Material Assignment
