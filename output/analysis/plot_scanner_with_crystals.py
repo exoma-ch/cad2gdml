@@ -645,6 +645,50 @@ def plot_debug_single_crystals(crystals, width, height, depth, save_dir=None):
     
     plt.show()
 
+def plot_y_vs_radial_angle(crystals, save_dir=None):
+    """Plot Y position vs radial angle (azimuth) to show all crystals"""
+    fig, ax = plt.subplots(1, 1, figsize=(12, 8))
+    
+    # Extract data
+    y_positions = [crystal['y'] for crystal in crystals]
+    azimuth_angles = [crystal['azimuth'] for crystal in crystals]
+    
+    # Create scatter plot
+    scatter = ax.scatter(azimuth_angles, y_positions, c=azimuth_angles, cmap='viridis', 
+                       alpha=0.7, s=20, edgecolors='black', linewidth=0.5)
+    
+    # Add colorbar
+    cbar = plt.colorbar(scatter, ax=ax)
+    cbar.set_label('Azimuth Angle (degrees)', rotation=270, labelpad=20)
+    
+    # Customize plot
+    ax.set_xlabel('Radial Angle (Azimuth) [degrees]', fontsize=12)
+    ax.set_ylabel('Y Position [mm]', fontsize=12)
+    ax.set_title('Crystal Distribution: Y Position vs Radial Angle', fontsize=14, fontweight='bold')
+    ax.grid(True, alpha=0.3)
+    
+    # Set axis limits with some padding
+    ax.set_xlim(min(azimuth_angles) - 5, max(azimuth_angles) + 5)
+    ax.set_ylim(min(y_positions) - 5, max(y_positions) + 5)
+    
+    # Add statistics text
+    stats_text = f'Total Crystals: {len(crystals)}\n'
+    stats_text += f'Y Range: {min(y_positions):.1f} to {max(y_positions):.1f} mm\n'
+    stats_text += f'Azimuth Range: {min(azimuth_angles):.1f} to {max(azimuth_angles):.1f}°'
+    
+    ax.text(0.02, 0.98, stats_text, transform=ax.transAxes, fontsize=10,
+            verticalalignment='top', bbox=dict(boxstyle='round', facecolor='white', alpha=0.8))
+    
+    plt.tight_layout()
+    
+    # Save plot
+    if save_dir:
+        filename = os.path.join(save_dir, "y_vs_radial_angle.png")
+        plt.savefig(filename, dpi=300, bbox_inches='tight')
+        print(f"Y vs Radial Angle plot saved to: {filename}")
+    
+    plt.show()
+
 if __name__ == "__main__":
     import sys
     import glob
@@ -673,6 +717,9 @@ if __name__ == "__main__":
         
         # Main geometry plot with crystal sizes
         plot_scanner_with_crystals(crystals, width, height, depth, save_dir=save_dir)
+        
+        # Y vs Radial Angle plot
+        plot_y_vs_radial_angle(crystals, save_dir=save_dir)
         
         print(f"\nScanner with crystal sizes visualizations saved to: {save_dir}")
     else:
