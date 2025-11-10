@@ -1,5 +1,7 @@
 # Ignore all output folders
 /output/gdml/*
+/output/analysis/*.csv
+/output/analysis/*.txt
 *.gdml
 /log*.txt
 *.csv
