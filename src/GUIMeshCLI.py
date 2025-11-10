@@ -72,6 +72,7 @@ except ImportError:
 class GUIMeshCLI:
     def __init__(self):
         self.world_dimensions = [1.0, 1.0, 1.0]  # in meters
+        self.world_position = [0.0, 0.0, 0.0]  # World box center position in meters
         self.list_of_objects = []
         self.Element_List = Materials.Load_Elements()
         self.Material_List = []
@@ -773,42 +774,31 @@ class GUIMeshCLI:
             height = max_y - min_y
             depth = max_z - min_z
             
-            # Calculate geometry center (in mm) - for information only
+            # Calculate geometry center (in mm)
             center_x = min_x + width / 2.0
             center_y = min_y + height / 2.0
             center_z = min_z + depth / 2.0
 
-            # Calculate world box size to contain offset geometry
-            # World box is centered at (0,0,0), so it must extend far enough to contain
-            # geometry that may be offset from origin
-            # For each axis, world size = 2 * max(|min|, |max|) * (1 + margin)
+            # World size: bounding box dimensions + margin on each side
             margin = 0.05
-            world_x = 2.0 * max(abs(min_x), abs(max_x)) * (1.0 + margin)
-            world_y = 2.0 * max(abs(min_y), abs(max_y)) * (1.0 + margin)
-            world_z = 2.0 * max(abs(min_z), abs(max_z)) * (1.0 + margin)
+            world_x = width * (1.0 + 2.0 * margin) / 1000.0
+            world_y = height * (1.0 + 2.0 * margin) / 1000.0
+            world_z = depth * (1.0 + 2.0 * margin) / 1000.0
             
-            # Ensure minimum world size is at least the geometry dimensions + margin
-            min_world_x = width * (1.0 + 2.0 * margin)
-            min_world_y = height * (1.0 + 2.0 * margin)
-            min_world_z = depth * (1.0 + 2.0 * margin)
-            world_x = max(world_x, min_world_x)
-            world_y = max(world_y, min_world_y)
-            world_z = max(world_z, min_world_z)
-            
-            # Convert from mm to meters
-            world_x /= 1000.0
-            world_y /= 1000.0
-            world_z /= 1000.0
+            # World position: geometry center (convert mm to meters)
+            world_pos_x = center_x / 1000.0
+            world_pos_y = center_y / 1000.0
+            world_pos_z = center_z / 1000.0
             
             print(f"\n=== Geometry Analysis ===")
             print(f"Bounding box: {width:.1f}mm x {height:.1f}mm x {depth:.1f}mm")
             print(f"Geometry center: ({center_x:.1f}, {center_y:.1f}, {center_z:.1f}) mm")
-            print(f"Geometry range: X[{min_x:.1f}, {max_x:.1f}] Y[{min_y:.1f}, {max_y:.1f}] Z[{min_z:.1f}, {max_z:.1f}] mm")
-            print(f"Calculated world size: {world_x:.2f}m x {world_y:.2f}m x {world_z:.2f}m")
-            print(f"World box centered at (0, 0, 0) will contain offset geometry")
+            print(f"World size: {world_x:.2f}m x {world_y:.2f}m x {world_z:.2f}m")
+            print(f"World position: ({world_pos_x:.3f}, {world_pos_y:.3f}, {world_pos_z:.3f}) m")
             
-            # Set the calculated world size
+            # Set the calculated world size and position
             self.world_dimensions = [world_x, world_y, world_z]
+            self.world_position = [world_pos_x, world_pos_y, world_pos_z]
             print(f"World dimensions automatically set to: {world_x:.2f}m x {world_y:.2f}m x {world_z:.2f}m")
             print("=" * 30)
             
@@ -925,7 +915,7 @@ class GUIMeshCLI:
             volumes_path = output_path / "Volumes"
             volumes_path.mkdir(exist_ok=True)
 
-            WriteGDML.CreateMother(str(output_path), self.list_of_objects, self.world_dimensions)
+            WriteGDML.CreateMother(str(output_path), self.list_of_objects, self.world_dimensions, self.world_position)
             
             for i, obj in enumerate(self.list_of_objects, 1):
                 if obj.VolumeGDMLoption == 1:

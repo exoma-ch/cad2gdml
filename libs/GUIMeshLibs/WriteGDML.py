@@ -26,13 +26,15 @@ import tkinter.filedialog
 import tkinter.messagebox
 
 #Write Mother.gdml file
-def CreateMother(dir_path,object_list,world):
+def CreateMother(dir_path,object_list,world,world_pos=[0.0,0.0,0.0]):
     #write headers and globals
     F=open(str(dir_path)+"/mother.gdml","w")
     F.write('<?xml version="1.0" encoding="UTF-8" ?>\n')
     F.write('<gdml xmlns:gdml="../schema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../schema/gdml.xsd" >\n')
     F.write('<define>\n')
-    F.write('<position name="center" x="0" y="0" z="0"/>\n')
+    # Translate geometry volumes to center them in world box (world is at origin)
+    # Negative of world position to center geometry in world
+    F.write('<position name="geometry_offset" x="'+str(-world_pos[0])+'" y="'+str(-world_pos[1])+'" z="'+str(-world_pos[2])+'" unit="m"/>\n')
     F.write('<rotation name="identity" x="0" y="0" z="0"/>\n')
     F.write('</define>\n')
     #write material information
@@ -60,7 +62,8 @@ def CreateMother(dir_path,object_list,world):
             # Use volume label directly - normalization happens at the end
             gdml_filename = str(object_list[i].VolumeCAD.Label) + ".gdml"
             F.write('<file name="Volumes/'+gdml_filename+'"/>\n')
-            F.write('<positionref ref="center"/>\n')
+            # Translate geometry to center it in world box
+            F.write('<positionref ref="geometry_offset"/>\n')
             F.write('<rotationref ref="identity"/>\n')
             F.write('</physvol>\n')
     F.write('</volume>\n')
