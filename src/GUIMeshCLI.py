@@ -77,19 +77,6 @@ class GUIMeshCLI:
         self.file_status = 0
         self.verbose = False
         self.vertex_counts = []  # Track vertex counts for statistics
-        self.use_direct_edge_analysis = True  # Use direct edge vector analysis by default
-
-    def set_orientation_analysis_method(self, use_direct_edge=True):
-        """Set the method for calculating crystal orientations
-        
-        Args:
-            use_direct_edge (bool): If True, use direct edge vector analysis (recommended for 8-vertex crystals)
-                                  If False, use PCA analysis (better for complex shapes with many vertices)
-        """
-        self.use_direct_edge_analysis = use_direct_edge
-        method = "Direct Edge Vector Analysis" if use_direct_edge else "PCA Analysis"
-        if self.verbose:
-            print(f"Orientation analysis method set to: {method}")
 
     def load_materials(self, material_path):
         """Load material(s) from a file or directory
@@ -317,7 +304,6 @@ class GUIMeshCLI:
         """Extract center coordinates of LYSO crystals only and optionally save to CSV"""
         crystal_centers, success = CrystalCenters.extract_crystal_centers(
             list_of_objects=self.list_of_objects,
-            use_direct_edge_analysis=self.use_direct_edge_analysis,
             verbose=self.verbose,
             output_file=output_file,
             output_dir=getattr(self, 'output_dir', None),
@@ -443,7 +429,6 @@ def main():
     parser.add_argument('--verbose', action='store_true', help='Enable verbose logging and progress messages')
     parser.add_argument('--assign-materials', nargs='?', const='material_mappings.json', default=None, help='Assign materials based on volume name patterns. Optionally specify JSON config file (default: material_mappings.json)')
     parser.add_argument('--extract-centers', nargs='?', const=True, help='Extract crystal center coordinates and save to CSV file. Optionally specify output filename.')
-    parser.add_argument('--use-pca', action='store_true', help='Use PCA analysis instead of direct edge vector analysis for crystal orientation')
     
     args = parser.parse_args()
 
@@ -456,9 +441,6 @@ def main():
     
     # Set output directory for files
     mesh.output_dir = args.output_dir
-    
-    # Set orientation analysis method
-    mesh.set_orientation_analysis_method(use_direct_edge=not args.use_pca)
 
     # Check material mappings file BEFORE loading STEP file (if --assign-materials is used)
     if args.assign_materials:

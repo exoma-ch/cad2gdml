@@ -141,9 +141,6 @@ python3 src/GUIMeshCLI.py --step <step_file> --output-dir <output_dir> --extract
 # With verbose output (shows detailed progress)
 python3 src/GUIMeshCLI.py --step <step_file> --output-dir <output_dir> --extract-centers --verbose
 
-# Use PCA analysis instead of Direct Edge Vector (default)
-python3 src/GUIMeshCLI.py --step <step_file> --output-dir <output_dir> --extract-centers --use-pca
-
 # Show help
 python3 src/GUIMeshCLI.py --help
 ```
@@ -377,17 +374,11 @@ center_z = (bbox.ZMin + bbox.ZMax) / 2
 
 #### Orientation Calculation
 
-The system offers **two methods** for extracting crystal orientations:
+The system uses **Direct Edge Vector Analysis** for extracting crystal orientations:
 
-**Method 1: Direct Edge Vector Analysis (Default)**
 - **Best for**: 8-vertex rectangular crystals
 - **How it works**: Analyzes edge vectors to find the main crystal axis
 - **Advantage**: More accurate for rectangular geometries
-
-**Method 2: PCA Analysis (Alternative)**
-- **Best for**: General 3D shapes with many vertices
-- **How it works**: Uses Principal Component Analysis on vertex distribution
-- **Advantage**: Robust statistical method
 
 #### Detailed Implementation
 
@@ -403,7 +394,7 @@ y_coords = [v[1] for v in vertices]
 z_coords = [v[2] for v in vertices]
 ```
 
-**Direct Edge Vector Analysis (Default):**
+**Direct Edge Vector Analysis:**
 1. **Edge Vector Collection**: Collect all edge vectors from the crystal vertices
 ```python
 # Check all possible edge combinations (8 choose 2 = 28 combinations)
@@ -455,12 +446,6 @@ azimuth_angle = math.degrees(math.atan2(main_axis_vector[2], main_axis_vector[0]
 elevation_angle = math.degrees(math.atan2(main_axis_vector[1], 
                                         math.sqrt(main_axis_vector[0]**2 + main_axis_vector[2]**2)))
 ```
-
-**PCA Analysis (Alternative):**
-1. **Covariance Matrix**: Calculate covariance matrix from vertex distribution
-2. **Principal Components**: Find eigenvectors of the covariance matrix
-3. **Azimuth Calculation**: `azimuth = atan2(2 * xz_cov, xx_var - zz_var) / 2`
-4. **Elevation Calculation**: `elevation = atan2(2 * xy_cov, xx_var - yy_var) / 2`
 
 **Angle Normalization:**
 - **Azimuth**: Normalized to 0-180° (opposite directions grouped together)

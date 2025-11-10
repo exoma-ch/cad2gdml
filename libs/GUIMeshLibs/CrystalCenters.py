@@ -46,12 +46,11 @@ def extract_crystal_number(volume_label):
     # If no number found, return None (will be handled later)
     return None
 
-def extract_crystal_centers(list_of_objects, use_direct_edge_analysis=True, verbose=False, output_file=None, output_dir=None, vertex_counts=None):
+def extract_crystal_centers(list_of_objects, verbose=False, output_file=None, output_dir=None, vertex_counts=None):
     """Extract center coordinates of LYSO crystals only and optionally save to CSV
     
     Args:
         list_of_objects: List of volume objects
-        use_direct_edge_analysis: If True, use direct edge vector analysis, else use PCA
         verbose: Enable verbose output
         output_file: Optional output CSV file path (or True for auto-generated name)
         output_dir: Optional output directory for auto-generated filenames
@@ -72,8 +71,7 @@ def extract_crystal_centers(list_of_objects, use_direct_edge_analysis=True, verb
         vertex_counts = []
     
     print(f"\n=== LYSO Crystal Center Analysis ===")
-    method = "Direct Edge Vector Analysis" if use_direct_edge_analysis else "PCA Analysis"
-    print(f"Using orientation analysis method: {method}")
+    print(f"Using Direct Edge Vector Analysis for crystal orientation")
     print(f"Scanning {len(list_of_objects)} volumes for LYSO crystals...")
     
     # Debug: Show first few volume names
@@ -117,114 +115,77 @@ def extract_crystal_centers(list_of_objects, use_direct_edge_analysis=True, verb
                     if verbose:
                         print(f"  Crystal {obj.VolumeCAD.Label}: {vertex_count} vertices")
                     
-                    # Analyze the crystal's orientation using the selected method
-                    if use_direct_edge_analysis:
-                        # DIRECT EDGE VECTOR ANALYSIS (improved for 8-vertex rectangular crystals)
-                        # Find the main axis by analyzing edge patterns for parallelepipeds
-                        
-                        # For rectangular crystals (parallelepipeds), we want to find the main axis
-                        # Each edge should have exactly 3 other parallel edges (4 total in that direction)
-                        edge_vectors = []
-                        edge_lengths = []
-                        
-                        # Check all possible edge combinations (8 choose 2 = 28 combinations)
-                        for i in range(len(vertices)):
-                            for j in range(i+1, len(vertices)):
-                                edge_vector = [vertices[j][k] - vertices[i][k] for k in range(3)]
-                                edge_length = math.sqrt(sum(v**2 for v in edge_vector))
-                                
-                                edge_vectors.append(edge_vector)
-                                edge_lengths.append(edge_length)
-                        
-                        # Find the main axis by looking for the longest edge with exactly 3 parallel edges
-                        # For a parallelepiped: 12 edges total, 4 edges in each of 3 perpendicular directions
-                        main_axis_vector = None
-                        max_parallel_count = 0
-                        longest_edge_length = 0
-                        
-                        # For each edge, count how many other edges are parallel to it
-                        for i, edge_vec in enumerate(edge_vectors):
-                            edge_len = edge_lengths[i]
-                            if edge_len <= 0:  # Skip zero-length edges
-                                continue
-                                
-                            # Normalize this edge
-                            normalized_edge = [v / edge_len for v in edge_vec]
+                    # DIRECT EDGE VECTOR ANALYSIS (for 8-vertex rectangular crystals)
+                    # Find the main axis by analyzing edge patterns for parallelepipeds
+                    
+                    # For rectangular crystals (parallelepipeds), we want to find the main axis
+                    # Each edge should have exactly 3 other parallel edges (4 total in that direction)
+                    edge_vectors = []
+                    edge_lengths = []
+                    
+                    # Check all possible edge combinations (8 choose 2 = 28 combinations)
+                    for i in range(len(vertices)):
+                        for j in range(i+1, len(vertices)):
+                            edge_vector = [vertices[j][k] - vertices[i][k] for k in range(3)]
+                            edge_length = math.sqrt(sum(v**2 for v in edge_vector))
                             
-                            # Count how many other edges are parallel to this direction
-                            parallel_count = 0
-                            for j, other_edge in enumerate(edge_vectors):
-                                if i != j and edge_lengths[j] > 0:  # Don't skip any edges, just zero-length ones
-                                    other_len = edge_lengths[j]
-                                    other_normalized = [v / other_len for v in other_edge]
-                                    # Calculate alignment (dot product)
-                                    alignment = abs(sum(normalized_edge[k] * other_normalized[k] for k in range(3)))
-                                    if alignment > 0.99:  # Nearly parallel (accounting for floating-point precision)
-                                        parallel_count += 1
+                            edge_vectors.append(edge_vector)
+                            edge_lengths.append(edge_length)
+                    
+                    # Find the main axis by looking for the longest edge with exactly 3 parallel edges
+                    # For a parallelepiped: 12 edges total, 4 edges in each of 3 perpendicular directions
+                    main_axis_vector = None
+                    max_parallel_count = 0
+                    longest_edge_length = 0
+                    
+                    # For each edge, count how many other edges are parallel to it
+                    for i, edge_vec in enumerate(edge_vectors):
+                        edge_len = edge_lengths[i]
+                        if edge_len <= 0:  # Skip zero-length edges
+                            continue
                             
-                            # For a parallelepiped, we expect exactly 3 parallel edges (plus itself = 4 total)
-                            # Among edges with 3 parallel edges, choose the longest one
-                            if parallel_count == 3:
-                                if parallel_count > max_parallel_count or (parallel_count == max_parallel_count and edge_len > longest_edge_length):
-                                    max_parallel_count = parallel_count
-                                    longest_edge_length = edge_len
-                                    main_axis_vector = normalized_edge
+                        # Normalize this edge
+                        normalized_edge = [v / edge_len for v in edge_vec]
                         
-                        # Normalize the main axis vector and calculate angles
-                        if main_axis_vector:
-                            length = math.sqrt(sum(v**2 for v in main_axis_vector))
-                            if length > 0:
-                                main_axis_vector = [v / length for v in main_axis_vector]
-                                
-                                # Calculate azimuth angle (rotation in XZ plane)
-                                azimuth_angle = math.degrees(math.atan2(main_axis_vector[2], main_axis_vector[0]))
-                                
-                                # Calculate elevation angle (tilt relative to XZ plane)
-                                elevation_angle = math.degrees(math.atan2(main_axis_vector[1], 
-                                                                            math.sqrt(main_axis_vector[0]**2 + main_axis_vector[2]**2)))
-                            else:
-                                # Fallback to radial direction
-                                azimuth_angle = math.degrees(math.atan2(bbox_center_z, bbox_center_x))
-                                elevation_angle = math.degrees(math.atan2(bbox_center_y, bbox_center_x))
+                        # Count how many other edges are parallel to this direction
+                        parallel_count = 0
+                        for j, other_edge in enumerate(edge_vectors):
+                            if i != j and edge_lengths[j] > 0:  # Don't skip any edges, just zero-length ones
+                                other_len = edge_lengths[j]
+                                other_normalized = [v / other_len for v in other_edge]
+                                # Calculate alignment (dot product)
+                                alignment = abs(sum(normalized_edge[k] * other_normalized[k] for k in range(3)))
+                                if alignment > 0.99:  # Nearly parallel (accounting for floating-point precision)
+                                    parallel_count += 1
+                        
+                        # For a parallelepiped, we expect exactly 3 parallel edges (plus itself = 4 total)
+                        # Among edges with 3 parallel edges, choose the longest one
+                        if parallel_count == 3:
+                            if parallel_count > max_parallel_count or (parallel_count == max_parallel_count and edge_len > longest_edge_length):
+                                max_parallel_count = parallel_count
+                                longest_edge_length = edge_len
+                                main_axis_vector = normalized_edge
+                    
+                    # Normalize the main axis vector and calculate angles
+                    if main_axis_vector:
+                        length = math.sqrt(sum(v**2 for v in main_axis_vector))
+                        if length > 0:
+                            main_axis_vector = [v / length for v in main_axis_vector]
+                            
+                            # Calculate azimuth angle (rotation in XZ plane)
+                            azimuth_angle = math.degrees(math.atan2(main_axis_vector[2], main_axis_vector[0]))
+                            
+                            # Calculate elevation angle (tilt relative to XZ plane)
+                            elevation_angle = math.degrees(math.atan2(main_axis_vector[1], 
+                                                                    math.sqrt(main_axis_vector[0]**2 + main_axis_vector[2]**2)))
                         else:
                             # Fallback to radial direction
                             azimuth_angle = math.degrees(math.atan2(bbox_center_z, bbox_center_x))
                             elevation_angle = math.degrees(math.atan2(bbox_center_y, bbox_center_x))
                     else:
-                        # PCA ANALYSIS (better for complex shapes with many vertices)
-                        # Extract all coordinates
-                        x_coords = [v[0] for v in vertices]
-                        y_coords = [v[1] for v in vertices]
-                        z_coords = [v[2] for v in vertices]
-                        
-                        # Calculate means
-                        x_mean = sum(x_coords) / len(x_coords)
-                        y_mean = sum(y_coords) / len(y_coords)
-                        z_mean = sum(z_coords) / len(z_coords)
-                        
-                        # Calculate covariance matrix for 3D orientation analysis
-                        # XZ plane (azimuth angle)
-                        xx_var = sum((x - x_mean)**2 for x in x_coords) / len(x_coords)
-                        zz_var = sum((z - z_mean)**2 for z in z_coords) / len(x_coords)
-                        xz_cov = sum((x - x_mean) * (z - z_mean) for x, z in zip(x_coords, z_coords)) / len(x_coords)
-                        
-                        # XY plane (elevation angle)
-                        yy_var = sum((y - y_mean)**2 for y in y_coords) / len(x_coords)
-                        xy_cov = sum((x - x_mean) * (y - y_mean) for x, y in zip(x_coords, y_coords)) / len(x_coords)
-                        
-                        # Calculate azimuth angle (rotation in XZ plane)
-                        if xx_var > 0 and zz_var > 0:
-                            azimuth_angle = math.degrees(math.atan2(2 * xz_cov, xx_var - zz_var) / 2)
-                        else:
-                            # Fallback to radial direction
-                            azimuth_angle = math.degrees(math.atan2(bbox_center_z, bbox_center_x))
-                        
-                        # Calculate elevation angle (tilt in Y direction)
-                        if xx_var > 0 and yy_var > 0:
-                            elevation_angle = math.degrees(math.atan2(2 * xy_cov, xx_var - yy_var) / 2)
-                        else:
-                            # Fallback to Y position
-                            elevation_angle = math.degrees(math.atan2(bbox_center_y, bbox_center_x))
+                        # Fallback to radial direction
+                        azimuth_angle = math.degrees(math.atan2(bbox_center_z, bbox_center_x))
+                        elevation_angle = math.degrees(math.atan2(bbox_center_y, bbox_center_x))
                     
                     # Normalize angles: azimuth to 0-180° (opposite directions are the same), elevation to 0-360°
                     if azimuth_angle < 0:
@@ -375,14 +336,13 @@ def extract_crystal_centers(list_of_objects, use_direct_edge_analysis=True, verb
     
     # Save to CSV if requested
     if output_file:
-        # If output_file is True (from --extract-centers flag without filename), create method-specific filename
+        # If output_file is True (from --extract-centers flag without filename), create default filename
         if output_file is True:
-            method_suffix = "direct_edge" if use_direct_edge_analysis else "pca"
             # Use the output directory if available, otherwise current directory
             if output_dir:
-                output_file = os.path.join(output_dir, f'lyso_crystal_centers_3d_angles_{method_suffix}.csv')
+                output_file = os.path.join(output_dir, 'lyso_crystal_centers_3d_angles.csv')
             else:
-                output_file = f'lyso_crystal_centers_3d_angles_{method_suffix}.csv'
+                output_file = 'lyso_crystal_centers_3d_angles.csv'
         else:
             # output_file is a string (filename provided by user)
             # If output directory is set and filename is not already a full path, prepend it
