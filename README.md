@@ -214,7 +214,12 @@ The system automatically assigns materials to volumes based on their names using
 
 ### Material Mappings Configuration
 
-The material assignment rules are defined in `src/material_mappings.json`:
+The material assignment rules are defined in `src/material_mappings.json` by default. You can use a custom configuration file by specifying it as an argument to `--assign-materials`:
+
+- `--assign-materials` → Uses `material_mappings.json` (default)
+- `--assign-materials custom_config.json` → Uses the specified JSON file
+
+**Default Configuration File (`src/material_mappings.json`):**
 
 ```json
 {
@@ -259,9 +264,9 @@ The material assignment rules are defined in `src/material_mappings.json`:
 - `pcb-sipm_pcb*` → **G4_POLYETHYLENE** (PCB material)
 - `unit-cover_plastic*` → **G4_POLYETHYLENE** (plastic)
 
-**Custom Material Loading:**
+**Basic Material Assignment (uses default `material_mappings.json`):**
 ```bash
-# Load custom LYSO material properties
+# Use default material mappings file (src/material_mappings.json)
 python3 src/GUIMeshCLI.py \
   --step "data/STEPfiles/ring_radial_12_axial_1.step" \
   --load-material "data/Materials/LYSO.txt" \
@@ -269,9 +274,22 @@ python3 src/GUIMeshCLI.py \
   --output-dir output/gdml/
 ```
 
+**Custom Material Configuration File:**
+```bash
+# Use a custom material mappings JSON file
+python3 src/GUIMeshCLI.py \
+  --step "data/STEPfiles/ring_radial_12_axial_1.step" \
+  --load-material "data/Materials/LYSO.txt" \
+  --assign-materials custom_material_config.json \
+  --output-dir output/gdml/
+```
+
 ### Customizing Material Mappings
 
-You can customize material assignments by editing `material_mappings.json`:
+You can customize material assignments in two ways:
+
+1. **Edit the default file**: Modify `src/material_mappings.json` directly
+2. **Use a custom file**: Create your own JSON configuration file and specify it with `--assign-materials custom_config.json`
 
 **Adding New Materials:**
 ```json

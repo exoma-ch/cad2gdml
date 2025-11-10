@@ -918,8 +918,7 @@ def main():
     parser.add_argument('--output-dir', help='Output directory for GDML files')
     parser.add_argument('--load-material', action='append', help='Load a custom material file. Can be used multiple times.')
     parser.add_argument('--verbose', action='store_true', help='Enable verbose logging and progress messages')
-    parser.add_argument('--assign-materials', action='store_true', help='Assign materials based on volume name patterns (single-pass workflow)')
-    parser.add_argument('--material-config', default='material_mappings.json', help='JSON file with material assignment rules (default: material_mappings.json)')
+    parser.add_argument('--assign-materials', nargs='?', const='material_mappings.json', default=None, help='Assign materials based on volume name patterns. Optionally specify JSON config file (default: material_mappings.json)')
     parser.add_argument('--extract-centers', nargs='?', const=True, help='Extract crystal center coordinates and save to CSV file. Optionally specify output filename.')
     parser.add_argument('--use-pca', action='store_true', help='Use PCA analysis instead of direct edge vector analysis for crystal orientation')
     
@@ -957,7 +956,7 @@ def main():
 
     # Single-pass material assignment (only if properties were not explicitly loaded)
     if args.assign_materials and not args.load_props:
-        if not mesh.assign_materials_from_names(args.material_config):
+        if not mesh.assign_materials_from_names(args.assign_materials):
             return
 
     # Extract crystal centers if requested
