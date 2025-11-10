@@ -315,7 +315,7 @@ class GUIMeshCLI:
 
     def extract_crystal_centers(self, output_file=None):
         """Extract center coordinates of LYSO crystals only and optionally save to CSV"""
-        crystal_centers, crystal_dimensions, success = CrystalCenters.extract_crystal_centers(
+        crystal_centers, success = CrystalCenters.extract_crystal_centers(
             list_of_objects=self.list_of_objects,
             use_direct_edge_analysis=self.use_direct_edge_analysis,
             verbose=self.verbose,
@@ -323,12 +323,6 @@ class GUIMeshCLI:
             output_dir=getattr(self, 'output_dir', None),
             vertex_counts=self.vertex_counts
         )
-        
-        # Store crystal dimensions if available
-        if crystal_dimensions:
-            self.crystal_width = crystal_dimensions.get('width')
-            self.crystal_height = crystal_dimensions.get('height')
-            self.crystal_depth = crystal_dimensions.get('depth')
         
         return success
 

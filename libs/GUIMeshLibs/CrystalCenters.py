@@ -58,17 +58,15 @@ def extract_crystal_centers(list_of_objects, use_direct_edge_analysis=True, verb
         vertex_counts: Optional list to append vertex counts to
     
     Returns:
-        tuple: (crystal_centers_list, crystal_dimensions_dict, success)
-               crystal_dimensions_dict contains: width, height, depth (in mm)
+        tuple: (crystal_centers_list, success)
     """
     if not list_of_objects:
         print("Error: No volumes loaded")
-        return [], {}, False
+        return [], False
     
     crystal_centers = []
     lyso_count = 0
     used_crystal_ids = set()
-    crystal_dimensions = {}
     
     if vertex_counts is None:
         vertex_counts = []
@@ -295,13 +293,6 @@ def extract_crystal_centers(list_of_objects, use_direct_edge_analysis=True, verb
                 center_y = bbox_center_y
                 center_z = bbox_center_z
             
-            # Get volume dimensions (store only once for the first crystal)
-            if lyso_count == 1:
-                crystal_dimensions['width'] = bbox.XMax - bbox.XMin
-                crystal_dimensions['height'] = bbox.YMax - bbox.YMin
-                crystal_dimensions['depth'] = bbox.ZMax - bbox.ZMin
-                print(f"Crystal dimensions: {crystal_dimensions['width']:.2f} × {crystal_dimensions['height']:.2f} × {crystal_dimensions['depth']:.2f} mm")
-            
             # Extract crystal number from volume label
             crystal_number = extract_crystal_number(volume_label)
             
@@ -325,7 +316,7 @@ def extract_crystal_centers(list_of_objects, use_direct_edge_analysis=True, verb
                 print(f"  1. Check for duplicate volume names in your STEP file")
                 print(f"  2. Ensure each crystal has a unique number")
                 print(f"  3. Verify the geometry export from your CAD software")
-                return [], {}, False
+                return [], False
             else:
                 # Valid unique crystal number
                 final_crystal_id = crystal_number
@@ -409,24 +400,9 @@ def extract_crystal_centers(list_of_objects, use_direct_edge_analysis=True, verb
             
             print(f"\nCrystal centers saved to: {output_file}")
             
-            # Save crystal dimensions to a separate file
-            if crystal_dimensions:
-                dim_file = output_file.replace('.csv', '_dimensions.txt')
-                try:
-                    with open(dim_file, 'w') as f:
-                        f.write(f"Crystal Dimensions\n")
-                        f.write(f"==================\n")
-                        f.write(f"Width:  {crystal_dimensions['width']:.2f} mm\n")
-                        f.write(f"Height: {crystal_dimensions['height']:.2f} mm\n")
-                        f.write(f"Depth:  {crystal_dimensions['depth']:.2f} mm\n")
-                        f.write(f"Volume: {crystal_dimensions['width'] * crystal_dimensions['height'] * crystal_dimensions['depth']:.2f} mm³\n")
-                    print(f"Crystal dimensions saved to: {dim_file}")
-                except Exception as e:
-                    print(f"Error saving crystal dimensions: {str(e)}")
-            
         except Exception as e:
             print(f"Error saving crystal centers: {str(e)}")
-            return crystal_centers, crystal_dimensions, False
+            return crystal_centers, False
     
-    return crystal_centers, crystal_dimensions, True
+    return crystal_centers, True
 
