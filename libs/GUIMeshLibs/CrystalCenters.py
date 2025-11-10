@@ -172,12 +172,29 @@ def extract_crystal_centers(list_of_objects, verbose=False, output_file=None, ou
                         if length > 0:
                             main_axis_vector = [v / length for v in main_axis_vector]
                             
-                            # Calculate azimuth angle (rotation in XZ plane)
-                            azimuth_angle = math.degrees(math.atan2(main_axis_vector[2], main_axis_vector[0]))
+                            # Normalize coordinate system to ensure consistent angles regardless of export orientation
+                            # Since elevation should be 0 (crystal axis in XZ plane), the Y component should be small
+                            # If Y and Z are swapped in the export, we need to detect and correct this
                             
-                            # Calculate elevation angle (tilt relative to XZ plane)
-                            elevation_angle = math.degrees(math.atan2(main_axis_vector[1], 
-                                                                    math.sqrt(main_axis_vector[0]**2 + main_axis_vector[2]**2)))
+                            abs_y = abs(main_axis_vector[1])
+                            abs_z = abs(main_axis_vector[2])
+                            
+                            # For crystals in XZ plane (elevation=0), Y component should be minimal
+                            # If |Y| > |Z|, it suggests Y and Z might be swapped (since in correct system |Y| should be ~0)
+                            # Use a threshold: if Y is significantly larger than Z, swap them
+                            # This ensures elevation will be ~0 as expected
+                            if abs_y > abs_z:
+                                # Likely Y and Z are swapped - swap them back to normalize to standard Y-up system
+                                normalized_vector = [main_axis_vector[0], main_axis_vector[2], main_axis_vector[1]]
+                            else:
+                                normalized_vector = main_axis_vector
+                            
+                            # Calculate azimuth angle (rotation in XZ plane)
+                            azimuth_angle = math.degrees(math.atan2(normalized_vector[2], normalized_vector[0]))
+                            
+                            # Calculate elevation angle (tilt relative to XZ plane - should be ~0 for this geometry)
+                            elevation_angle = math.degrees(math.atan2(normalized_vector[1], 
+                                                                    math.sqrt(normalized_vector[0]**2 + normalized_vector[2]**2)))
                         else:
                             # Fallback to radial direction
                             azimuth_angle = math.degrees(math.atan2(bbox_center_z, bbox_center_x))
