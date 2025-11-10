@@ -334,23 +334,38 @@ def extract_crystal_centers(list_of_objects, verbose=False, output_file=None, ou
         if vertex_counts:
             print(f"Vertex counts: {min(vertex_counts)} to {max(vertex_counts)} vertices per crystal (avg: {sum(vertex_counts)/len(vertex_counts):.1f})")
     
-    # Save to CSV if requested
+    # Save to CSV and H5 if requested
     if output_file:
         # If output_file is True (from --extract-centers flag without filename), create default filename
         if output_file is True:
             # Use the output directory if available, otherwise current directory
             if output_dir:
-                output_file = os.path.join(output_dir, 'lyso_crystal_centers_3d_angles.csv')
+                csv_file = os.path.join(output_dir, 'lyso_crystal_centers_3d_angles.csv')
+                h5_file = os.path.join(output_dir, 'lyso_crystal_centers_3d_angles.h5')
             else:
-                output_file = 'lyso_crystal_centers_3d_angles.csv'
+                csv_file = 'lyso_crystal_centers_3d_angles.csv'
+                h5_file = 'lyso_crystal_centers_3d_angles.h5'
         else:
             # output_file is a string (filename provided by user)
             # If output directory is set and filename is not already a full path, prepend it
             if output_dir and not os.path.isabs(output_file) and not os.path.dirname(output_file):
                 output_file = os.path.join(output_dir, output_file)
+            
+            # Generate CSV and H5 filenames from the provided filename
+            if output_file.endswith('.csv'):
+                csv_file = output_file
+                h5_file = output_file[:-4] + '.h5'
+            elif output_file.endswith('.h5'):
+                h5_file = output_file
+                csv_file = output_file[:-3] + '.csv'
+            else:
+                csv_file = output_file + '.csv'
+                h5_file = output_file + '.h5'
+        
+        # Save CSV file
         try:
             import csv
-            with open(output_file, 'w', newline='') as csvfile:
+            with open(csv_file, 'w', newline='') as csvfile:
                 fieldnames = ['crystal_id', 'volume_name', 'center_x', 'center_y', 'center_z', 'azimuth_angle', 'elevation_angle']
                 writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
                 
@@ -358,11 +373,55 @@ def extract_crystal_centers(list_of_objects, verbose=False, output_file=None, ou
                 for crystal in crystal_centers:
                     writer.writerow(crystal)
             
-            print(f"\nCrystal centers saved to: {output_file}")
+            print(f"\nCrystal centers saved to CSV: {csv_file}")
             
         except Exception as e:
-            print(f"Error saving crystal centers: {str(e)}")
+            print(f"Error saving crystal centers to CSV: {str(e)}")
             return crystal_centers, False
+        
+        # Save H5 file
+        try:
+            import h5py
+            import numpy as np
+            
+            with h5py.File(h5_file, 'w') as f:
+                # Create datasets for each field
+                n_crystals = len(crystal_centers)
+                
+                # Create datasets
+                crystal_ids = np.array([c['crystal_id'] for c in crystal_centers], dtype=np.int32)
+                center_x = np.array([c['center_x'] for c in crystal_centers], dtype=np.float64)
+                center_y = np.array([c['center_y'] for c in crystal_centers], dtype=np.float64)
+                center_z = np.array([c['center_z'] for c in crystal_centers], dtype=np.float64)
+                azimuth_angle = np.array([c['azimuth_angle'] for c in crystal_centers], dtype=np.float64)
+                elevation_angle = np.array([c['elevation_angle'] for c in crystal_centers], dtype=np.float64)
+                
+                # Store as datasets
+                f.create_dataset('crystal_id', data=crystal_ids, compression='gzip')
+                f.create_dataset('center_x', data=center_x, compression='gzip')
+                f.create_dataset('center_y', data=center_y, compression='gzip')
+                f.create_dataset('center_z', data=center_z, compression='gzip')
+                f.create_dataset('azimuth_angle', data=azimuth_angle, compression='gzip')
+                f.create_dataset('elevation_angle', data=elevation_angle, compression='gzip')
+                
+                # Store volume names as variable-length strings
+                volume_names = [c['volume_name'].encode('utf-8') for c in crystal_centers]
+                f.create_dataset('volume_name', data=volume_names, compression='gzip')
+                
+                # Add metadata
+                f.attrs['description'] = 'LYSO crystal center coordinates and orientations'
+                f.attrs['n_crystals'] = n_crystals
+                f.attrs['units'] = 'mm for coordinates, degrees for angles'
+                f.attrs['created_by'] = 'GUIMeshCLI'
+            
+            print(f"Crystal centers saved to H5: {h5_file}")
+            
+        except ImportError:
+            print(f"Warning: h5py not available. Skipping H5 file creation.")
+            print(f"Install h5py with: pip install h5py")
+        except Exception as e:
+            print(f"Error saving crystal centers to H5: {str(e)}")
+            # Don't fail completely if H5 save fails, CSV is more important
     
     return crystal_centers, True
 
