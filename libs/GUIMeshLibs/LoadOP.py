@@ -21,28 +21,6 @@
 #import os
 #import Materials
 #import Volumes
-#Add FreeCAD directory to os path
-def Find_FreeCAD_Dir():
-        import tkinter.filedialog
-        import os.path
-        path_to_FreeCAD=tkinter.filedialog.askdirectory()
-        #Check if directory is correct
-        if((os.path.isfile(path_to_FreeCAD+"/bin/FreeCAD.PYD")==True) or (os.path.isfile(path_to_FreeCAD+"/lib/FreeCAD.so")==True)):
-            import sys
-            sys.path.append(path_to_FreeCAD+"/bin")
-            sys.path.append(path_to_FreeCAD+"/lib")
-            import FreeCAD
-            try:
-                    import FreeCAD
-            except:
-                    import tkinter.messagebox
-                    tkinter.messagebox.showinfo("Warning", "FreeCAD was found. However, there was an error importing FreeCAD.")
-                    print("FreeCAD was found. However, there was an error importing FreeCAD.")
-            return 1
-        else:
-            return 0
-
-#Add FreeCAD directory to os path
 def Load_STEP_File(doc_status, material, path_to_file):
     """Load a STEP file and return list of Volume objects.
     

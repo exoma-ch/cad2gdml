@@ -22,8 +22,6 @@
 import os
 from GUIMeshLibs import Materials
 from GUIMeshLibs import Volumes
-import tkinter.filedialog
-import tkinter.messagebox
 
 #Write Mother.gdml file
 def CreateMother(dir_path,object_list,world,world_pos=[0.0,0.0,0.0]):
@@ -134,27 +132,4 @@ def normalize_base_volumes(volumes_dir):
     # No longer performing any normalization - keeping original names as they are
     pass
 
-#Main function called to write all GDML files
-def Write_Files(obj_list, world_list):
-    write_dir=tkinter.filedialog.askdirectory()
-    print(write_dir)
-    # Create Volumes Directory (does not remove folders)
-    try:
-        os.mkdir(str(write_dir)+"/Volumes")
-        print("Directory " , str(write_dir)+"/Volumes" ,  " Created ") 
-    except:
-        print("Directory " , str(write_dir)+"/Volumes" ,  " already exists")
-    #Create mother gdml
-    CreateMother(write_dir,obj_list,world_list)
-    #Create volume gdmls
-    counter=1
-    for obj in obj_list:
-        if obj.VolumeGDMLoption==1:
-            CreateGDML(obj,counter,write_dir)
-        counter+=1
-    
-    # Normalize base volumes at the end
-    normalize_base_volumes(str(write_dir)+"/Volumes")
-    
-    tkinter.messagebox.showinfo("Message", 'GDML Files ready.')        
 #Note: A number is added to each volumes label to avoid that two different volumes have the same name. This can be seen in the mother and in the volumes GDMLs

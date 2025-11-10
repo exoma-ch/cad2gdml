@@ -60,7 +60,6 @@ try:
     from GUIMeshLibs import Materials
     from GUIMeshLibs import Volumes
     from GUIMeshLibs import LoadOP
-    from GUIMeshLibs import MaterialManager
     from GUIMeshLibs import WriteGDML
     from GUIMeshLibs import CrystalCenters
 except ImportError:

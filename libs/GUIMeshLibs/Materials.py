@@ -20,7 +20,6 @@
 #Libaries
 import os
 import json
-import tkinter.messagebox
 
 #Class Element - an Element has a name (from G4 NIST), a density and zero number of elements (used to differentiate them from created materials)
 class Element:
@@ -152,27 +151,3 @@ def Load_Materials_From_Dir(materials_dir):
         print("Material Database loaded. Check log for errors.")
         return mat_db
 
-#Loads all Materials in JSON form from the "Materials" folder. Each file format is tested. Returns a Material database
-def Load_Materials():
-        return Load_Materials_From_Dir("Materials")
-
-#Save the Material Database into the "Materials" Folder. 
-def Save_Materials(Mat_List):
-        if (os.path.isdir("Materials/")==False):
-                print('"Materials" folder not found')
-                return 0
-        for i in Mat_List:
-                print (i.Name)
-                f=open("Materials/"+str(i.Name)+".txt","w")
-                f.write(i.Name+"\n")
-                f.write(str(i.Density)+"\n")
-                f.write(str(i.Nelements)+"\n")
-                for j in range(0, i.Nelements):
-                        f.write(str(i.Elements[j])+"\n")
-                        if(j<i.Nelements-1):
-                                f.write(str(i.ElementFractions[j])+"\n")
-                        else:
-                                f.write(str(i.ElementFractions[j]))
-                f.close()
-        #tkinter.messagebox.showinfo("Message", "Material Database saved.")
-        print("Material Database saved.")
