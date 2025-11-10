@@ -5,10 +5,7 @@
 python GUIMeshCLI.py --help
 
 # Single-pass (recommended): load STEP once, assign materials, write GDML
-python GUIMeshCLI.py --step STEPfiles/your.step --assign-materials --load-materials Materials/LYSO.json --output-dir gdml_output/
-
-# Optional: save properties to CSV (for auditing)
-python GUIMeshCLI.py --step STEPfiles/your.step --assign-materials --save-props props.csv --output-dir gdml_output/ """
+python GUIMeshCLI.py --step STEPfiles/your.step --assign-materials --load-materials Materials/LYSO.json --output-dir gdml_output/ """
 
 #########################################################################################################
 #    GUIMeshCLI v1                                                                                      #
@@ -306,7 +303,7 @@ class GUIMeshCLI:
                 print(f"  ... and {len(unmatched_volumes) - 10} more")
             print(f"\nTo fix this:")
             print(f"  1. Add patterns to the material mappings file for these volume names")
-            print(f"  2. Or use --load-props with a CSV file that has explicit material assignments")
+            print(f"  2. Check that volume names match the patterns in the material mappings file")
             return False
         
         if not assignments_count:
@@ -823,86 +820,6 @@ class GUIMeshCLI:
             print("Error: Dimensions must be valid numbers")
             return False
 
-    def save_properties(self, output_file):
-        """Save volume properties to a CSV file"""
-        try:
-            with open(output_file, 'w') as f:
-                for obj in self.list_of_objects:
-                    f.write(f"{obj.VolumeCAD.Label};{obj.VolumeMaterial.Name};{obj.VolumeMMD};{obj.VolumeGDMLoption}\n")
-            print(f"Properties saved to {output_file}")
-            return True
-        except Exception as e:
-            print(f"Error saving properties: {str(e)}")
-            return False
-
-    def load_properties(self, input_file):
-        """Load volume properties from a CSV file"""
-        if not os.path.exists(input_file):
-            print(f"Error: File {input_file} does not exist")
-            return False
-
-        try:
-            with open(input_file, 'r') as f:
-                properties = f.readlines()
-
-            if len(properties) != len(self.list_of_objects):
-                print("Error: Number of properties does not match number of objects")
-                return False
-
-            for i, line in enumerate(properties):
-                props = line.strip().split(';')
-                if len(props) != 4:
-                    print(f"Error: Invalid format in line {i+1}")
-                    continue
-
-                vol_label, mat_name, mmd, gdml_opt = props
-                
-                if vol_label != self.list_of_objects[i].VolumeCAD.Label:
-                    print(f"Warning: Volume name mismatch in line {i+1}")
-                    continue
-
-                # Set material
-                material_found = False
-                for ele in self.Element_List:
-                    if mat_name == ele.Name:
-                        self.list_of_objects[i].VolumeMaterial = ele
-                        material_found = True
-                        break
-                
-                if not material_found:
-                    for mat in self.Material_List:
-                        if mat_name == mat.Name:
-                            self.list_of_objects[i].VolumeMaterial = mat
-                            material_found = True
-                            break
-
-                if not material_found:
-                    print(f"Warning: Material {mat_name} not found for volume {vol_label}")
-
-                # Set MMD
-                try:
-                    mmd = float(mmd)
-                    if mmd > 0:
-                        self.list_of_objects[i].VolumeMMD = mmd
-                    else:
-                        print(f"Warning: Invalid MMD value in line {i+1}")
-                except ValueError:
-                    print(f"Warning: Invalid MMD value in line {i+1}")
-
-                # Set GDML option
-                try:
-                    gdml_opt = int(gdml_opt)
-                    self.list_of_objects[i].VolumeGDMLoption = 1 if gdml_opt > 0 else 0
-                except ValueError:
-                    print(f"Warning: Invalid GDML option in line {i+1}")
-
-            print("Properties loaded successfully")
-            return True
-
-        except Exception as e:
-            print(f"Error loading properties: {str(e)}")
-            return False
-
     def write_gdml(self, output_dir):
         """Write GDML files"""
         if not self.list_of_objects:
@@ -937,8 +854,6 @@ def main():
     parser.add_argument('--step', help='Input STEP file path')
     parser.add_argument('--world-size', nargs=3, type=float, metavar=('X', 'Y', 'Z'),
                       help='World dimensions in meters (X Y Z)')
-    parser.add_argument('--save-props', help='Save properties to CSV file')
-    parser.add_argument('--load-props', help='Load properties from CSV file')
     parser.add_argument('--output-dir', help='Output directory for GDML files')
     parser.add_argument('--load-materials', action='append', help='Load material(s) from a JSON file or directory containing JSON files. Can be used multiple times.')
     parser.add_argument('--verbose', action='store_true', help='Enable verbose logging and progress messages')
@@ -962,7 +877,7 @@ def main():
     mesh.set_orientation_analysis_method(use_direct_edge=not args.use_pca)
 
     # Check material mappings file BEFORE loading STEP file (if --assign-materials is used)
-    if args.assign_materials and not args.load_props:
+    if args.assign_materials:
         config_file = args.assign_materials
         if mesh.check_material_mappings_file(config_file) is None:
             print(f"   ERROR: Material mappings file '{config_file}' not found.")
@@ -983,22 +898,14 @@ def main():
             if not mesh.load_materials(material_path):
                 return
 
-    if args.load_props:
-        if not mesh.load_properties(args.load_props):
-            return
-
-    # Single-pass material assignment (only if properties were not explicitly loaded)
-    if args.assign_materials and not args.load_props:
+    # Material assignment based on volume name patterns
+    if args.assign_materials:
         if not mesh.assign_materials_from_names(args.assign_materials):
             return
 
     # Extract crystal centers if requested
     if args.extract_centers:
         if not mesh.extract_crystal_centers(args.extract_centers):
-            return
-
-    if args.save_props:
-        if not mesh.save_properties(args.save_props):
             return
 
     if args.output_dir:
