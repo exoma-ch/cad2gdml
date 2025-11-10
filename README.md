@@ -46,7 +46,7 @@ This project is based on [GUIMesh3](https://github.com/MPintoSpace/GUIMesh3), or
 # Convert STEP file to GDML with material assignment
 python3 src/GUIMeshCLI.py \
   --step "data/STEPfiles/ring_radial_12_axial_1.step" \
-  --load-material "data/Materials/LYSO.txt" \
+  --load-materials "data/Materials/LYSO.json" \
   --assign-materials \
   --output-dir output/gdml/
 ```
@@ -57,7 +57,7 @@ python3 src/GUIMeshCLI.py \
 # Extract crystal centers and orientations for simulation setup
 python3 src/GUIMeshCLI.py \
   --step "data/STEPfiles/ring_radial_12_axial_1.step" \
-  --load-material "data/Materials/LYSO.txt" \
+  --load-materials "data/Materials/LYSO.json" \
   --assign-materials \
   --extract-centers output/analysis/crystal_lookup.csv \
   --output-dir output/analysis/
@@ -95,14 +95,14 @@ python3 plot_scanner_with_crystals.py
 # Step 1: Convert STEP to GDML
 python3 src/GUIMeshCLI.py \
   --step "data/STEPfiles/ring_radial_12_axial_1.step" \
-  --load-material "data/Materials/LYSO.txt" \
+  --load-materials "data/Materials/LYSO.json" \
   --assign-materials \
   --output-dir output/gdml/
 
 # Step 2: Extract crystal data for simulation
 python3 src/GUIMeshCLI.py \
   --step "data/STEPfiles/ring_radial_12_axial_1.step" \
-  --load-material "data/Materials/LYSO.txt" \
+  --load-materials "data/Materials/LYSO.json" \
   --assign-materials \
   --extract-centers output/analysis/crystal_lookup.csv \
   --output-dir output/analysis/
@@ -160,7 +160,7 @@ By default, the system automatically calculates the world size:
 # Automatic world size (recommended)
 python3 src/GUIMeshCLI.py \
   --step "data/STEPfiles/ring_radial_12_axial_1.step" \
-  --load-material "data/Materials/LYSO.txt" \
+  --load-materials "data/Materials/LYSO.json" \
   --assign-materials \
   --output-dir output/gdml/
 ```
@@ -179,7 +179,7 @@ For specific simulation requirements, you can set custom world dimensions:
 # Set custom world size (in meters)
 python3 src/GUIMeshCLI.py \
   --step "data/STEPfiles/ring_radial_12_axial_1.step" \
-  --load-material "data/Materials/LYSO.txt" \
+  --load-materials "data/Materials/LYSO.json" \
   --assign-materials \
   --world-size 1.0 1.0 1.0 \
   --output-dir output/gdml/
@@ -258,18 +258,47 @@ The material assignment rules are defined in `src/material_mappings.json` by def
 ### Material Assignment Examples
 
 **Volume Name Patterns:**
-- `_detector_lyso_*` → *image.png*LYSO** (custom material, requires `--load-material`)
+- `_detector_lyso_*` → *image.png*LYSO** (custom material, requires `--load-materials`)
 - `sipm_si*` → **G4_Si** (pure silicon)
 - `dmod-base_al*` → **G4_Al** (aluminum)
 - `pcb-sipm_pcb*` → **G4_POLYETHYLENE** (PCB material)
 - `unit-cover_plastic*` → **G4_POLYETHYLENE** (plastic)
+
+**Loading Individual Material Files:**
+```bash
+# Load a single material file
+python3 src/GUIMeshCLI.py \
+  --step "data/STEPfiles/ring_radial_12_axial_1.step" \
+  --load-materials "data/Materials/LYSO.json" \
+  --assign-materials \
+  --output-dir output/gdml/
+
+# Load multiple material files (repeat --load-materials for each file)
+python3 src/GUIMeshCLI.py \
+  --step "data/STEPfiles/ring_radial_12_axial_1.step" \
+  --load-materials "data/Materials/LYSO.json" \
+  --load-materials "data/Materials/DenseAl.json" \
+  --load-materials "data/Materials/CustomMaterial.json" \
+  --assign-materials \
+  --output-dir output/gdml/
+```
+
+**Loading All Materials from a Directory:**
+```bash
+# Load all JSON material files from a directory
+python3 src/GUIMeshCLI.py \
+  --step "data/STEPfiles/ring_radial_12_axial_1.step" \
+  --load-materials "data/Materials" \
+  --assign-materials \
+  --output-dir output/gdml/
+```
 
 **Basic Material Assignment (uses default `material_mappings.json`):**
 ```bash
 # Use default material mappings file (src/material_mappings.json)
 python3 src/GUIMeshCLI.py \
   --step "data/STEPfiles/ring_radial_12_axial_1.step" \
-  --load-material "data/Materials/LYSO.txt" \
+  --load-materials "data/Materials/LYSO.json" \
   --assign-materials \
   --output-dir output/gdml/
 ```
@@ -279,7 +308,7 @@ python3 src/GUIMeshCLI.py \
 # Use a custom material mappings JSON file
 python3 src/GUIMeshCLI.py \
   --step "data/STEPfiles/ring_radial_12_axial_1.step" \
-  --load-material "data/Materials/LYSO.txt" \
+  --load-materials "data/Materials/LYSO.json" \
   --assign-materials custom_material_config.json \
   --output-dir output/gdml/
 ```
@@ -310,7 +339,7 @@ You can customize material assignments in two ways:
 ```
 
 **Custom Material Properties:**
-For materials with `"requires_custom": true`, create a material file (e.g., `data/Materials/CUSTOM_MATERIAL.txt`) with Geant4 material definitions and load it using `--load-material`.
+For materials with `"requires_custom": true`, create a material file (e.g., `data/Materials/CUSTOM_MATERIAL.json`) with Geant4 material definitions and load it using `--load-materials`.
 
 ### Material Assignment Process
 

@@ -1,0 +1,8 @@
+{
+  "name": "DenseAl",
+  "density": 4.0,
+  "elements": [
+    {"name": "G4_Al", "fraction": 1.0}
+  ]
+}
+

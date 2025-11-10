@@ -5,7 +5,7 @@
 python GUIMeshCLI.py --help
 
 # Single-pass (recommended): load STEP once, assign materials, write GDML
-python GUIMeshCLI.py --step STEPfiles/your.step --assign-materials --load-material Materials/LYSO.txt --output-dir gdml_output/
+python GUIMeshCLI.py --step STEPfiles/your.step --assign-materials --load-materials Materials/LYSO.json --output-dir gdml_output/
 
 # Optional: save properties to CSV (for auditing)
 python GUIMeshCLI.py --step STEPfiles/your.step --assign-materials --save-props props.csv --output-dir gdml_output/ """
@@ -92,26 +92,68 @@ class GUIMeshCLI:
         if self.verbose:
             print(f"Orientation analysis method set to: {method}")
 
-    def load_custom_material(self, material_file):
-        """Load a custom material from a file"""
-        if not os.path.exists(material_file):
-            print(f"Error: Material file {material_file} not found.")
-            return False
-
-        new_material = Materials.Load_Material(material_file)
-        if new_material == 0:
-            print(f"Error: Could not load material from {material_file}.")
-            return False
-
-        # Check for duplicate names
-        for mat in self.Material_List + self.Element_List:
-            if mat.Name == new_material.Name:
-                print(f"Error: Material name '{new_material.Name}' already exists.")
-                return False
+    def load_materials(self, material_path):
+        """Load material(s) from a file or directory
         
-        self.Material_List.append(new_material)
-        print(f"Successfully loaded material '{new_material.Name}'")
-        return True
+        Args:
+            material_path: Path to a JSON material file or directory containing JSON material files
+        
+        Returns:
+            bool: True if at least one material was loaded successfully, False otherwise
+        """
+        path = Path(material_path).resolve()
+        
+        if not path.exists():
+            print(f"Error: Path '{material_path}' not found.")
+            return False
+        
+        # If it's a directory, load all JSON files from it
+        if path.is_dir():
+            new_materials = Materials.Load_Materials_From_Dir(str(path))
+            if new_materials == 0:
+                print("No materials loaded from directory.")
+                return False
+        # If it's a file, load it
+        elif path.is_file():
+            # Check file extension
+            if path.suffix.lower() != '.json':
+                print(f"Error: Material file must be in JSON format (.json), got '{path.suffix}'")
+                return False
+            
+            new_material = Materials.Load_Material_JSON(str(path))
+            if new_material == 0:
+                return False
+            new_materials = [new_material]
+        else:
+            print(f"Error: '{material_path}' is neither a file nor a directory.")
+            return False
+        
+        # Check for duplicates and add to Material_List
+        loaded_count = 0
+        skipped_count = 0
+        for new_material in new_materials:
+            # Check for duplicate names
+            is_duplicate = False
+            for mat in self.Material_List + self.Element_List:
+                if mat.Name == new_material.Name:
+                    print(f"Warning: Material '{new_material.Name}' already exists, skipping.")
+                    skipped_count += 1
+                    is_duplicate = True
+                    break
+            
+            if not is_duplicate:
+                self.Material_List.append(new_material)
+                loaded_count += 1
+        
+        if loaded_count > 0:
+            if path.is_dir():
+                print(f"Loaded {loaded_count} materials from {material_path}")
+            else:
+                print(f"Successfully loaded material '{new_materials[0].Name}'")
+        if skipped_count > 0:
+            print(f"Skipped {skipped_count} duplicate materials")
+        
+        return loaded_count > 0
 
     def load_step_file(self, step_file):
         """Load a STEP file and process its contents"""
@@ -184,8 +226,6 @@ class GUIMeshCLI:
         config_path = script_dir / config_file
         if config_path.exists():
             return str(config_path)
-        
-        return None
         
         return None
 
@@ -275,12 +315,8 @@ class GUIMeshCLI:
             for k, v in sorted(assignments_count.items(), key=lambda x: (-x[1], x[0])):
                 print(f"  {k}: {v} volumes")
         
-        if custom_materials_needed:
-            print(f"\nCustom materials needed: {', '.join(custom_materials_needed)}")
-            print("  Load them using --load-material flag")
-        
         if unmatched_volumes:
-            print(f"\n❌ ERROR: {len(unmatched_volumes)} volumes have no matching material pattern:")
+            print(f"\n ERROR: {len(unmatched_volumes)} volumes have no matching material pattern:")
             # Show first few examples
             examples = unmatched_volumes[:10]
             for example in examples:
@@ -605,7 +641,7 @@ class GUIMeshCLI:
                 # Handle duplicate or missing crystal numbers
                 if crystal_number is None:
                     # No number found in label - this is an error
-                    print(f"\n❌ ERROR: No crystal number found in volume name '{volume_label}'")
+                    print(f"\n ERROR: No crystal number found in volume name '{volume_label}'")
                     print(f"Expected patterns: '_detector_lyso_123', 'Part_456', 'Crystal_789', etc.")
                     print(f"Found {lyso_count} LYSO crystals before error.")
                     print(f"\nTo fix this:")
@@ -615,7 +651,7 @@ class GUIMeshCLI:
                     return False
                 elif crystal_number in used_crystal_ids:
                     # Duplicate found - this is an error
-                    print(f"\n❌ ERROR: Duplicate crystal ID {crystal_number} found in volume name '{volume_label}'")
+                    print(f"\n ERROR: Duplicate crystal ID {crystal_number} found in volume name '{volume_label}'")
                     print(f"Previous volume with same ID was already processed.")
                     print(f"Found {lyso_count} LYSO crystals before error.")
                     print(f"\nTo fix this:")
@@ -915,7 +951,7 @@ def main():
     parser.add_argument('--save-props', help='Save properties to CSV file')
     parser.add_argument('--load-props', help='Load properties from CSV file')
     parser.add_argument('--output-dir', help='Output directory for GDML files')
-    parser.add_argument('--load-material', action='append', help='Load a custom material file. Can be used multiple times.')
+    parser.add_argument('--load-materials', action='append', help='Load material(s) from a JSON file or directory containing JSON files. Can be used multiple times.')
     parser.add_argument('--verbose', action='store_true', help='Enable verbose logging and progress messages')
     parser.add_argument('--assign-materials', nargs='?', const='material_mappings.json', default=None, help='Assign materials based on volume name patterns. Optionally specify JSON config file (default: material_mappings.json)')
     parser.add_argument('--extract-centers', nargs='?', const=True, help='Extract crystal center coordinates and save to CSV file. Optionally specify output filename.')
@@ -953,9 +989,9 @@ def main():
         if not mesh.set_world_size(*args.world_size):
             return
 
-    if args.load_material:
-        for mat_file in args.load_material:
-            if not mesh.load_custom_material(mat_file):
+    if args.load_materials:
+        for material_path in args.load_materials:
+            if not mesh.load_materials(material_path):
                 return
 
     if args.load_props:
