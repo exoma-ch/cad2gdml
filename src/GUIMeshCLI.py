@@ -151,12 +151,9 @@ class GUIMeshCLI:
             return False
 
         try:
-            if self.verbose:
-                print(f"Starting STEP import: {step_file}")
-                print("Note: Large STEP files may take several minutes to import...")
             start_time = time.time()
             
-            # Use LoadOP to load the STEP file
+            # Use LoadOP to load the STEP file (progress output is handled inside Load_STEP_File)
             list_of_objects = LoadOP.Load_STEP_File(self.file_status, self.Element_List[13], path_to_file=step_file)
             
             if list_of_objects == 0:
@@ -164,13 +161,13 @@ class GUIMeshCLI:
                 return False
             
             elapsed = time.time() - start_time
-            if self.verbose:
-                print(f"File read successfully in {elapsed:.1f}s")
-            
             self.list_of_objects = list_of_objects
             self.file_status = 1
             
-            print(f"Loaded {len(self.list_of_objects)} objects from STEP file")
+            print(f"\n{'='*60}")
+            print(f"STEP file import completed in {elapsed:.1f} seconds")
+            print(f"Total volumes loaded: {len(self.list_of_objects)}")
+            print(f"{'='*60}\n")
             
             # Calculate and set optimal world size
             self.auto_set_world_size()

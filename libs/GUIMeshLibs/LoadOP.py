@@ -57,22 +57,56 @@ def Load_STEP_File(doc_status, material, path_to_file):
         print("Previous document closed")
     
     # Create new document
+    print("Creating FreeCAD document...")
     FreeCAD.newDocument("Unnamed")
     FreeCAD.setActiveDocument("Unnamed")
     
     try: 
+        # Import STEP file - this can take a long time for large files
+        file_basename = os.path.basename(path_to_file)
+        file_size_mb = os.path.getsize(path_to_file) / (1024 * 1024) if os.path.exists(path_to_file) else 0
+        
+        print(f"\n{'='*60}")
+        print(f"Importing STEP file: {file_basename}")
+        if file_size_mb > 0:
+            print(f"File size: {file_size_mb:.1f} MB")
+        print(f"{'='*60}")
+        print("Parsing STEP file geometry (this may take several minutes for large files)...")
+        print("Please wait", end="", flush=True)
+        
+        # Import the file (blocking operation - can't show progress during this)
         Import.insert(path_to_file, "Unnamed")  # FreeCAD attempts to open file
-        print("File read successfully")
+        
+        print(" ✓")
+        print("Processing objects...", end="", flush=True)
+        
         list_of_objects = []
-        for obj in FreeCAD.ActiveDocument.Objects:
+        all_objects = list(FreeCAD.ActiveDocument.Objects)
+        total_objects = len(all_objects)
+        
+        # Process objects with progress indication
+        processed_count = 0
+        for i, obj in enumerate(all_objects):
             try:
                 if obj.TypeId == "Part::Feature":
                     obj.Label = obj.Label.replace(" ", "_")
                     obj.Label = obj.Label.replace(".", "_")
                     obj.Label = obj.Label.replace("---", "_")
                     list_of_objects.append(Volumes.Volume(obj, material, 0.1, 1))
+                    processed_count += 1
+                    
+                    # Show progress every 10 objects or at milestones
+                    if total_objects > 10:
+                        if (i + 1) % max(1, total_objects // 10) == 0 or (i + 1) == total_objects:
+                            progress = int((i + 1) / total_objects * 100)
+                            print(f"\rProcessing objects... {progress}% ({i + 1}/{total_objects})", end="", flush=True)
+                    elif (i + 1) == total_objects:
+                        print(f"\rProcessing objects... {i + 1} objects", end="", flush=True)
             except:
                 continue
+        
+        print(" Done!")
+        print(f"Successfully loaded {processed_count} volume(s) from {total_objects} object(s)")
         return list_of_objects
     except Exception as e:
         print(f"Error reading file. Format might be incorrect: {str(e)}")
