@@ -173,18 +173,29 @@ class GUIMeshCLI:
             print(f"Error reading file: {str(e)}")
             return False
 
+    def check_material_mappings_file(self, config_file="material_mappings.json"):
+        """Check if material mappings file exists. Returns the full path if found, None otherwise."""
+        config_path = Path(config_file)
+        if config_path.exists():
+            return str(config_path)
+
+        # Try relative to script directory (src/)
+        script_dir = Path(__file__).parent
+        config_path = script_dir / config_file
+        if config_path.exists():
+            return str(config_path)
+        
+        return None
+        
+        return None
+
     def load_material_mappings(self, config_file="material_mappings.json"):
         """Load material assignment rules from JSON configuration file."""
+        config_path = self.check_material_mappings_file(config_file)
+        if config_path is None:
+            raise FileNotFoundError(f"Material mappings file '{config_file}' not found. Please create the file or specify a valid path.")
+        
         try:
-            config_path = Path(config_file)
-            if not config_path.exists():
-                # Try relative to script directory (src/)
-                script_dir = Path(__file__).parent
-                config_path = script_dir / config_file
-                if not config_path.exists():
-                    print(f"Warning: Material mappings file '{config_file}' not found. Using default mappings.")
-                    return self.get_default_mappings()
-            
             with open(config_path, 'r') as f:
                 config = json.load(f)
             
@@ -196,23 +207,10 @@ class GUIMeshCLI:
             
             return config
             
+        except json.JSONDecodeError as e:
+            raise ValueError(f"Error parsing material mappings file '{config_path}': {str(e)}")
         except Exception as e:
-            print(f"Warning: Error loading material mappings: {str(e)}. Using default mappings.")
-            return self.get_default_mappings()
-
-    def get_default_mappings(self):
-        """Fallback default material mappings if JSON file is not available."""
-        return {
-            "material_mappings": {
-                "lyso": {"material": "LYSO", "description": "Custom LYSO scintillator material", "requires_custom": True},
-                "sipm": {"material": "G4_Si", "description": "Pure silicon for SiPM", "requires_custom": False},
-                "pcb": {"material": "G4_POLYETHYLENE", "description": "PCB material", "requires_custom": False},
-                "plastic": {"material": "G4_POLYETHYLENE", "description": "Plastic material", "requires_custom": False},
-                "aluminum": {"material": "G4_Al", "description": "Aluminum material", "requires_custom": False},
-                "al": {"material": "G4_Al", "description": "Aluminum material (short)", "requires_custom": False}
-            },
-            "fallback_material": {"material": "G4_Si", "description": "Default fallback material", "requires_custom": False}
-        }
+            raise RuntimeError(f"Error loading material mappings from '{config_path}': {str(e)}")
 
     def assign_materials_from_names(self, config_file="material_mappings.json"):
         """Assign materials to volumes based on their label/name patterns using JSON configuration."""
@@ -221,9 +219,17 @@ class GUIMeshCLI:
             return False
 
         # Load material mappings from JSON
-        config = self.load_material_mappings(config_file)
+        try:
+            config = self.load_material_mappings(config_file)
+        except (FileNotFoundError, ValueError, RuntimeError) as e:
+            print(f"ERROR: {str(e)}")
+            return False
+        
         mappings = config.get("material_mappings", {})
-        fallback = config.get("fallback_material", {"material": "G4_Si"})
+        
+        if not mappings:
+            print("Error: No material mappings found in configuration file.")
+            return False
 
         def choose_material_name(label_lower: str) -> tuple:
             """Return (material_name, description, requires_custom) for a given label."""
@@ -231,8 +237,8 @@ class GUIMeshCLI:
                 if pattern in label_lower:
                     return (mapping["material"], mapping["description"], mapping.get("requires_custom", False))
             
-            # Fallback
-            return (fallback["material"], fallback["description"], fallback.get("requires_custom", False))
+            # No match found
+            return (None, None, False)
 
         # Build quick lookup for available materials/elements
         name_to_material = {}
@@ -243,22 +249,16 @@ class GUIMeshCLI:
 
         assignments_count = {}
         custom_materials_needed = set()
-        fallback_used = set()
+        unmatched_volumes = []
 
         for obj in self.list_of_objects:
             label_lower = str(obj.VolumeCAD.Label).lower()
             mat_name, description, requires_custom = choose_material_name(label_lower)
             
-            # Check if this was a fallback assignment
-            if mat_name == fallback["material"]:
-                # Check if any pattern actually matched
-                pattern_matched = False
-                for pattern in mappings.keys():
-                    if pattern in label_lower:
-                        pattern_matched = True
-                        break
-                if not pattern_matched:
-                    fallback_used.add(obj.VolumeCAD.Label)
+            # Check if no pattern matched
+            if mat_name is None:
+                unmatched_volumes.append(obj.VolumeCAD.Label)
+                continue
             
             if requires_custom:
                 custom_materials_needed.add(mat_name)
@@ -279,18 +279,17 @@ class GUIMeshCLI:
             print(f"\nCustom materials needed: {', '.join(custom_materials_needed)}")
             print("  Load them using --load-material flag")
         
-        if fallback_used:
-            print(f"\n❌ ERROR: {len(fallback_used)} volumes have unmatched names and would use fallback material '{fallback['material']}':")
+        if unmatched_volumes:
+            print(f"\n❌ ERROR: {len(unmatched_volumes)} volumes have no matching material pattern:")
             # Show first few examples
-            examples = list(fallback_used)[:10]
+            examples = unmatched_volumes[:10]
             for example in examples:
                 print(f"  - {example}")
-            if len(fallback_used) > 10:
-                print(f"  ... and {len(fallback_used) - 10} more")
+            if len(unmatched_volumes) > 10:
+                print(f"  ... and {len(unmatched_volumes) - 10} more")
             print(f"\nTo fix this:")
-            print(f"  1. Add patterns to src/material_mappings.json for these volume names")
+            print(f"  1. Add patterns to the material mappings file for these volume names")
             print(f"  2. Or use --load-props with a CSV file that has explicit material assignments")
-            print(f"  3. Or modify the fallback_material in material_mappings.json if this is intentional")
             return False
         
         if not assignments_count:
@@ -936,6 +935,15 @@ def main():
     
     # Set orientation analysis method
     mesh.set_orientation_analysis_method(use_direct_edge=not args.use_pca)
+
+    # Check material mappings file BEFORE loading STEP file (if --assign-materials is used)
+    if args.assign_materials and not args.load_props:
+        config_file = args.assign_materials
+        if mesh.check_material_mappings_file(config_file) is None:
+            print(f"   ERROR: Material mappings file '{config_file}' not found.")
+            print(f"   Please create the file or specify a valid path.")
+            print(f"   The file should be located in the current directory or in src/ directory.")
+            return
 
     if args.step:
         if not mesh.load_step_file(args.step):
