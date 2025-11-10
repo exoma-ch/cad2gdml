@@ -645,6 +645,7 @@ class GUIMeshCLI:
                 
                 used_crystal_ids.add(final_crystal_id)
                 
+                # Keep original center coordinates (no translation - geometry keeps CAD offset)
                 crystal_info = {
                     'crystal_id': final_crystal_id,
                     'volume_name': volume_label,
@@ -772,11 +773,27 @@ class GUIMeshCLI:
             height = max_y - min_y
             depth = max_z - min_z
             
-            # Add some margin (20% on each side)
-            margin = 0.2
-            world_x = width * (1 + 2 * margin)
-            world_y = height * (1 + 2 * margin)
-            world_z = depth * (1 + 2 * margin)
+            # Calculate geometry center (in mm) - for information only
+            center_x = min_x + width / 2.0
+            center_y = min_y + height / 2.0
+            center_z = min_z + depth / 2.0
+
+            # Calculate world box size to contain offset geometry
+            # World box is centered at (0,0,0), so it must extend far enough to contain
+            # geometry that may be offset from origin
+            # For each axis, world size = 2 * max(|min|, |max|) * (1 + margin)
+            margin = 0.05
+            world_x = 2.0 * max(abs(min_x), abs(max_x)) * (1.0 + margin)
+            world_y = 2.0 * max(abs(min_y), abs(max_y)) * (1.0 + margin)
+            world_z = 2.0 * max(abs(min_z), abs(max_z)) * (1.0 + margin)
+            
+            # Ensure minimum world size is at least the geometry dimensions + margin
+            min_world_x = width * (1.0 + 2.0 * margin)
+            min_world_y = height * (1.0 + 2.0 * margin)
+            min_world_z = depth * (1.0 + 2.0 * margin)
+            world_x = max(world_x, min_world_x)
+            world_y = max(world_y, min_world_y)
+            world_z = max(world_z, min_world_z)
             
             # Convert from mm to meters
             world_x /= 1000.0
@@ -785,8 +802,10 @@ class GUIMeshCLI:
             
             print(f"\n=== Geometry Analysis ===")
             print(f"Bounding box: {width:.1f}mm x {height:.1f}mm x {depth:.1f}mm")
-            print(f"Center: ({min_x + width/2:.1f}, {min_y + height/2:.1f}, {min_z + depth/2:.1f}) mm")
+            print(f"Geometry center: ({center_x:.1f}, {center_y:.1f}, {center_z:.1f}) mm")
+            print(f"Geometry range: X[{min_x:.1f}, {max_x:.1f}] Y[{min_y:.1f}, {max_y:.1f}] Z[{min_z:.1f}, {max_z:.1f}] mm")
             print(f"Calculated world size: {world_x:.2f}m x {world_y:.2f}m x {world_z:.2f}m")
+            print(f"World box centered at (0, 0, 0) will contain offset geometry")
             
             # Set the calculated world size
             self.world_dimensions = [world_x, world_y, world_z]
