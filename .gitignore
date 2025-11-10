@@ -2,6 +2,7 @@
 /output/gdml/*
 /output/analysis/*.csv
 /output/analysis/*.txt
+/output/analysis/*.h5
 *.gdml
 /log*.txt
 *.csv
