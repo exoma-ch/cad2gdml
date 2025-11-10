@@ -171,40 +171,20 @@ class GUIMeshCLI:
                 print("Note: Large STEP files may take several minutes to import...")
             start_time = time.time()
             
-            if self.file_status:
-                FreeCAD.closeDocument("Unnamed")
-                print("Previous document closed")
-
-            FreeCAD.newDocument("Unnamed")
-            FreeCAD.setActiveDocument("Unnamed")
+            # Use LoadOP to load the STEP file
+            list_of_objects = LoadOP.Load_STEP_File(self.file_status, self.Element_List[13], path_to_file=step_file)
             
-            # This is the blocking call - no way to show progress during import
-            Import.insert(step_file, "Unnamed")
+            if list_of_objects == 0:
+                print("Error: Failed to load STEP file")
+                return False
             
             elapsed = time.time() - start_time
-            print(f"File read successfully in {elapsed:.1f}s")
-            
-            self.list_of_objects = []
-            all_objs = FreeCAD.ActiveDocument.Objects
-            part_objs = [obj for obj in all_objs if obj.TypeId == "Part::Feature"]
-            total_parts = len(part_objs)
             if self.verbose:
-                print(f"Found {total_parts} solid parts in {len(all_objs)} total objects")
-            for idx, obj in enumerate(part_objs, start=1):
-                try:
-                    obj.Label = obj.Label.replace(" ", "_")
-                    obj.Label = obj.Label.replace(".", "_")
-                    obj.Label = obj.Label.replace("---", "_")
-                    self.list_of_objects.append(Volumes.Volume(obj, self.Element_List[13], 0.1, 1))
-                    #print(f"Added object: {obj.Label}")
-                except Exception as e:
-                    if self.verbose:
-                        print(f"Error processing part {idx}: {obj.Label} - {str(e)}")
-                    continue
-                if self.verbose and (idx % 500 == 0 or idx == total_parts):
-                    print(f"Processed {idx}/{total_parts} parts")
+                print(f"File read successfully in {elapsed:.1f}s")
             
+            self.list_of_objects = list_of_objects
             self.file_status = 1
+            
             print(f"Loaded {len(self.list_of_objects)} objects from STEP file")
             
             # Calculate and set optimal world size
@@ -966,7 +946,7 @@ def main():
     mesh = GUIMeshCLI()
     mesh.verbose = bool(args.verbose)
     
-    # Set output directory for CSV files
+    # Set output directory for files
     mesh.output_dir = args.output_dir
     
     # Set orientation analysis method

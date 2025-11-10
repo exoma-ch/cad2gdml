@@ -43,39 +43,59 @@ def Find_FreeCAD_Dir():
             return 0
 
 #Add FreeCAD directory to os path
-def Load_STEP_File(doc_status,material):
+def Load_STEP_File(doc_status, material, path_to_file):
+    """Load a STEP file and return list of Volume objects.
+    
+    Args:
+        doc_status: Whether a document is already open (1) or not (0)
+        material: Material object to assign to volumes
+        path_to_file: Path to the STEP file to load
+    
+    Returns:
+        list: List of Volume objects, or 0 on error
+    """
     from GUIMeshLibs import Volumes
-    import tkinter.filedialog
     import FreeCAD
     import Import
     import FreeCADGui
     import Draft
     import Part
-    #prepares and opens STEP file with FreeCADs
-    path_to_file = tkinter.filedialog.askopenfilename()
-    if( path_to_file[-5:]==".STEP" or path_to_file[-5:]==".step"or path_to_file[-4:]==".stp"):
-        if (doc_status):    #If a file was already open the document associated with it must be closed
-            FreeCAD.closeDocument("Unnamed")
-            print("Previous document closed")
-        FreeCAD.newDocument("Unnamed")
-        FreeCAD.setActiveDocument("Unnamed")
-        try: 
-            Import.insert(path_to_file,"Unnamed") #FreeCAD attempts to open file - If the format is wrong it will be detected
-            print("File read successfuly")
-            list_of_objects=[]
-            for obj in FreeCAD.ActiveDocument.Objects:
-                try:
-                        if(obj.TypeId=="Part::Feature"):
-                                obj.Label=obj.Label.replace(" ","_")
-                                obj.Label=obj.Label.replace(".","_")
-                                obj.Label=obj.Label.replace("---","_")
-                                list_of_objects.append(Volumes.Volume(obj,material,0.1,1))
-                except:
-                        continue
-            return list_of_objects
-        except:
-            print("Error reading file. Format might be incorrect.")
-            return 0
-    else:
+    import os.path
+    
+    # Validate file extension
+    if not (path_to_file[-5:].lower() == ".step" or 
+            path_to_file[-4:].lower() == ".stp"):
         print("Error with file extension")
+        return 0
+    
+    # Check if file exists
+    if not os.path.exists(path_to_file):
+        print(f"Error: File {path_to_file} does not exist")
+        return 0
+    
+    # Close previous document if needed
+    if doc_status:
+        FreeCAD.closeDocument("Unnamed")
+        print("Previous document closed")
+    
+    # Create new document
+    FreeCAD.newDocument("Unnamed")
+    FreeCAD.setActiveDocument("Unnamed")
+    
+    try: 
+        Import.insert(path_to_file, "Unnamed")  # FreeCAD attempts to open file
+        print("File read successfully")
+        list_of_objects = []
+        for obj in FreeCAD.ActiveDocument.Objects:
+            try:
+                if obj.TypeId == "Part::Feature":
+                    obj.Label = obj.Label.replace(" ", "_")
+                    obj.Label = obj.Label.replace(".", "_")
+                    obj.Label = obj.Label.replace("---", "_")
+                    list_of_objects.append(Volumes.Volume(obj, material, 0.1, 1))
+            except:
+                continue
+        return list_of_objects
+    except Exception as e:
+        print(f"Error reading file. Format might be incorrect: {str(e)}")
         return 0
