@@ -22,17 +22,17 @@
 import os
 from GUIMeshLibs import Materials
 from GUIMeshLibs import Volumes
-import tkinter.filedialog
-import tkinter.messagebox
 
 #Write Mother.gdml file
-def CreateMother(dir_path,object_list,world):
+def CreateMother(dir_path,object_list,world,world_pos=[0.0,0.0,0.0]):
     #write headers and globals
     F=open(str(dir_path)+"/mother.gdml","w")
     F.write('<?xml version="1.0" encoding="UTF-8" ?>\n')
     F.write('<gdml xmlns:gdml="../schema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../schema/gdml.xsd" >\n')
     F.write('<define>\n')
-    F.write('<position name="center" x="0" y="0" z="0"/>\n')
+    # Translate geometry volumes to center them in world box (world is at origin)
+    # Negative of world position to center geometry in world
+    F.write('<position name="geometry_offset" x="'+str(-world_pos[0])+'" y="'+str(-world_pos[1])+'" z="'+str(-world_pos[2])+'" unit="m"/>\n')
     F.write('<rotation name="identity" x="0" y="0" z="0"/>\n')
     F.write('</define>\n')
     #write material information
@@ -60,7 +60,8 @@ def CreateMother(dir_path,object_list,world):
             # Use volume label directly - normalization happens at the end
             gdml_filename = str(object_list[i].VolumeCAD.Label) + ".gdml"
             F.write('<file name="Volumes/'+gdml_filename+'"/>\n')
-            F.write('<positionref ref="center"/>\n')
+            # Translate geometry to center it in world box
+            F.write('<positionref ref="geometry_offset"/>\n')
             F.write('<rotationref ref="identity"/>\n')
             F.write('</physvol>\n')
     F.write('</volume>\n')
@@ -131,27 +132,4 @@ def normalize_base_volumes(volumes_dir):
     # No longer performing any normalization - keeping original names as they are
     pass
 
-#Main function called to write all GDML files
-def Write_Files(obj_list, world_list):
-    write_dir=tkinter.filedialog.askdirectory()
-    print(write_dir)
-    # Create Volumes Directory (does not remove folders)
-    try:
-        os.mkdir(str(write_dir)+"/Volumes")
-        print("Directory " , str(write_dir)+"/Volumes" ,  " Created ") 
-    except:
-        print("Directory " , str(write_dir)+"/Volumes" ,  " already exists")
-    #Create mother gdml
-    CreateMother(write_dir,obj_list,world_list)
-    #Create volume gdmls
-    counter=1
-    for obj in obj_list:
-        if obj.VolumeGDMLoption==1:
-            CreateGDML(obj,counter,write_dir)
-        counter+=1
-    
-    # Normalize base volumes at the end
-    normalize_base_volumes(str(write_dir)+"/Volumes")
-    
-    tkinter.messagebox.showinfo("Message", 'GDML Files ready.')        
 #Note: A number is added to each volumes label to avoid that two different volumes have the same name. This can be seen in the mother and in the volumes GDMLs

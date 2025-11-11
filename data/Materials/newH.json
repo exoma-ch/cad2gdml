@@ -1,0 +1,8 @@
+{
+  "name": "newH",
+  "density": 0.2,
+  "elements": [
+    {"name": "G4_H", "fraction": 1.0}
+  ]
+}
+

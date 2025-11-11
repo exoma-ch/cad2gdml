@@ -1,0 +1,9 @@
+{
+  "name": "SiO2",
+  "density": 2.8,
+  "elements": [
+    {"name": "G4_Si", "fraction": 0.334},
+    {"name": "G4_O", "fraction": 0.666}
+  ]
+}
+

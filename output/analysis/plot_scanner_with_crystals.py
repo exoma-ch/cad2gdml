@@ -9,6 +9,84 @@ import csv
 import math
 import sys
 import os
+import argparse
+
+def normalize_elevation_angle(elevation):
+    """Normalize elevation angle: 0° and 360° are equivalent"""
+    elevation = elevation % 360.0
+    if elevation == 360.0:
+        elevation = 0.0
+    return elevation
+
+def normalize_coordinates(crystals):
+    """
+    Normalize coordinates to make plots axis-independent.
+    This handles different axis conventions (yup vs noyup) by:
+    1. Normalizing elevation angles (0° = 360°)
+    2. Transforming to a canonical coordinate system (noyup convention)
+    
+    The transformation detects if y and z are swapped (yup convention)
+    and converts to the canonical (noyup) convention where:
+    - y values are typically positive
+    - z values are typically negative
+    - y and z are swapped compared to yup
+    """
+    if not crystals:
+        return crystals
+    
+    normalized = []
+    
+    # Detect coordinate system convention by checking y and z value patterns
+    # In yup: y values are distributed around 0 (mean_y ≈ 0), z values have non-zero mean
+    # In noyup: y values have non-zero mean, z values are distributed around 0 (mean_z ≈ 0)
+    y_values = [c['y'] for c in crystals]
+    z_values = [c['z'] for c in crystals]
+    
+    # Calculate means to determine which coordinate is centered around 0
+    mean_y = sum(y_values) / len(y_values)
+    mean_z = sum(z_values) / len(z_values)
+    
+    # Tolerance for "near zero" (within 1 mm)
+    tolerance = 1.0
+    
+    # Determine if we need to swap and transform
+    # If mean_y ≈ 0 and mean_z ≠ 0, likely yup (needs swap to noyup)
+    # If mean_y ≠ 0 and mean_z ≈ 0, likely noyup (already correct)
+    needs_swap = (abs(mean_y) < tolerance and abs(mean_z) > tolerance)
+    
+    if needs_swap:
+        print("Detected yup coordinate convention - transforming to canonical (noyup) convention")
+        for crystal in crystals:
+            # Swap y and z, and negate z to match noyup convention
+            # yup: (y, z) -> noyup: (z, -y) but we want (y, z) in noyup
+            # Actually: yup(y, z) -> noyup(-z, y)
+            elevation = normalize_elevation_angle(crystal['elevation'])
+            normalized_crystal = {
+                'id': crystal['id'],
+                'name': crystal['name'],
+                'x': crystal['x'],
+                'y': -crystal['z'],  # Swap: use -z as y
+                'z': crystal['y'],   # Swap: use y as z
+                'azimuth': crystal['azimuth'],
+                'elevation': elevation
+            }
+            normalized.append(normalized_crystal)
+    else:
+        print("Using canonical (noyup) coordinate convention")
+        for crystal in crystals:
+            elevation = normalize_elevation_angle(crystal['elevation'])
+            normalized_crystal = {
+                'id': crystal['id'],
+                'name': crystal['name'],
+                'x': crystal['x'],
+                'y': crystal['y'],
+                'z': crystal['z'],
+                'azimuth': crystal['azimuth'],
+                'elevation': elevation
+            }
+            normalized.append(normalized_crystal)
+    
+    return normalized
 
 def read_crystal_data(csv_file):
     """Read crystal data from CSV file"""
@@ -30,6 +108,10 @@ def read_crystal_data(csv_file):
                 crystals.append(crystal)
         
         print(f"Loaded {len(crystals)} crystal centers from {csv_file}")
+        
+        # Normalize coordinates to make plots axis-independent
+        crystals = normalize_coordinates(crystals)
+        
         return crystals
         
     except FileNotFoundError:
@@ -39,23 +121,6 @@ def read_crystal_data(csv_file):
         print(f"Error reading CSV file: {e}")
         return []
 
-def read_crystal_dimensions(csv_file):
-    """Read crystal dimensions from dimensions file"""
-    dimensions_file = csv_file.replace('.csv', '_dimensions.txt')
-    
-    try:
-        with open(dimensions_file, 'r') as f:
-            lines = f.readlines()
-            width = float(lines[0].split(':')[1].strip().replace('mm', ''))
-            height = float(lines[1].split(':')[1].strip().replace('mm', ''))
-            depth = float(lines[2].split(':')[1].strip().replace('mm', ''))
-            return width, height, depth
-    except FileNotFoundError:
-        print(f"Error reading dimensions file {dimensions_file}: [Errno 2] No such file or directory: '{dimensions_file}'")
-        return 4.0, 4.0, 20.0  # Default dimensions
-    except Exception as e:
-        print(f"Error reading dimensions file: {e}")
-        return 4.0, 4.0, 20.0  # Default dimensions
 
 def plot_scanner_with_crystals(crystals, width, height, depth, save_dir=None):
     """Plot scanner geometry with crystal dimensions in three orthogonal planes"""
@@ -690,15 +755,59 @@ def plot_y_vs_radial_angle(crystals, save_dir=None):
     plt.show()
 
 if __name__ == "__main__":
-    import sys
     import glob
     
-    # Auto-detect CSV file
-    csv_file = None
-    if len(sys.argv) > 1:
-        csv_file = sys.argv[1]
-    else:
-        # Look for CSV files in current directory
+    parser = argparse.ArgumentParser(
+        description="Plot scanner geometry with crystal dimensions and orientations",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""
+Examples:
+  %(prog)s
+  %(prog)s crystal_centers.csv
+  %(prog)s --width 15.92 --height 5.30 --depth 23.63
+  %(prog)s crystal_centers.csv --width 15.92 --height 5.30 --depth 23.63
+        """
+    )
+    
+    parser.add_argument(
+        'csv_file',
+        nargs='?',
+        help='CSV file with crystal center data (default: auto-detect)'
+    )
+    
+    parser.add_argument(
+        '--width',
+        type=float,
+        default=3.95,
+        help='Crystal width in mm (default: 3.95)'
+    )
+    
+    parser.add_argument(
+        '--height',
+        type=float,
+        default=5.3,
+        help='Crystal height in mm (default: 25.0)'
+    )
+    
+    parser.add_argument(
+        '--depth',
+        type=float,
+        default=25.0,
+        help='Crystal depth in mm (default: 5.3)'
+    )
+    
+    parser.add_argument(
+        '--save-dir',
+        type=str,
+        default='.',
+        help='Directory to save output plots (default: current directory)'
+    )
+    
+    args = parser.parse_args()
+    
+    # Auto-detect CSV file if not provided
+    csv_file = args.csv_file
+    if not csv_file:
         csv_files = glob.glob("lyso_crystal_centers_3d_angles*.csv")
         if csv_files:
             csv_file = csv_files[0]  # Use the first one found
@@ -706,21 +815,18 @@ if __name__ == "__main__":
             csv_file = "lyso_crystal_centers_3d_angles.csv"  # Fallback
     
     print(f"Plotting scanner with crystal sizes from: {csv_file}")
-    save_dir = "."
+    print(f"Crystal dimensions: {args.width:.2f} × {args.height:.2f} × {args.depth:.2f} mm")
     
     # Read crystal data
     crystals = read_crystal_data(csv_file)
     
     if crystals:
-        # Read crystal dimensions
-        width, height, depth = read_crystal_dimensions(csv_file)
-        
         # Main geometry plot with crystal sizes
-        plot_scanner_with_crystals(crystals, width, height, depth, save_dir=save_dir)
+        plot_scanner_with_crystals(crystals, args.width, args.height, args.depth, save_dir=args.save_dir)
         
         # Y vs Radial Angle plot
-        plot_y_vs_radial_angle(crystals, save_dir=save_dir)
+        plot_y_vs_radial_angle(crystals, save_dir=args.save_dir)
         
-        print(f"\nScanner with crystal sizes visualizations saved to: {save_dir}")
+        print(f"\nScanner with crystal sizes visualizations saved to: {args.save_dir}")
     else:
         print("No crystal data loaded.")

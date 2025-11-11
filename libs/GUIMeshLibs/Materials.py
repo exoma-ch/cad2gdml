@@ -19,7 +19,7 @@
 #########################################################################################################
 #Libaries
 import os
-import tkinter.messagebox
+import json
 
 #Class Element - an Element has a name (from G4 NIST), a density and zero number of elements (used to differentiate them from created materials)
 class Element:
@@ -48,126 +48,106 @@ def Load_Elements():
                 ele_db.append(Element(ele_db_names[i],ele_db_dens[i]))
         return ele_db
 
-#Loads a Material from a txt file - Several tests are made to ensure format is correct and that it does not overlap with other material
-def Load_Material(path_to_material):
+#Loads a Material from a JSON file - Several tests are made to ensure format is correct
+def Load_Material_JSON(path_to_material):
         ele_db_names=["G4_H", "G4_He", "G4_Li", "G4_Be", "G4_B", "G4_C", "G4_N", "G4_O", "G4_F", "G4_Ne", "G4_Na", "G4_Mg", "G4_Al", "G4_Si", "G4_P", "G4_S", "G4_Cl", "G4_Ar", "G4_K", "G4_Ca", "G4_Sc", "G4_Ti", "G4_V", "G4_Cr", "G4_Mn", "G4_Fe", "G4_Co", "G4_Ni", "G4_Cu", "G4_Zn", "G4_Ga", "G4_Ge", "G4_As", "G4_Se", "G4_Br", "G4_Kr", "G4_Rb", "G4_Sr", "G4_Y", "G4_Zr", "G4_Nb", "G4_Mo", "G4_Tc", "G4_Ru", "G4_Rh", "G4_Pd", "G4_Ag", "G4_Cd", "G4_In", "G4_Sn", "G4_Sb", "G4_Te", "G4_I", "G4_Xe", "G4_Cs", "G4_Ba", "G4_La", "G4_Ce", "G4_Pr", "G4_Nd", "G4_Pm", "G4_Sm", "G4_Eu", "G4_Gd", "G4_Tb", "G4_Dy", "G4_Ho", "G4_Er", "G4_Tm", "G4_Yb", "G4_Lu", "G4_Hf", "G4_Ta", "G4_W", "G4_Re", "G4_Os", "G4_Ir", "G4_Pt", "G4_Au", "G4_Hg", "G4_Tl", "G4_Pb", "G4_Bi", "G4_Po", "G4_At", "G4_Rn", "G4_Fr", "G4_Ra", "G4_Ac", "G4_Th", "G4_Pa", "G4_U", "G4_Np", "G4_Pu", "G4_Am", "G4_Cm", "G4_Bk", "G4_Cf","G4_A-150_TISSUE", "G4_ACETONE", "G4_ACETYLENE", "G4_ADENINE", "G4_AIR", "G4_ALANINE", "G4_ALUMINUM_OXIDE", "G4_AMBER", "G4_AMMONIA", "G4_ANILINE", "G4_ANTHRACENE", "G4_B-100_BONE", "G4_BAKELITE", "G4_BARIUM_FLUORIDE", "G4_BARIUM_SULFATE", "G4_BENZENE", "G4_BERYLLIUM_OXIDE", "G4_BGO", "G4_BONE_COMPACT_ICRU", "G4_BONE_CORTICAL_ICRP", "G4_BORON_CARBIDE", "G4_BORON_OXIDE", "G4_BUTANE", "G4_N-BUTYL_ALCOHOL", "G4_C-552", "G4_CADMIUM_TELLURIDE", "G4_CADMIUM_TUNGSTATE", "G4_CALCIUM_CARBONATE", "G4_CALCIUM_FLUORIDE", "G4_CALCIUM_OXIDE", "G4_CALCIUM_SULFATE", "G4_CALCIUM_TUNGSTATE", "G4_CARBON_DIOXIDE", "G4_CARBON_TETRACHLORIDE", "G4_CELLULOSE_CELLOPHANE", "G4_CELLULOSE_BUTYRATE", "G4_CELLULOSE_NITRATE", "G4_CERIC_SULFATE", "G4_CESIUM_FLUORIDE", "G4_CESIUM_IODIDE", "G4_CHLOROBENZENE", "G4_CHLOROFORM", "G4_CYCLOHEXANE", "G4_1,2-DICHLOROBENZENE", "G4_DICHLORODIETHYL_ETHER", "G4_1,2-DICHLOROETHANE", "G4_DIETHYL_ETHER", "G4_N,N-DIMETHYL_FORMAMIDE", "G4_DIMETHYL_SULFOXIDE", "G4_ETHANE", "G4_ETHYL_ALCOHOL", "G4_ETHYL_CELLULOSE", "G4_ETHYLENE", "G4_EYE_LENS_ICRP", "G4_FERRIC_OXIDE", "G4_FERROBORIDE", "G4_FERROUS_OXIDE", "G4_FERROUS_SULFATE", "G4_FREON-12", "G4_FREON-12B2", "G4_FREON-13", "G4_FREON-13B1", "G4_FREON-13I1", "G4_GADOLINIUM_OXYSULFIDE", "G4_GALLIUM_ARSENIDE", "G4_GEL_PHOTO_EMULSION", "G4_Pyrex_Glass", "G4_GLASS_LEAD", "G4_GLASS_PLATE", "G4_GLUCOSE", "G4_GLUTAMINE", "G4_GLYCEROL", "G4_GUANINE", "G4_GYPSUM", "G4_N-HEPTANE", "G4_N-HEXANE", "G4_KAPTON", "G4_LANTHANUM_OXYBROMIDE", "G4_LANTHANUM_OXYSULFIDE", "G4_LEAD_OXIDE", "G4_LITHIUM_AMIDE", "G4_LITHIUM_CARBONATE", "G4_LITHIUM_FLUORIDE", "G4_LITHIUM_HYDRIDE", "G4_LITHIUM_IODIDE", "G4_LITHIUM_OXIDE", "G4_LITHIUM_TETRABORATE", "G4_M3_WAX", "G4_MAGNESIUM_CARBONATE", "G4_MAGNESIUM_FLUORIDE", "G4_MAGNESIUM_OXIDE", "G4_MAGNESIUM_TETRABORATE", "G4_MERCURIC_IODIDE", "G4_METHANE", "G4_METHANOL", "G4_MIX_D_WAX", "G4_MS20_TISSUE", "G4_MUSCLE_STRIATED_ICRU", "G4_MUSCLE_WITH_SUCROSE", "G4_MUSCLE_WITHOUT_SUCROSE", "G4_NAPHTHALENE", "G4_NITROBENZENE", "G4_NITROUS_OXIDE", "G4_NYLON-8062", "G4_NYLON-6/6", "G4_NYLON-6/10", "G4_NYLON-11_RILSAN", "G4_OCTANE", "G4_PARAFFIN", "G4_N-PENTANE", "G4_PHOTO_EMULSION", "G4_PLASTIC_SC_VINYLTOLUENE", "G4_PLUTONIUM_DIOXIDE", "G4_POLYACRYLONITRILE", "G4_POLYCARBONATE", "G4_POLYCHLOROSTYRENE", "G4_POLYETHYLENE", "G4_MYLAR", "G4_PLEXIGLASS", "G4_POLYOXYMETHYLENE", "G4_POLYPROPYLENE", "G4_POLYSTYRENE", "G4_TEFLON", "G4_POLYTRIFLUOROCHLOROETHYLENE", "G4_POLYVINYL_ACETATE", "G4_POLYVINYL_ALCOHOL", "G4_POLYVINYL_BUTYRAL", "G4_POLYVINYL_CHLORIDE", "G4_POLYVINYLIDENE_CHLORIDE", "G4_POLYVINYLIDENE_FLUORIDE", "G4_POLYVINYL_PYRROLIDONE", "G4_POTASSIUM_IODIDE", "G4_POTASSIUM_OXIDE", "G4_PROPANE", "G4_lPROPANE", "G4_N-PROPYL_ALCOHOL", "G4_PYRIDINE", "G4_RUBBER_BUTYL", "G4_RUBBER_NATURAL", "G4_RUBBER_NEOPRENE", "G4_SILICON_DIOXIDE", "G4_SILVER_BROMIDE", "G4_SILVER_CHLORIDE", "G4_SILVER_HALIDES", "G4_SILVER_IODIDE", "G4_SODIUM_CARBONATE", "G4_SODIUM_IODIDE", "G4_SODIUM_MONOXIDE", "G4_SODIUM_NITRATE", "G4_STILBENE", "G4_SUCROSE", "G4_TERPHENYL", "G4_TETRACHLOROETHYLENE", "G4_THALLIUM_CHLORIDE", "G4_TISSUE_SOFT_ICRU-4", "G4_TISSUE-METHANE", "G4_TISSUE-PROPANE", "G4_TITANIUM_DIOXIDE", "G4_TOLUENE", "G4_TRICHLOROETHYLENE", "G4_TRIETHYL_PHOSPHATE", "G4_TUNGSTEN_HEXAFLUORIDE", "G4_URANIUM_DICARBIDE", "G4_URANIUM_MONOCARBIDE", "G4_URANIUM_OXIDE", "G4_UREA", "G4_VALINE", "G4_VITON", "G4_WATER", "G4_WATER_VAPOR", "G4_XYLENE", "G4_GRAPHITE"]
-        lines= open(path_to_material).read().split('\n')
         error_check=0
-        #check if density is float > 0
         try:
-                float(lines[1])<=0
-                #check if number of elements is and integer > 0 and if number number of lines with element name and fraction is correct
-                try:
-                        int(lines[2])>0
-                        if len(lines)!=(int(lines[2])*2+3):
-                                print("Error: Number of Elements assigned different than expected.")
+                with open(path_to_material, 'r') as f:
+                        mat_data = json.load(f)
+                
+                # Validate JSON structure
+                if 'name' not in mat_data or 'density' not in mat_data or 'elements' not in mat_data:
+                        print("Error: JSON file must contain 'name', 'density', and 'elements' fields.")
+                        error_check=1
+                else:
+                        name = mat_data['name']
+                        try:
+                                density = float(mat_data['density'])
+                                if density <= 0:
+                                        print("Error: Material density must be > 0.")
+                                        error_check=1
+                        except (ValueError, TypeError):
+                                print("Error: Material density must be a valid float.")
+                                error_check=1
+                        
+                        elements_list = mat_data['elements']
+                        if not isinstance(elements_list, list) or len(elements_list) == 0:
+                                print("Error: 'elements' must be a non-empty list.")
                                 error_check=1
                         else:
-                                elements=[]
-                                check_fractions=0.0
-                                for i in range(3,len(lines)):
-                                        elements.append(lines[i])
-                                        #check if fraction is a float
-                                        if(i%2==0):
-                                                try:
-                                                        check_fractions+=float(lines[i])
-                                                except ValueError:
-                                                        print("Error: Element fraction not a float.")
-                                                        error_check=1
-                                        #check if element exists
-                                        else:
-                                                if lines[i] not in ele_db_names:
-                                                        print("Error: Element not in database, please check the name.")
-                                                        error_check=1
-                                if str(check_fractions)!="1.0": #string used to fix a bug
-                                        error_check=1
-                                        print("Error: Element fraction sum different than 1.")
-                except ValueError:
-                        print("Error: Number of Elements is either < 1 or not an integer.")
-                        error_check=1
-        except ValueError:
-                print("Error: Material density either not a float or <1.")
-                error_check=1
-                
-        #Accept or not the material
-        if error_check==0:
-                print(lines[0]+" was imported successfully.")
-                #tkinter.messagebox.showinfo("Message", lines[0]+" was imported successfully.")
-                return Material(lines[0], float(lines[1]),int(lines[2]),elements)
-        else:
-                print(lines[0]+" was not imported due to format errors.")
-                return 0
-        
-#Loads all Materials in txt form from the "Materials" folder. Each file format is tested. Returns a Maerial database
-def Load_Materials():
-        ele_db_names=["G4_H", "G4_He", "G4_Li", "G4_Be", "G4_B", "G4_C", "G4_N", "G4_O", "G4_F", "G4_Ne", "G4_Na", "G4_Mg", "G4_Al", "G4_Si", "G4_P", "G4_S", "G4_Cl", "G4_Ar", "G4_K", "G4_Ca", "G4_Sc", "G4_Ti", "G4_V", "G4_Cr", "G4_Mn", "G4_Fe", "G4_Co", "G4_Ni", "G4_Cu", "G4_Zn", "G4_Ga", "G4_Ge", "G4_As", "G4_Se", "G4_Br", "G4_Kr", "G4_Rb", "G4_Sr", "G4_Y", "G4_Zr", "G4_Nb", "G4_Mo", "G4_Tc", "G4_Ru", "G4_Rh", "G4_Pd", "G4_Ag", "G4_Cd", "G4_In", "G4_Sn", "G4_Sb", "G4_Te", "G4_I", "G4_Xe", "G4_Cs", "G4_Ba", "G4_La", "G4_Ce", "G4_Pr", "G4_Nd", "G4_Pm", "G4_Sm", "G4_Eu", "G4_Gd", "G4_Tb", "G4_Dy", "G4_Ho", "G4_Er", "G4_Tm", "G4_Yb", "G4_Lu", "G4_Hf", "G4_Ta", "G4_W", "G4_Re", "G4_Os", "G4_Ir", "G4_Pt", "G4_Au", "G4_Hg", "G4_Tl", "G4_Pb", "G4_Bi", "G4_Po", "G4_At", "G4_Rn", "G4_Fr", "G4_Ra", "G4_Ac", "G4_Th", "G4_Pa", "G4_U", "G4_Np", "G4_Pu", "G4_Am", "G4_Cm", "G4_Bk", "G4_Cf","G4_A-150_TISSUE", "G4_ACETONE", "G4_ACETYLENE", "G4_ADENINE", "G4_AIR", "G4_ALANINE", "G4_ALUMINUM_OXIDE", "G4_AMBER", "G4_AMMONIA", "G4_ANILINE", "G4_ANTHRACENE", "G4_B-100_BONE", "G4_BAKELITE", "G4_BARIUM_FLUORIDE", "G4_BARIUM_SULFATE", "G4_BENZENE", "G4_BERYLLIUM_OXIDE", "G4_BGO", "G4_BONE_COMPACT_ICRU", "G4_BONE_CORTICAL_ICRP", "G4_BORON_CARBIDE", "G4_BORON_OXIDE", "G4_BUTANE", "G4_N-BUTYL_ALCOHOL", "G4_C-552", "G4_CADMIUM_TELLURIDE", "G4_CADMIUM_TUNGSTATE", "G4_CALCIUM_CARBONATE", "G4_CALCIUM_FLUORIDE", "G4_CALCIUM_OXIDE", "G4_CALCIUM_SULFATE", "G4_CALCIUM_TUNGSTATE", "G4_CARBON_DIOXIDE", "G4_CARBON_TETRACHLORIDE", "G4_CELLULOSE_CELLOPHANE", "G4_CELLULOSE_BUTYRATE", "G4_CELLULOSE_NITRATE", "G4_CERIC_SULFATE", "G4_CESIUM_FLUORIDE", "G4_CESIUM_IODIDE", "G4_CHLOROBENZENE", "G4_CHLOROFORM", "G4_CYCLOHEXANE", "G4_1,2-DICHLOROBENZENE", "G4_DICHLORODIETHYL_ETHER", "G4_1,2-DICHLOROETHANE", "G4_DIETHYL_ETHER", "G4_N,N-DIMETHYL_FORMAMIDE", "G4_DIMETHYL_SULFOXIDE", "G4_ETHANE", "G4_ETHYL_ALCOHOL", "G4_ETHYL_CELLULOSE", "G4_ETHYLENE", "G4_EYE_LENS_ICRP", "G4_FERRIC_OXIDE", "G4_FERROBORIDE", "G4_FERROUS_OXIDE", "G4_FERROUS_SULFATE", "G4_FREON-12", "G4_FREON-12B2", "G4_FREON-13", "G4_FREON-13B1", "G4_FREON-13I1", "G4_GADOLINIUM_OXYSULFIDE", "G4_GALLIUM_ARSENIDE", "G4_GEL_PHOTO_EMULSION", "G4_Pyrex_Glass", "G4_GLASS_LEAD", "G4_GLASS_PLATE", "G4_GLUCOSE", "G4_GLUTAMINE", "G4_GLYCEROL", "G4_GUANINE", "G4_GYPSUM", "G4_N-HEPTANE", "G4_N-HEXANE", "G4_KAPTON", "G4_LANTHANUM_OXYBROMIDE", "G4_LANTHANUM_OXYSULFIDE", "G4_LEAD_OXIDE", "G4_LITHIUM_AMIDE", "G4_LITHIUM_CARBONATE", "G4_LITHIUM_FLUORIDE", "G4_LITHIUM_HYDRIDE", "G4_LITHIUM_IODIDE", "G4_LITHIUM_OXIDE", "G4_LITHIUM_TETRABORATE", "G4_M3_WAX", "G4_MAGNESIUM_CARBONATE", "G4_MAGNESIUM_FLUORIDE", "G4_MAGNESIUM_OXIDE", "G4_MAGNESIUM_TETRABORATE", "G4_MERCURIC_IODIDE", "G4_METHANE", "G4_METHANOL", "G4_MIX_D_WAX", "G4_MS20_TISSUE", "G4_MUSCLE_STRIATED_ICRU", "G4_MUSCLE_WITH_SUCROSE", "G4_MUSCLE_WITHOUT_SUCROSE", "G4_NAPHTHALENE", "G4_NITROBENZENE", "G4_NITROUS_OXIDE", "G4_NYLON-8062", "G4_NYLON-6/6", "G4_NYLON-6/10", "G4_NYLON-11_RILSAN", "G4_OCTANE", "G4_PARAFFIN", "G4_N-PENTANE", "G4_PHOTO_EMULSION", "G4_PLASTIC_SC_VINYLTOLUENE", "G4_PLUTONIUM_DIOXIDE", "G4_POLYACRYLONITRILE", "G4_POLYCARBONATE", "G4_POLYCHLOROSTYRENE", "G4_POLYETHYLENE", "G4_MYLAR", "G4_PLEXIGLASS", "G4_POLYOXYMETHYLENE", "G4_POLYPROPYLENE", "G4_POLYSTYRENE", "G4_TEFLON", "G4_POLYTRIFLUOROCHLOROETHYLENE", "G4_POLYVINYL_ACETATE", "G4_POLYVINYL_ALCOHOL", "G4_POLYVINYL_BUTYRAL", "G4_POLYVINYL_CHLORIDE", "G4_POLYVINYLIDENE_CHLORIDE", "G4_POLYVINYLIDENE_FLUORIDE", "G4_POLYVINYL_PYRROLIDONE", "G4_POTASSIUM_IODIDE", "G4_POTASSIUM_OXIDE", "G4_PROPANE", "G4_lPROPANE", "G4_N-PROPYL_ALCOHOL", "G4_PYRIDINE", "G4_RUBBER_BUTYL", "G4_RUBBER_NATURAL", "G4_RUBBER_NEOPRENE", "G4_SILICON_DIOXIDE", "G4_SILVER_BROMIDE", "G4_SILVER_CHLORIDE", "G4_SILVER_HALIDES", "G4_SILVER_IODIDE", "G4_SODIUM_CARBONATE", "G4_SODIUM_IODIDE", "G4_SODIUM_MONOXIDE", "G4_SODIUM_NITRATE", "G4_STILBENE", "G4_SUCROSE", "G4_TERPHENYL", "G4_TETRACHLOROETHYLENE", "G4_THALLIUM_CHLORIDE", "G4_TISSUE_SOFT_ICRU-4", "G4_TISSUE-METHANE", "G4_TISSUE-PROPANE", "G4_TITANIUM_DIOXIDE", "G4_TOLUENE", "G4_TRICHLOROETHYLENE", "G4_TRIETHYL_PHOSPHATE", "G4_TUNGSTEN_HEXAFLUORIDE", "G4_URANIUM_DICARBIDE", "G4_URANIUM_MONOCARBIDE", "G4_URANIUM_OXIDE", "G4_UREA", "G4_VALINE", "G4_VITON", "G4_WATER", "G4_WATER_VAPOR", "G4_XYLENE", "G4_GRAPHITE"]
-        mat_db=[]
-        if (os.path.isdir("Materials/")==False):
-                print('"Materials" folder not found')
-                return 0
-        for filename in os.listdir("Materials"):
-                print("Loading "+filename)
-                lines = open("Materials/"+filename).read().split('\n')
-                #Check variable format
-                error_check=0
-                try:
-                        float(lines[1])<0
-                        try:
-                                int(lines[2])>0
-                                if len(lines)!=(int(lines[2])*2+3):
-                                        print("Error: Number of Elements assigned different than expected.")
-                                        error_check=1
-                                else:
-                                        elements=[]
-                                        check_fractions=0.0
-                                        for i in range(3,len(lines)):
-                                                elements.append(lines[i])
-                                                if(i%2==0):
-                                                        try:
-                                                                check_fractions+=float(lines[i])
-                                                        except ValueError:
-                                                                print("Error: Element fraction not a float.")
-                                                                error_check=1
-                                                else:
-                                                        if lines[i] not in ele_db_names:
-                                                                print("Error: Element not in database, please check the name.")
-                                                                error_check=1
-                                        if str(check_fractions)!="1.0": #string used to fix a bug
+                                # Build elements array in the format expected by Material class
+                                # Format: [element1_name, fraction1, element2_name, fraction2, ...]
+                                elements = []
+                                check_fractions = 0.0
+                                
+                                for elem in elements_list:
+                                        if not isinstance(elem, dict) or 'name' not in elem or 'fraction' not in elem:
+                                                print("Error: Each element must be a dict with 'name' and 'fraction' fields.")
                                                 error_check=1
-                                                print("Error: Element fraction sum different than 1.")
-                        except ValueError:
-                                print("Error: Number of Elements is either < 1 or not an integer.")
-                                error_check=1
-                except ValueError:
-                        print("Error: Material density either not a float or <1.")
-                        error_check=1
-
-                if (error_check==0):
-                        print(lines[0]+" was imported successfully.")
-                        mat_db.append(Material(lines[0], float(lines[1]),int(lines[2]),elements))
+                                                break
+                                        
+                                        elem_name = elem['name']
+                                        if elem_name not in ele_db_names:
+                                                print("Error: Element '"+elem_name+"' not in database, please check the name.")
+                                                error_check=1
+                                        
+                                        try:
+                                                fraction = float(elem['fraction'])
+                                                if fraction < 0 or fraction > 1:
+                                                        print("Error: Element fraction must be between 0 and 1.")
+                                                        error_check=1
+                                                elements.append(elem_name)
+                                                elements.append(str(fraction))
+                                                check_fractions += fraction
+                                        except (ValueError, TypeError):
+                                                print("Error: Element fraction must be a valid float.")
+                                                error_check=1
+                                
+                                # Validate fraction sum
+                                if error_check == 0:
+                                        if abs(check_fractions - 1.0) > 0.0001:  # Allow small floating point errors
+                                                print("Error: Element fraction sum different than 1 (got "+str(check_fractions)+").")
+                                                error_check=1
+                                
+                                if error_check == 0:
+                                        num_elements = len(elements_list)
+                                        new_material = Material(name, density, num_elements, elements)
+                                        print(name+" was imported successfully.")
+                                        return new_material
+                                        
+        except json.JSONDecodeError as e:
+                print("Error: Invalid JSON format in "+path_to_material+": "+str(e))
+                error_check=1
+        except (ValueError, KeyError) as e:
+                print("Error: Invalid material data in "+path_to_material+": "+str(e))
+                error_check=1
+        except Exception as e:
+                print("Error: Could not load material from JSON file "+path_to_material+": "+str(e))
+                error_check=1
+        
+        if error_check != 0:
+                if 'name' in locals():
+                        print(name+" was not imported due to format errors.")
                 else:
-                        print (lines[0]+" was not imported due to format errors.")
-        #tkinter.messagebox.showinfo("Message", "Material Database loaded. Check log for errors.")
+                        print("Material was not imported due to format errors.")
+                return 0
+
+#Loads all Materials in JSON form from a directory. Returns a Material database
+def Load_Materials_From_Dir(materials_dir):
+        mat_db=[]
+        if not os.path.isdir(materials_dir):
+                print(f'Materials directory "{materials_dir}" not found')
+                return 0
+        for filename in os.listdir(materials_dir):
+                # Only process JSON files
+                if not filename.lower().endswith('.json'):
+                        continue
+                print("Loading "+filename)
+                material_path = os.path.join(materials_dir, filename)
+                new_material = Load_Material_JSON(material_path)
+                if new_material != 0:
+                        mat_db.append(new_material)
         print("Material Database loaded. Check log for errors.")
         return mat_db
 
-#Save the Material Database into the "Materials" Folder. 
-def Save_Materials(Mat_List):
-        if (os.path.isdir("Materials/")==False):
-                print('"Materials" folder not found')
-                return 0
-        for i in Mat_List:
-                print (i.Name)
-                f=open("Materials/"+str(i.Name)+".txt","w")
-                f.write(i.Name+"\n")
-                f.write(str(i.Density)+"\n")
-                f.write(str(i.Nelements)+"\n")
-                for j in range(0, i.Nelements):
-                        f.write(str(i.Elements[j])+"\n")
-                        if(j<i.Nelements-1):
-                                f.write(str(i.ElementFractions[j])+"\n")
-                        else:
-                                f.write(str(i.ElementFractions[j]))
-                f.close()
-        #tkinter.messagebox.showinfo("Message", "Material Database saved.")
-        print("Material Database saved.")
