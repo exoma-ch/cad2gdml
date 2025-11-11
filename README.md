@@ -1,222 +1,138 @@
-# GUIMeshCLI - STEP to GDML Converter with Crystal Analysis
+# GUIMeshCLI - STEP to GDML Converter
 
-This project is based on [GUIMesh3](https://github.com/MPintoSpace/GUIMesh3), originally developed by Marco Gui Alves Pinto. It is now a command line interface that converts STEP geometries to GDML format.
+Command-line tool that converts STEP CAD files to GDML format for Geant4 simulations. Based on [GUIMesh3](https://github.com/MPintoSpace/GUIMesh3).
 
-## Table of Contents
+## Project Structure
 
-- [Primary Purpose](#primary-purpose)
-- [Quick Start](#quick-start)
-  - [Basic STEP to GDML Conversion](#basic-step-to-gdml-conversion)
-  - [Extract Crystal Data for Geant4 Simulation](#extract-crystal-data-for-geant4-simulation)
-  - [Visualize Crystal Geometry](#visualize-crystal-geometry)
-- [Complete Workflow](#complete-workflow)
-  - [For Geant4 Simulation Setup](#for-geant4-simulation-setup)
-  - [Output Files](#output-files)
-  - [Command Line Options](#command-line-options)
-- [World Size Configuration](#world-size-configuration)
-  - [Automatic World Size Calculation](#automatic-world-size-calculation)
-  - [Manual World Size Setting](#manual-world-size-setting)
-  - [World Size Options](#world-size-options)
-  - [Example Output](#example-output)
-- [Material Assignment](#material-assignment)
-  - [How Material Assignment Works](#how-material-assignment-works)
-  - [Material Mappings Configuration](#material-mappings-configuration)
-  - [Material Assignment Examples](#material-assignment-examples)
-  - [Customizing Material Mappings](#customizing-material-mappings)
-  - [Material Assignment Process](#material-assignment-process)
-- [Technical Details](#technical-details)
-  - [How Crystal Centers and Orientations Are Calculated](#how-crystal-centers-and-orientations-are-calculated)
-  - [Visualization Tool](#visualization-tool)
-- [Dependencies](#dependencies)
-- [Project Structure](#project-structure)
-- [Files Description](#files-description)
-- [License](#license)
-
-## Primary Purpose
-
-**Main Function**: Convert STEP CAD files to GDML format for Geant4 simulations, including automatic material assignment based on part names.
-
-**Secondary Feature**: Extract crystal center coordinates and orientations for detector simulation setup.
-
-## Quick Start
-
-### Basic STEP to GDML Conversion
-
-```bash
-# Convert STEP file to GDML with material assignment
-python3 src/GUIMeshCLI.py \
-  --step "data/STEPfiles/ring_radial_12_axial_1.step" \
-  --load-materials "data/Materials/LYSO.json" \
-  --assign-materials \
-  --output-dir output/gdml/
+```
+/mnt/guimesh/
+├── src/                    # Source code
+│   ├── GUIMeshCLI.py      # Main CLI script
+│   └── material_mappings.json  # Material assignment rules
+├── libs/                  # Core libraries
+│   └── GUIMeshLibs/       # GUIMesh library modules
+├── data/                  # Input data
+│   ├── STEPfiles/        # STEP geometry files
+│   └── Materials/        # Material definition files (JSON)
+├── output/               # Generated outputs
+│   ├── gdml/            # GDML output files
+│   └── analysis/        # Crystal analysis results
+└── build/Podman/        # Container build files
 ```
 
-### Extract Crystal Data for Geant4 Simulation
+## Setup
+
+### 1. Clone this repository
 
 ```bash
-# Extract crystal centers and orientations for simulation setup
-python3 src/GUIMeshCLI.py \
-  --step "data/STEPfiles/ring_radial_12_axial_1.step" \
-  --load-materials "data/Materials/LYSO.json" \
-  --assign-materials \
-  --extract-centers output/analysis/crystal_lookup.csv \
-  --output-dir output/analysis/
+git clone <repository-url>
+cd guimesh
 ```
 
-### Visualize Crystal Geometry
+### 2. Build the Podman image
 
 ```bash
-# Generate visualizations from crystal data
-cd output/analysis
-python3 plot_scanner_with_crystals.py
+cd build/Podman
+podman build -t guimesh .
 ```
 
-**Visualization Features:**
-- **3D Scanner View**: Shows crystal orientations as oriented sticks
-- **Orthogonal Plane Views**: Top (XZ), Side (XY), and Front (YZ) projections  
-- **Orientation Group Analysis**: Groups crystals by azimuth angle for pattern analysis
-- **Debug Views**: Single crystal per group for easier debugging
+### 3. Start a container
 
-**Output Files:**
-- `scanner_with_crystals.png` - Main scanner visualization
-- `all_orientation_groups_combined.png` - Separate plots for each orientation group
-- `all_orientation_groups_superimposed.png` - All groups overlaid
-- `debug_single_crystals_per_group.png` - Debug view with one crystal per group
-
-## Complete Workflow
-
-### For Geant4 Simulation Setup
-
-1. **Convert STEP to GDML with materials**
-2. **Extract crystal lookup table** 
-3. **Visualize geometry for verification**
+Start a container with the cloned repository bind-mounted:
 
 ```bash
-# Step 1: Convert STEP to GDML
-python3 src/GUIMeshCLI.py \
-  --step "data/STEPfiles/ring_radial_12_axial_1.step" \
-  --load-materials "data/Materials/LYSO.json" \
-  --assign-materials \
-  --output-dir output/gdml/
-
-# Step 2: Extract crystal data for simulation
-python3 src/GUIMeshCLI.py \
-  --step "data/STEPfiles/ring_radial_12_axial_1.step" \
-  --load-materials "data/Materials/LYSO.json" \
-  --assign-materials \
-  --extract-centers output/analysis/crystal_lookup.csv \
-  --output-dir output/analysis/
-
-# Step 3: Visualize for verification
-cd output/analysis
-python3 plot_scanner_with_crystals.py
+podman run -it \
+  --name guimesh-container \
+  -v /path/to/guimesh:/mnt/guimesh \
+  guimesh
 ```
 
-### Output Files
+Replace `/path/to/guimesh` with the absolute path to your cloned repository.
 
-**GDML Files (for Geant4):**
-- `mother.gdml` - Main GDML file with material assignments
-- `Volumes/` - Directory with individual volume GDML files
+### 4. Re-enter the container
 
-**Crystal Lookup Table (CSV format):**
-- `crystal_lookup.csv` - Crystal ID, center coordinates, and orientation angles
-- **Columns**: `crystal_id`, `volume_name`, `center_x`, `center_y`, `center_z`, `azimuth_angle`, `elevation_angle`
-- **Purpose**: Provides crystal positions and orientations for Geant4 simulation setup
-
-**Visualization Files:**
-- `scanner_with_crystals.png` - Main scanner visualization with crystal orientations
-- `all_orientation_groups_combined.png` - Separate plots for each orientation group
-- `all_orientation_groups_superimposed.png` - All groups overlaid on same plots
-- `debug_single_crystals_per_group.png` - Debug view with one crystal per group
-
-### Command Line Options
+To re-enter the container later:
 
 ```bash
-# Basic extraction (auto-generated filename)
-python3 src/GUIMeshCLI.py --step <step_file> --output-dir <output_dir> --extract-centers
-
-# Specify custom CSV filename
-python3 src/GUIMeshCLI.py --step <step_file> --output-dir <output_dir> --extract-centers <filename.csv>
-
-# With verbose output (shows detailed progress)
-python3 src/GUIMeshCLI.py --step <step_file> --output-dir <output_dir> --extract-centers --verbose
-
-# Show help
-python3 src/GUIMeshCLI.py --help
+podman start -ai guimesh-container
 ```
 
-## World Size Configuration
+## Usage
 
-The system automatically calculates the world size based on the geometry's bounding box, but you can also set it manually for specific simulation requirements.
-
-### Automatic World Size Calculation
-
-By default, the system automatically calculates the world size:
+### Command with all flags
 
 ```bash
-# Automatic world size (recommended)
 python3 src/GUIMeshCLI.py \
-  --step "data/STEPfiles/ring_radial_12_axial_1.step" \
-  --load-materials "data/Materials/LYSO.json" \
-  --assign-materials \
-  --output-dir output/gdml/
-```
-
-The system will:
-1. Analyze the geometry's bounding box
-2. Add a 10% margin for safety
-3. Display the calculated world dimensions
-4. Use these dimensions in the generated GDML files
-
-### Manual World Size Setting
-
-For specific simulation requirements, you can set custom world dimensions:
-
-```bash
-# Set custom world size (in meters)
-python3 src/GUIMeshCLI.py \
-  --step "data/STEPfiles/ring_radial_12_axial_1.step" \
-  --load-materials "data/Materials/LYSO.json" \
-  --assign-materials \
+  --step data/STEPfiles/ring_radial_12_axial_1.step \
+  --load-materials data/Materials/LYSO.json \
+  --assign-materials custom_config.json \
+  --extract-centers output/analysis/crystal_lookup.h5 \
+  --output-dir output/gdml/ \
   --world-size 1.0 1.0 1.0 \
-  --output-dir output/gdml/
+  --verbose
 ```
 
-### World Size Options
+### Flag descriptions
 
-- **Automatic**: `--world-size auto` (default) - Calculates based on geometry
-- **Custom**: `--world-size <x> <y> <z>` - Set specific dimensions in meters
-- **Cubic**: `--world-size 2.0` - Creates a 2m × 2m × 2m cubic world
+- `--step <file>` - **Required.** Input STEP file path to convert
+- `--load-materials <file_or_dir>` - Load material(s) from JSON file or directory. Can be used multiple times. If pointing to a directory, all `.json` files in that directory will be loaded
+- `--assign-materials [config.json]` - Assign materials to volumes based on name patterns. Uses `src/material_mappings.json` by default, or specify a custom config file
+- `--extract-centers [filename]` - Optional: extract crystal center coordinates and orientations and write BOTH a CSV and an H5 file. If a CSV filename is provided, an H5 with the same stem is also written. If no filename is provided, both are auto-generated in the output directory
+- `--output-dir <dir>` - Output directory for GDML files
+- `--world-size <X> <Y> <Z>` - Optional: set world dimensions in meters (default: auto-calculated from geometry bounding box)
+- `--verbose` - Enable detailed progress messages
 
-### Example Output
+### Outputs
+- GDML: `mother.gdml` plus `Volumes/*.gdml`
+- Crystal data: `<name>.csv` and `<name>.h5` (both created by `--extract-centers`)
 
-```
-=== Geometry Analysis ===
-Bounding box: 366.8mm x 380.0mm x 366.8mm
-Center: (0.0, 150.0, 0.0) mm
-Calculated world size: 0.51m x 0.53m x 0.51m
-World dimensions automatically set to: 0.51m x 0.53m x 0.51m
+### Loading materials examples
+
+```bash
+# Single material file
+--load-materials "data/Materials/LYSO.json"
+
+# Multiple individual material files
+--load-materials "data/Materials/LYSO.json" \
+--load-materials "data/Materials/DenseAl.json" \
+--load-materials "data/Materials/SiO2.json"
+
+# Load all materials from a directory (all .json files)
+--load-materials "data/Materials"
+
+# Combine individual files and directory
+--load-materials "data/Materials/LYSO.json" \
+--load-materials "data/Materials"
 ```
 
 ## Material Assignment
 
-The system automatically assigns materials to volumes based on their names using pattern matching rules defined in `src/material_mappings.json`. This allows for flexible and customizable material assignment without modifying the code.
+### CAD Model Requirements
 
-### How Material Assignment Works
+**Important:** In your CAD model, you must save part names that include the material identifier in the name. The tool matches material patterns based on volume names.
 
-1. **Volume Name Analysis**: The system examines each volume's name for specific keywords
-2. **Pattern Matching**: Keywords are matched against the material mappings configuration
-3. **Material Assignment**: The corresponding Geant4 material is assigned to the volume
-4. **Custom Material Loading**: Materials marked as `requires_custom: true` are loaded from external files
+**Examples:**
+- `crystal34_lyso` → Will match `lyso` pattern and assign LYSO material
+- `detector_sipm_01` → Will match `sipm` pattern and assign G4_Si material
+- `base_aluminum_ring` → Will match `aluminum` or `al` pattern and assign G4_Al material
+- `pcb_board_01` → Will match `pcb` pattern and assign G4_POLYETHYLENE material
 
-### Material Mappings Configuration
+The material assignment uses case-insensitive pattern matching, so `LYSO`, `lyso`, `Lyso` all work the same.
 
-The material assignment rules are defined in `src/material_mappings.json` by default. You can use a custom configuration file by specifying it as an argument to `--assign-materials`:
+### Material Patterns
 
-- `--assign-materials` → Uses `material_mappings.json` (default)
-- `--assign-materials custom_config.json` → Uses the specified JSON file
+Material patterns are defined in `src/material_mappings.json`:
 
-**Default Configuration File (`src/material_mappings.json`):**
+- `lyso` → `LYSO` material (custom, requires `--load-materials`)
+- `sipm` → `G4_Si` (silicon)
+- `aluminum` or `al` → `G4_Al` (aluminum)
+- `pcb` or `plastic` → `G4_POLYETHYLENE`
+
+### Creating Material Assignment Configuration
+
+To assign materials to volumes based on their names, create or edit `src/material_mappings.json`. The file defines patterns that match volume names (case-insensitive).
+
+**Example: `src/material_mappings.json`**
 
 ```json
 {
@@ -231,307 +147,67 @@ The material assignment rules are defined in `src/material_mappings.json` by def
       "description": "Pure silicon for Silicon Photomultiplier",
       "requires_custom": false
     },
-    "pcb": {
-      "material": "G4_POLYETHYLENE",
-      "description": "PCB material (fiberglass/epoxy composite approximation)",
-      "requires_custom": false
-    },
     "aluminum": {
       "material": "G4_Al",
       "description": "Aluminum material",
       "requires_custom": false
     }
   },
-  "fallback_material": {
-    "material": "G4_Si",
-    "description": "Default fallback material",
-    "requires_custom": false
-  },
   "version": "1.0",
   "description": "Material assignment rules for GUIMeshCLI"
 }
 ```
 
-### Material Assignment Examples
+**Field descriptions:**
+- `material_mappings`: Dictionary of patterns (keys) and material assignments (values)
+  - Pattern key: Substring to match in volume names (case-insensitive)
+  - `material`: Geant4 material name (e.g., `"LYSO"` for custom, `"G4_Al"` for standard)
+  - `description`: Human-readable description
+  - `requires_custom`: `true` if material must be loaded via `--load-materials`, `false` for standard Geant4 materials
 
-**Volume Name Patterns:**
-- `_detector_lyso_*` → *image.png*LYSO** (custom material, requires `--load-materials`)
-- `sipm_si*` → **G4_Si** (pure silicon)
-- `dmod-base_al*` → **G4_Al** (aluminum)
-- `pcb-sipm_pcb*` → **G4_POLYETHYLENE** (PCB material)
-- `unit-cover_plastic*` → **G4_POLYETHYLENE** (plastic)
-
-**Loading Individual Material Files:**
-```bash
-# Load a single material file
-python3 src/GUIMeshCLI.py \
-  --step "data/STEPfiles/ring_radial_12_axial_1.step" \
-  --load-materials "data/Materials/LYSO.json" \
-  --assign-materials \
-  --output-dir output/gdml/
-
-# Load multiple material files (repeat --load-materials for each file)
-python3 src/GUIMeshCLI.py \
-  --step "data/STEPfiles/ring_radial_12_axial_1.step" \
-  --load-materials "data/Materials/LYSO.json" \
-  --load-materials "data/Materials/DenseAl.json" \
-  --load-materials "data/Materials/CustomMaterial.json" \
-  --assign-materials \
-  --output-dir output/gdml/
-```
-
-**Loading All Materials from a Directory:**
-```bash
-# Load all JSON material files from a directory
-python3 src/GUIMeshCLI.py \
-  --step "data/STEPfiles/ring_radial_12_axial_1.step" \
-  --load-materials "data/Materials" \
-  --assign-materials \
-  --output-dir output/gdml/
-```
-
-**Basic Material Assignment (uses default `material_mappings.json`):**
-```bash
-# Use default material mappings file (src/material_mappings.json)
-python3 src/GUIMeshCLI.py \
-  --step "data/STEPfiles/ring_radial_12_axial_1.step" \
-  --load-materials "data/Materials/LYSO.json" \
-  --assign-materials \
-  --output-dir output/gdml/
-```
-
-**Custom Material Configuration File:**
-```bash
-# Use a custom material mappings JSON file
-python3 src/GUIMeshCLI.py \
-  --step "data/STEPfiles/ring_radial_12_axial_1.step" \
-  --load-materials "data/Materials/LYSO.json" \
-  --assign-materials custom_material_config.json \
-  --output-dir output/gdml/
-```
-
-### Customizing Material Mappings
-
-You can customize material assignments in two ways:
-
-1. **Edit the default file**: Modify `src/material_mappings.json` directly
-2. **Use a custom file**: Create your own JSON configuration file and specify it with `--assign-materials custom_config.json`
-
-**Adding New Materials:**
+**Adding a new pattern:**
 ```json
-{
-  "material_mappings": {
-    "tungsten": {
-      "material": "G4_W",
-      "description": "Tungsten material",
-      "requires_custom": false
-    },
-    "lead": {
-      "material": "G4_Pb",
-      "description": "Lead shielding material",
-      "requires_custom": false
-    }
-  }
+"tungsten": {
+  "material": "G4_W",
+  "description": "Tungsten material",
+  "requires_custom": false
 }
 ```
 
-**Custom Material Properties:**
-For materials with `"requires_custom": true`, create a material file (e.g., `data/Materials/CUSTOM_MATERIAL.json`) with Geant4 material definitions and load it using `--load-materials`.
+### Creating Material Definition Files
 
-### Material Assignment Process
+Custom materials (those with `requires_custom: true`) must be defined in JSON files and loaded with `--load-materials`. Save these files in `data/Materials/` or any directory.
 
-1. **Volume Scanning**: System scans all volumes in the STEP file
-2. **Name Pattern Matching**: Volume names are checked against material mappings
-3. **Material Assignment**: Matching volumes are assigned the corresponding Geant4 material
-4. **Custom Material Loading**: Custom materials are loaded from external files
-5. **GDML Generation**: Materials are included in the generated GDML files
+**Example: `data/Materials/LYSO.json`**
 
-**Assignment Summary Example:**
-```
-Material assignments summary:
-  LYSO: 1728 volumes
-  G4_Si: 336 volumes
-  G4_Al: 12 volumes
-  G4_POLYETHYLENE: 12 volumes
-```
-
-## Technical Details
-
-### How Crystal Centers and Orientations Are Calculated
-
-The system extracts crystal center coordinates and 3D orientations using geometric analysis of the tessellated 3D shapes. This creates a lookup table for Geant4 simulations.
-
-#### Center Calculation
-
-**Method**: Bounding box center calculation
-```python
-# Get bounding box of the crystal volume
-bbox = obj.VolumeCAD.Shape.BoundBox
-center_x = (bbox.XMin + bbox.XMax) / 2
-center_y = (bbox.YMin + bbox.YMax) / 2  
-center_z = (bbox.ZMin + bbox.ZMax) / 2
+```json
+{
+  "name": "LYSO",
+  "density": 7.1,
+  "elements": [
+    {"name": "G4_Lu", "fraction": 0.7143},
+    {"name": "G4_Y", "fraction": 0.0403},
+    {"name": "G4_Si", "fraction": 0.0637},
+    {"name": "G4_O", "fraction": 0.1814},
+    {"name": "G4_Ce", "fraction": 0.0003}
+  ]
+}
 ```
 
-#### Orientation Calculation
+**Field descriptions:**
+- `name`: Material name (must match the name in `material_mappings.json`)
+- `density`: Density in g/cm³
+- `elements`: Array of constituent elements
+  - `name`: Geant4 element name (e.g., `"G4_Lu"`, `"G4_Al"`, `"G4_Si"`)
+  - `fraction`: Mass fraction (must sum to 1.0)
 
-The system uses **Direct Edge Vector Analysis** for extracting crystal orientations:
 
-- **Best for**: 8-vertex rectangular crystals
-- **How it works**: Analyzes edge vectors to find the main crystal axis
-- **Advantage**: More accurate for rectangular geometries
-
-#### Detailed Implementation
-
-**Geometric Data Extraction:**
-```python
-# Get tessellated vertices from the 3D crystal shape
-triangles = obj.VolumeCAD.Shape.tessellate(precision)
-vertices = triangles[0]  # All 3D vertices of the crystal
-
-# Extract coordinates
-x_coords = [v[0] for v in vertices]
-y_coords = [v[1] for v in vertices] 
-z_coords = [v[2] for v in vertices]
-```
-
-**Direct Edge Vector Analysis:**
-1. **Edge Vector Collection**: Collect all edge vectors from the crystal vertices
-```python
-# Check all possible edge combinations (8 choose 2 = 28 combinations)
-for i in range(len(vertices)):
-    for j in range(i+1, len(vertices)):
-        edge_vector = [vertices[j][k] - vertices[i][k] for k in range(3)]
-        edge_length = math.sqrt(sum(v**2 for v in edge_vector))
-        edge_vectors.append(edge_vector)
-        edge_lengths.append(edge_length)
-```
-
-2. **Main Axis Identification**: Find the longest edge with exactly 3 parallel edges (parallelepiped property)
-```python
-# For each edge, count how many other edges are parallel to it
-for i, edge_vec in enumerate(edge_vectors):
-    edge_len = edge_lengths[i]
-    if edge_len <= 0:  # Skip zero-length edges
-        continue
-        
-    # Normalize this edge
-    normalized_edge = [v / edge_len for v in edge_vec]
-    
-    # Count how many other edges are parallel to this direction
-    parallel_count = 0
-    for j, other_edge in enumerate(edge_vectors):
-        if i != j and edge_lengths[j] > 0:  # Don't skip any edges, just zero-length ones
-            other_normalized = [v / other_len for v in other_edge]
-            # Calculate alignment (dot product)
-            alignment = abs(sum(normalized_edge[k] * other_normalized[k] for k in range(3)))
-            if alignment > 0.99:  # Nearly parallel (accounting for floating-point precision)
-                parallel_count += 1
-    
-    # For a parallelepiped, we expect exactly 3 parallel edges (plus itself = 4 total)
-    # Among edges with 3 parallel edges, choose the longest one
-    if parallel_count == 3:
-        if parallel_count > max_parallel_count or (parallel_count == max_parallel_count and edge_len > longest_edge_length):
-            max_parallel_count = parallel_count
-            longest_edge_length = edge_len
-            main_axis_vector = normalized_edge
-```
-
-3. **Azimuth Calculation**: `azimuth = atan2(main_axis[2], main_axis[0])`
-4. **Elevation Calculation**: `elevation = atan2(main_axis[1], sqrt(main_axis[0]² + main_axis[2]²))`
-```python
-# Calculate azimuth angle (rotation in XZ plane)
-azimuth_angle = math.degrees(math.atan2(main_axis_vector[2], main_axis_vector[0]))
-
-# Calculate elevation angle (tilt relative to XZ plane)
-elevation_angle = math.degrees(math.atan2(main_axis_vector[1], 
-                                        math.sqrt(main_axis_vector[0]**2 + main_axis_vector[2]**2)))
-```
-
-**Angle Normalization:**
-- **Azimuth**: Normalized to 0-180° (opposite directions grouped together)
-- **Elevation**: Normalized to 0-360° (0° and 360° grouped together)
-- **Rounding**: Angles rounded to 1 decimal place to avoid floating-point precision issues
-
-### Visualization Tool
-
-The `plot_scanner_with_crystals.py` script provides comprehensive visualization of the crystal geometry:
-
-**Features:**
-- **Automatic CSV Detection**: Finds and uses the correct CSV file automatically
-- **3D Crystal Representation**: Shows crystals as oriented sticks (20mm length)
-- **Multiple View Angles**: Top (XZ), Side (XY), and Front (YZ) projections
-- **Orientation Grouping**: Groups crystals by azimuth angle for pattern analysis
-- **Debug Views**: Single crystal per group for detailed inspection
 
 **Usage:**
-```bash
-cd output/analysis
-python3 plot_scanner_with_crystals.py
-```
+1. Create the material JSON file (e.g., `data/Materials/LYSO.json`)
+2. Add pattern to `src/material_mappings.json` with `requires_custom: true`
+3. Load the material when running: `--load-materials data/Materials/LYSO.json`
 
-**Output Files:**
-- `scanner_with_crystals.png` - Main scanner visualization with crystal orientations
-- `all_orientation_groups_combined.png` - Separate plots for each orientation group
-- `all_orientation_groups_superimposed.png` - All groups overlaid on same plots
-- `debug_single_crystals_per_group.png` - Debug view with one crystal per group
+## License
 
-## Dependencies
-
-You can build a containerized environment using Podman.
-
-Build an image: 
-
-```bash
-podman build -t <imagename> .
-```
-Start a container with bind mount to your git repository:
-```bash
-podman run -it \
-  --name <containername> \
-  -v <pathto>/CADtoGeant4:/mnt/guimesh \
-  <imagename>
-  ```
-  Re-enter the container:
-  ```bash
-  podman start -ai guimesh-container
-  ```
-
-## Project Structure
-```
-/mnt/guimesh/
-├── src/                          # Source code
-│   ├── GUIMeshCLI.py            # Main CLI script
-│   ├── GUIMesh.py               # Original GUI version
-│   └── material_mappings.json   # Material configuration
-├── libs/                        # Libraries
-│   └── GUIMeshLibs/            # GUIMesh libraries
-├── data/                        # Input data
-│   ├── STEPfiles/              # STEP geometry files
-│   └── Materials/              # Material definitions
-├── output/                      # Generated outputs
-│   └── analysis/               # Analysis results and visualizations
-│       ├── plot_scanner_with_crystals.py    # Main visualization script
-│       ├── lyso_crystal_centers_3d_angles_*.csv  # Crystal data files
-│       ├── mother.gdml         # Generated GDML file
-│       ├── Volumes/            # Individual volume GDML files
-│       └── *.png               # Visualization images
-├── docs/                        # Documentation
-│   └── Documents/              # User manual and guides
-├── examples/                    # Example files
-└── build/                       # Build artifacts
-```
-
-## Files Description
-* `src/GUIMeshCLI.py` - Main source code for command line interface
-* `src/material_mappings.json` - JSON configuration file defining material assignment rules
-* `docs/Documents/` - Folder with "GUIMesh User Manual.pdf", a guide on how to run GUIMesh
-* `libs/GUIMeshLibs/` - folder containing libraries used in GUIMesh
-* `data/Materials/` - folder which should be used to save materials in a database
-* `data/STEPfiles/` - folder with STEP geometries used in all tests
-* `output/gdml/` - folder for the gdml output
-* `COPYING.txt` - License disclosure
-
-## License  
-Licensed under the [GNU General Public License v3.0](https://www.gnu.org/licenses/gpl-3.0.html).
-
-See the `COPYING` file for license details.
+Licensed under the [GNU General Public License v3.0](https://www.gnu.org/licenses/gpl-3.0.html). See `COPYING.txt` for details.
