@@ -5,6 +5,7 @@ This document provides information for developers who want to contribute to, mod
 ## Table of Contents
 
 - [Development Setup](#development-setup)
+  - [Creating New Container Image Versions](#creating-new-container-image-versions)
 - [Project Architecture](#project-architecture)
 - [Code Structure](#code-structure)
 - [Key Components](#key-components)
@@ -17,7 +18,7 @@ This document provides information for developers who want to contribute to, mod
 
 ### Prerequisites
 
-- **Podman** or **Docker** (for containerized development - recommended)
+- **Podman**
 - **Git**
 
 **Note:** FreeCAD and all Python dependencies are automatically included in the container - no manual installation required.
@@ -50,6 +51,92 @@ The container automatically includes:
 - Properly configured environment variables (`PYTHONPATH`, `LD_LIBRARY_PATH`) for FreeCAD
 
 Everything is set up automatically - just build and run the container.
+
+### Creating New Container Image Versions
+
+When you're ready to release a new version of the container image, follow these steps:
+
+#### 1. Commit Your Changes
+
+Make sure all your changes are committed:
+
+```bash
+git add .
+git commit -m "Description of changes"
+git push origin main
+```
+
+#### 2. Create a Git Tag
+
+Create a git tag for the new version. Use semantic versioning (e.g., `v1.0.0`, `v1.1.0`, `v2.0.0`):
+
+```bash
+git tag -a v1.1.0 -m "Release version 1.1.0"
+```
+
+#### 3. Push the Tag
+
+Push the tag to trigger the automated build:
+
+```bash
+git push origin v1.1.0
+```
+
+#### 4. Monitor the Build
+
+The GitHub Actions workflow will automatically:
+- Detect the tag push
+- Build the container image
+- Tag it with the version (e.g., `v1.1.0`, `1.1.0`, `1.1`, `1`)
+- Push it to GitHub Container Registry at `ghcr.io/morepet/cadtogeant4/cadtogeant4`
+
+You can monitor the build progress in the **Actions** tab of your GitHub repository.
+
+#### 5. Verify the Image
+
+Once the build completes, verify the image is available:
+
+```bash
+podman pull ghcr.io/morepet/cadtogeant4/cadtogeant4:v1.1.0
+```
+
+
+#### Updating an Existing Tag
+
+If you need to update a tag to point to a newer commit:
+
+```bash
+# Delete the local tag
+git tag -d v1.0.0
+
+# Create a new tag pointing to current commit
+git tag -a v1.0.0 -m "Release version 1.0.0"
+
+# Delete the remote tag and push the new one
+git push origin :refs/tags/v1.0.0
+git push origin v1.0.0
+```
+
+**Note:** This will trigger a new build with the updated tag.
+
+#### Manual Build (Local Testing)
+
+If you want to build and tag an image locally for testing before pushing:
+
+```bash
+cd build/Podman
+
+# Build with a specific tag
+podman build -t cad2geant:v1.1.0 .
+
+# Or with full registry path
+podman build -t ghcr.io/morepet/cadtogeant4/cadtogeant4:v1.1.0 .
+
+# Test the image locally
+podman run -it --rm \
+  -v /path/to/CADtoGeant4:/mnt/guimesh \
+  cad2geant:v1.1.0
+```
 
 ## Project Architecture
 
