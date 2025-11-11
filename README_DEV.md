@@ -29,17 +29,19 @@ This document provides information for developers who want to contribute to, mod
 ```bash
 # Build the development container
 cd build/Podman
-podman build -t guimesh-dev .
+podman build -t cad2geant .
 
 # Start container with your project mounted
 podman run -it \
-  --name guimesh-dev \
-  -v /path/to/guimesh:/mnt/guimesh \
-  guimesh-dev
+  --name guimesh-container \
+  -v /path/to/CADtoGeant4:/mnt/guimesh \
+  cad2geant
 
 # Re-enter container
-podman start -ai guimesh-dev
+podman start -ai guimesh-container
 ```
+
+Replace `/path/to/CADtoGeant4` with the absolute path to your cloned repository.
 
 The container automatically includes:
 - Python 3.11

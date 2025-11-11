@@ -1,0 +1,69 @@
+name: Build and Push Container Image
+
+on:
+  push:
+    branches:
+      - main
+      - master
+    paths:
+      - 'build/Podman/**'
+      - '.github/workflows/build-container.yml'
+    tags:
+      - 'v*'  # Triggers on any tag starting with 'v' (e.g., v1.0, v1.0.0)
+  pull_request:
+    branches:
+      - main
+      - master
+    paths:
+      - 'build/Podman/**'
+      - '.github/workflows/build-container.yml'
+  release:
+    types: [published]
+  workflow_dispatch:
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}/cadtogeant4
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Log in to Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata (tags, labels) for Docker
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=semver,pattern={{major}}
+            type=raw,value=latest,enable={{is_default_branch}}
+
+      - name: Build and push Container image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./build/Podman
+          file: ./build/Podman/Containerfile
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
