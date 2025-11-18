@@ -1,0 +1,36 @@
+{
+  "material_mappings": {
+    "sipm": {
+      "material": "G4_Si",
+      "description": "Pure silicon for Silicon Photomultiplier",
+      "requires_custom": false
+    },
+    "pcb": {
+      "material": "G4_POLYETHYLENE",
+      "description": "PCB material (fiberglass/epoxy composite approximation)",
+      "requires_custom": false
+    },
+    "plastic": {
+      "material": "G4_POLYETHYLENE",
+      "description": "Plastic material",
+      "requires_custom": false
+    },
+    "aluminum": {
+      "material": "G4_Al",
+      "description": "Aluminum material",
+      "requires_custom": false
+    },
+    "al": {
+      "material": "G4_Al",
+      "description": "Aluminum material (short form)",
+      "requires_custom": false
+    }
+  },
+  "fallback_material": {
+    "material": "G4_Si",
+    "description": "Default fallback material",
+    "requires_custom": false
+  },
+  "version": "1.0",
+  "description": "Material assignment rules for GUIMeshCLI"
+}

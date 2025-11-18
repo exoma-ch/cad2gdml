@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
+<gdml xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://service-spi.web.cern.ch/service-spi/app/releases/GDML/schema/gdml.xsd">
+ <define>
+ <position name="pcb-sipm_pcb022_v0" unit="mm" x="76.3156986040718" y="-44.06088913245554" z="-49.7499999999991"/>
+ <position name="pcb-sipm_pcb022_v1" unit="mm" x="75.44967320028735" y="-43.56088913245554" z="-49.7499999999991"/>
+ <position name="pcb-sipm_pcb022_v2" unit="mm" x="83.74967320028735" y="-29.184867429633854" z="-49.7499999999991"/>
+ <position name="pcb-sipm_pcb022_v3" unit="mm" x="84.6156986040718" y="-29.684867429633854" z="-49.7499999999991"/>
+ <position name="pcb-sipm_pcb022_v4" unit="mm" x="75.44967320028734" y="-43.560889132455536" z="-0.2499999999990976"/>
+ <position name="pcb-sipm_pcb022_v5" unit="mm" x="76.3156986040718" y="-44.060889132455536" z="-0.2499999999990976"/>
+ <position name="pcb-sipm_pcb022_v6" unit="mm" x="83.74967320028735" y="-29.18486742963385" z="-0.2499999999990976"/>
+ <position name="pcb-sipm_pcb022_v7" unit="mm" x="84.6156986040718" y="-29.68486742963385" z="-0.2499999999990976"/>
+ </define>
+
+ <solids>
+ <tessellated aunit="deg" lunit="mm" name="pcb-sipm_pcb022_solid">
+ <triangular vertex1="pcb-sipm_pcb022_v0" vertex2="pcb-sipm_pcb022_v1" vertex3="pcb-sipm_pcb022_v2"/>
+ <triangular vertex1="pcb-sipm_pcb022_v0" vertex2="pcb-sipm_pcb022_v2" vertex3="pcb-sipm_pcb022_v3"/>
+ <triangular vertex1="pcb-sipm_pcb022_v4" vertex2="pcb-sipm_pcb022_v1" vertex3="pcb-sipm_pcb022_v5"/>
+ <triangular vertex1="pcb-sipm_pcb022_v5" vertex2="pcb-sipm_pcb022_v1" vertex3="pcb-sipm_pcb022_v0"/>
+ <triangular vertex1="pcb-sipm_pcb022_v4" vertex2="pcb-sipm_pcb022_v5" vertex3="pcb-sipm_pcb022_v6"/>
+ <triangular vertex1="pcb-sipm_pcb022_v6" vertex2="pcb-sipm_pcb022_v5" vertex3="pcb-sipm_pcb022_v7"/>
+ <triangular vertex1="pcb-sipm_pcb022_v3" vertex2="pcb-sipm_pcb022_v6" vertex3="pcb-sipm_pcb022_v7"/>
+ <triangular vertex1="pcb-sipm_pcb022_v2" vertex2="pcb-sipm_pcb022_v6" vertex3="pcb-sipm_pcb022_v3"/>
+ <triangular vertex1="pcb-sipm_pcb022_v4" vertex2="pcb-sipm_pcb022_v2" vertex3="pcb-sipm_pcb022_v1"/>
+ <triangular vertex1="pcb-sipm_pcb022_v4" vertex2="pcb-sipm_pcb022_v6" vertex3="pcb-sipm_pcb022_v2"/>
+ <triangular vertex1="pcb-sipm_pcb022_v7" vertex2="pcb-sipm_pcb022_v5" vertex3="pcb-sipm_pcb022_v3"/>
+ <triangular vertex1="pcb-sipm_pcb022_v3" vertex2="pcb-sipm_pcb022_v5" vertex3="pcb-sipm_pcb022_v0"/>
+ </tessellated>
+ <box lunit="mm" name="worldsolid" x="1000" y="1000" z="1000"/>
+ </solids>
+ <structure>
+ <volume name="pcb-sipm_pcb022">
+ <materialref ref="G4_Si"/>
+ <solidref ref="pcb-sipm_pcb022_solid"/>
+ </volume>
+ </structure>
+ <setup name="Default" version="1.0">
+ <world ref="pcb-sipm_pcb022"/>
+ </setup>
+</gdml>

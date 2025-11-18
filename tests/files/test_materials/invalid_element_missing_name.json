@@ -1,0 +1,8 @@
+{
+  "name": "TestMaterial",
+  "density": 7.1,
+  "elements": [
+    {"fraction": 0.7143}
+  ]
+}
+

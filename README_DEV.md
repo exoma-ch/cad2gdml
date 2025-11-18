@@ -340,6 +340,66 @@ JSON configuration for material assignment rules:
 
 ## Testing
 
+### Automated Testing with pytest
+
+The project uses pytest for automated testing. To set up and run tests:
+
+#### Setup
+
+1. Create a virtual environment (recommended):
+```bash
+python3 -m venv .venv
+source .venv/bin/activate  # On Linux/Mac
+# or
+.venv\Scripts\activate  # On Windows
+```
+
+2. Install test dependencies:
+```bash
+pip install -r requirements-test.txt
+```
+
+#### Running Tests
+
+Run all tests:
+```bash
+pytest
+```
+
+Run tests with verbose output:
+```bash
+pytest -v
+```
+
+Run a specific test file:
+```bash
+pytest tests/test_cli_no_step.py
+```
+
+Run a specific test:
+```bash
+pytest tests/test_cli_no_step.py::test_main_without_step_argument
+```
+
+#### Example Test
+
+The test suite includes an example test (`tests/test_cli_no_step.py`) that verifies the program handles cases where the `--step` argument is not provided. This ensures the CLI fails gracefully when required inputs are missing.
+
+#### Coverage Reports
+
+Coverage reports are automatically generated when running tests. The current test coverage is **28%** for `GUIMeshCLI.py`, focusing on error handling and CLI argument parsing.
+
+View coverage report:
+```bash
+# Coverage is automatically included in pytest output
+pytest
+
+# View detailed HTML coverage report
+# Open htmlcov/index.html in your browser after running tests
+```
+
+For detailed coverage analysis, see `tests/COVERAGE_REPORT.md`.
+
 ### Manual Testing
 
 **Test STEP file loading:**

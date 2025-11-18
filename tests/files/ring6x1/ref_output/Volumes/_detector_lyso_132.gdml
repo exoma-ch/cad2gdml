@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
+<gdml xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://service-spi.web.cern.ch/service-spi/app/releases/GDML/schema/gdml.xsd">
+ <define>
+ <position name="_detector_lyso_132_v0" unit="mm" x="-55.05801270189197" y="26.880281166371585" z="-38.84999999999849"/>
+ <position name="_detector_lyso_132_v1" unit="mm" x="-76.70864779650289" y="39.38028116637167" z="-44.149999999998506"/>
+ <position name="_detector_lyso_132_v2" unit="mm" x="-76.70864779650289" y="39.38028116637167" z="-38.849999999998495"/>
+ <position name="_detector_lyso_132_v3" unit="mm" x="-55.05801270189197" y="26.88028116637158" z="-44.14999999999849"/>
+ <position name="_detector_lyso_132_v4" unit="mm" x="-57.033012701891984" y="23.459480821423057" z="-38.84999999999849"/>
+ <position name="_detector_lyso_132_v5" unit="mm" x="-78.68364779650292" y="35.959480821423135" z="-38.8499999999985"/>
+ <position name="_detector_lyso_132_v6" unit="mm" x="-57.033012701891984" y="23.459480821423057" z="-44.14999999999849"/>
+ <position name="_detector_lyso_132_v7" unit="mm" x="-78.68364779650292" y="35.959480821423135" z="-44.1499999999985"/>
+ </define>
+
+ <materials>
+   <material name="LYSO" state="solid">
+       <D unit="g/cm3" value="7.1"/>
+       <fraction n="0.7143" ref="G4_Lu"/>
+       <fraction n="0.0403" ref="G4_Y"/>
+       <fraction n="0.0637" ref="G4_Si"/>
+       <fraction n="0.1814" ref="G4_O"/>
+       <fraction n="0.0003" ref="G4_Ce"/>
+   </material>
+ </materials>
+ <solids>
+ <tessellated aunit="deg" lunit="mm" name="_detector_lyso_132_solid">
+ <triangular vertex1="_detector_lyso_132_v0" vertex2="_detector_lyso_132_v1" vertex3="_detector_lyso_132_v2"/>
+ <triangular vertex1="_detector_lyso_132_v0" vertex2="_detector_lyso_132_v3" vertex3="_detector_lyso_132_v1"/>
+ <triangular vertex1="_detector_lyso_132_v4" vertex2="_detector_lyso_132_v0" vertex3="_detector_lyso_132_v5"/>
+ <triangular vertex1="_detector_lyso_132_v5" vertex2="_detector_lyso_132_v0" vertex3="_detector_lyso_132_v2"/>
+ <triangular vertex1="_detector_lyso_132_v6" vertex2="_detector_lyso_132_v4" vertex3="_detector_lyso_132_v7"/>
+ <triangular vertex1="_detector_lyso_132_v7" vertex2="_detector_lyso_132_v4" vertex3="_detector_lyso_132_v5"/>
+ <triangular vertex1="_detector_lyso_132_v3" vertex2="_detector_lyso_132_v7" vertex3="_detector_lyso_132_v1"/>
+ <triangular vertex1="_detector_lyso_132_v3" vertex2="_detector_lyso_132_v6" vertex3="_detector_lyso_132_v7"/>
+ <triangular vertex1="_detector_lyso_132_v4" vertex2="_detector_lyso_132_v3" vertex3="_detector_lyso_132_v0"/>
+ <triangular vertex1="_detector_lyso_132_v4" vertex2="_detector_lyso_132_v6" vertex3="_detector_lyso_132_v3"/>
+ <triangular vertex1="_detector_lyso_132_v7" vertex2="_detector_lyso_132_v5" vertex3="_detector_lyso_132_v1"/>
+ <triangular vertex1="_detector_lyso_132_v1" vertex2="_detector_lyso_132_v5" vertex3="_detector_lyso_132_v2"/>
+ </tessellated>
+ <box lunit="mm" name="worldsolid" x="1000" y="1000" z="1000"/>
+ </solids>
+ <structure>
+ <volume name="_detector_lyso_132">
+ <materialref ref="LYSO"/>
+ <solidref ref="_detector_lyso_132_solid"/>
+ </volume>
+ </structure>
+ <setup name="Default" version="1.0">
+ <world ref="_detector_lyso_132"/>
+ </setup>
+</gdml>

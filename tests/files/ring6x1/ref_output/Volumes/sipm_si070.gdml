@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
+<gdml xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://service-spi.web.cern.ch/service-spi/app/releases/GDML/schema/gdml.xsd">
+ <define>
+ <position name="sipm_si070_v0" unit="mm" x="-75.39967320028775" y="-43.647491672833404" z="-16.8499999999991"/>
+ <position name="sipm_si070_v1" unit="mm" x="-74.5336477965033" y="-43.147491672833404" z="-16.8499999999991"/>
+ <position name="sipm_si070_v2" unit="mm" x="-74.5336477965033" y="-43.147491672833404" z="-33.14999999999909"/>
+ <position name="sipm_si070_v3" unit="mm" x="-75.39967320028775" y="-43.647491672833404" z="-33.14999999999909"/>
+ <position name="sipm_si070_v4" unit="mm" x="-70.4836477965033" y="-50.16229744348737" z="-16.8499999999991"/>
+ <position name="sipm_si070_v5" unit="mm" x="-71.34967320028775" y="-50.66229744348736" z="-16.8499999999991"/>
+ <position name="sipm_si070_v6" unit="mm" x="-70.4836477965033" y="-50.16229744348737" z="-33.14999999999909"/>
+ <position name="sipm_si070_v7" unit="mm" x="-71.34967320028775" y="-50.66229744348736" z="-33.14999999999909"/>
+ </define>
+
+ <solids>
+ <tessellated aunit="deg" lunit="mm" name="sipm_si070_solid">
+ <triangular vertex1="sipm_si070_v0" vertex2="sipm_si070_v1" vertex3="sipm_si070_v2"/>
+ <triangular vertex1="sipm_si070_v0" vertex2="sipm_si070_v2" vertex3="sipm_si070_v3"/>
+ <triangular vertex1="sipm_si070_v4" vertex2="sipm_si070_v1" vertex3="sipm_si070_v5"/>
+ <triangular vertex1="sipm_si070_v1" vertex2="sipm_si070_v0" vertex3="sipm_si070_v5"/>
+ <triangular vertex1="sipm_si070_v6" vertex2="sipm_si070_v4" vertex3="sipm_si070_v7"/>
+ <triangular vertex1="sipm_si070_v7" vertex2="sipm_si070_v4" vertex3="sipm_si070_v5"/>
+ <triangular vertex1="sipm_si070_v3" vertex2="sipm_si070_v2" vertex3="sipm_si070_v6"/>
+ <triangular vertex1="sipm_si070_v3" vertex2="sipm_si070_v6" vertex3="sipm_si070_v7"/>
+ <triangular vertex1="sipm_si070_v4" vertex2="sipm_si070_v6" vertex3="sipm_si070_v2"/>
+ <triangular vertex1="sipm_si070_v1" vertex2="sipm_si070_v4" vertex3="sipm_si070_v2"/>
+ <triangular vertex1="sipm_si070_v7" vertex2="sipm_si070_v5" vertex3="sipm_si070_v3"/>
+ <triangular vertex1="sipm_si070_v5" vertex2="sipm_si070_v0" vertex3="sipm_si070_v3"/>
+ </tessellated>
+ <box lunit="mm" name="worldsolid" x="1000" y="1000" z="1000"/>
+ </solids>
+ <structure>
+ <volume name="sipm_si070">
+ <materialref ref="G4_Si"/>
+ <solidref ref="sipm_si070_solid"/>
+ </volume>
+ </structure>
+ <setup name="Default" version="1.0">
+ <world ref="sipm_si070"/>
+ </setup>
+</gdml>

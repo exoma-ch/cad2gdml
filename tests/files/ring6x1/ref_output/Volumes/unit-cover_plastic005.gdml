@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
+<gdml xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://service-spi.web.cern.ch/service-spi/app/releases/GDML/schema/gdml.xsd">
+ <define>
+ <position name="unit-cover_plastic005_v0" unit="mm" x="59.71153508203679" y="-73.33014396980161" z="-49.9999999999991"/>
+ <position name="unit-cover_plastic005_v1" unit="mm" x="59.961535082036775" y="-72.89713126790939" z="-0.4999999999990976"/>
+ <position name="unit-cover_plastic005_v2" unit="mm" x="59.711535082036775" y="-73.33014396980161" z="9.023892744153272e-13"/>
+ <position name="unit-cover_plastic005_v3" unit="mm" x="59.96153508203679" y="-72.89713126790939" z="-49.4999999999991"/>
+ <position name="unit-cover_plastic005_v4" unit="mm" x="93.36153508203698" y="-15.046634295108973" z="-49.9999999999991"/>
+ <position name="unit-cover_plastic005_v5" unit="mm" x="93.111535082037" y="-15.4796469970012" z="-49.4999999999991"/>
+ <position name="unit-cover_plastic005_v6" unit="mm" x="93.36153508203698" y="-15.04663429510898" z="8.988365607365267e-13"/>
+ <position name="unit-cover_plastic005_v7" unit="mm" x="93.11153508203698" y="-15.4796469970012" z="-0.49999999999910116"/>
+ <position name="unit-cover_plastic005_v8" unit="mm" x="69.32499999999995" y="-1.169134295108904" z="9.023892744153272e-13"/>
+ <position name="unit-cover_plastic005_v9" unit="mm" x="35.67499999999973" y="-59.45264396980152" z="9.059419880941277e-13"/>
+ <position name="unit-cover_plastic005_v10" unit="mm" x="69.32499999999993" y="-1.169134295108904" z="-49.9999999999991"/>
+ <position name="unit-cover_plastic005_v11" unit="mm" x="35.67499999999974" y="-59.45264396980152" z="-49.9999999999991"/>
+ <position name="unit-cover_plastic005_v12" unit="mm" x="36.35801270189194" y="-59.269631267909304" z="-0.49999999999909406"/>
+ <position name="unit-cover_plastic005_v13" unit="mm" x="69.50801270189214" y="-1.852146997001114" z="-0.4999999999990976"/>
+ <position name="unit-cover_plastic005_v14" unit="mm" x="69.50801270189214" y="-1.852146997001114" z="-49.4999999999991"/>
+ <position name="unit-cover_plastic005_v15" unit="mm" x="36.35801270189195" y="-59.2696312679093" z="-49.4999999999991"/>
+ </define>
+
+ <solids>
+ <tessellated aunit="deg" lunit="mm" name="unit-cover_plastic005_solid">
+ <triangular vertex1="unit-cover_plastic005_v0" vertex2="unit-cover_plastic005_v1" vertex3="unit-cover_plastic005_v2"/>
+ <triangular vertex1="unit-cover_plastic005_v3" vertex2="unit-cover_plastic005_v1" vertex3="unit-cover_plastic005_v0"/>
+ <triangular vertex1="unit-cover_plastic005_v4" vertex2="unit-cover_plastic005_v5" vertex3="unit-cover_plastic005_v0"/>
+ <triangular vertex1="unit-cover_plastic005_v0" vertex2="unit-cover_plastic005_v5" vertex3="unit-cover_plastic005_v3"/>
+ <triangular vertex1="unit-cover_plastic005_v5" vertex2="unit-cover_plastic005_v6" vertex3="unit-cover_plastic005_v7"/>
+ <triangular vertex1="unit-cover_plastic005_v7" vertex2="unit-cover_plastic005_v6" vertex3="unit-cover_plastic005_v1"/>
+ <triangular vertex1="unit-cover_plastic005_v4" vertex2="unit-cover_plastic005_v6" vertex3="unit-cover_plastic005_v5"/>
+ <triangular vertex1="unit-cover_plastic005_v1" vertex2="unit-cover_plastic005_v6" vertex3="unit-cover_plastic005_v2"/>
+ <triangular vertex1="unit-cover_plastic005_v8" vertex2="unit-cover_plastic005_v2" vertex3="unit-cover_plastic005_v6"/>
+ <triangular vertex1="unit-cover_plastic005_v8" vertex2="unit-cover_plastic005_v9" vertex3="unit-cover_plastic005_v2"/>
+ <triangular vertex1="unit-cover_plastic005_v8" vertex2="unit-cover_plastic005_v6" vertex3="unit-cover_plastic005_v10"/>
+ <triangular vertex1="unit-cover_plastic005_v10" vertex2="unit-cover_plastic005_v6" vertex3="unit-cover_plastic005_v4"/>
+ <triangular vertex1="unit-cover_plastic005_v11" vertex2="unit-cover_plastic005_v10" vertex3="unit-cover_plastic005_v0"/>
+ <triangular vertex1="unit-cover_plastic005_v0" vertex2="unit-cover_plastic005_v10" vertex3="unit-cover_plastic005_v4"/>
+ <triangular vertex1="unit-cover_plastic005_v2" vertex2="unit-cover_plastic005_v9" vertex3="unit-cover_plastic005_v11"/>
+ <triangular vertex1="unit-cover_plastic005_v2" vertex2="unit-cover_plastic005_v11" vertex3="unit-cover_plastic005_v0"/>
+ <triangular vertex1="unit-cover_plastic005_v8" vertex2="unit-cover_plastic005_v10" vertex3="unit-cover_plastic005_v11"/>
+ <triangular vertex1="unit-cover_plastic005_v8" vertex2="unit-cover_plastic005_v11" vertex3="unit-cover_plastic005_v9"/>
+ <triangular vertex1="unit-cover_plastic005_v12" vertex2="unit-cover_plastic005_v13" vertex3="unit-cover_plastic005_v1"/>
+ <triangular vertex1="unit-cover_plastic005_v1" vertex2="unit-cover_plastic005_v13" vertex3="unit-cover_plastic005_v7"/>
+ <triangular vertex1="unit-cover_plastic005_v7" vertex2="unit-cover_plastic005_v13" vertex3="unit-cover_plastic005_v14"/>
+ <triangular vertex1="unit-cover_plastic005_v7" vertex2="unit-cover_plastic005_v14" vertex3="unit-cover_plastic005_v5"/>
+ <triangular vertex1="unit-cover_plastic005_v14" vertex2="unit-cover_plastic005_v3" vertex3="unit-cover_plastic005_v5"/>
+ <triangular vertex1="unit-cover_plastic005_v14" vertex2="unit-cover_plastic005_v15" vertex3="unit-cover_plastic005_v3"/>
+ <triangular vertex1="unit-cover_plastic005_v12" vertex2="unit-cover_plastic005_v1" vertex3="unit-cover_plastic005_v15"/>
+ <triangular vertex1="unit-cover_plastic005_v15" vertex2="unit-cover_plastic005_v1" vertex3="unit-cover_plastic005_v3"/>
+ <triangular vertex1="unit-cover_plastic005_v15" vertex2="unit-cover_plastic005_v14" vertex3="unit-cover_plastic005_v12"/>
+ <triangular vertex1="unit-cover_plastic005_v14" vertex2="unit-cover_plastic005_v13" vertex3="unit-cover_plastic005_v12"/>
+ </tessellated>
+ <box lunit="mm" name="worldsolid" x="1000" y="1000" z="1000"/>
+ </solids>
+ <structure>
+ <volume name="unit-cover_plastic005">
+ <materialref ref="G4_POLYETHYLENE"/>
+ <solidref ref="unit-cover_plastic005_solid"/>
+ </volume>
+ </structure>
+ <setup name="Default" version="1.0">
+ <world ref="unit-cover_plastic005"/>
+ </setup>
+</gdml>

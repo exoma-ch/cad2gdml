@@ -1,0 +1,35 @@
+Creating FreeCAD document...
+
+============================================================
+Importing STEP file: ring6x1.step
+File size: 0.8 MB
+============================================================
+Parsing STEP file geometry (this may take several minutes for large files)...
+Please wait ✓
+Processing objects...Processing objects... 9% (153/1532)Processing objects... 19% (306/1532)Processing objects... 29% (459/1532)Processing objects... 39% (612/1532)Processing objects... 49% (765/1532)Processing objects... 59% (918/1532)Processing objects... 79% (1224/1532) Done!
+Successfully loaded 1044 volume(s) from 1532 object(s)
+
+============================================================
+STEP file import completed in 0.6 seconds
+Total volumes loaded: 1044
+============================================================
+
+
+=== Geometry Analysis ===
+Bounding box: 231.4mm x 226.8mm x 380.0mm
+Geometry center: (0.0, 0.0, -150.0) mm
+World size: 0.25m x 0.25m x 0.42m
+World position: (0.000, 0.000, -0.150) m
+World dimensions automatically set to: 0.25m x 0.25m x 0.42m
+==============================
+LYSO was imported successfully.
+Successfully loaded material 'LYSO'
+Loaded material mappings from src/material_mappings.json
+  Material assignment rules for GUIMeshCLI
+  Version: 1.0
+Material assignments summary:
+  LYSO: 864 volumes
+  G4_Si: 168 volumes
+  G4_Al: 6 volumes
+  G4_POLYETHYLENE: 6 volumes
+GDML files written to tests/files/ring6x1/ref_output

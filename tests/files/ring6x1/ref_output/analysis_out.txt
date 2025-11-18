@@ -1,0 +1,39 @@
+Plotting scanner with crystal sizes from: tests/files/ring6x1/ref_output/crystal_lookup.csv
+Crystal dimensions: 3.95 × 5.30 × 25.00 mm
+Loaded 864 crystal centers from tests/files/ring6x1/ref_output/crystal_lookup.csv
+Detected yup coordinate convention - transforming to canonical (noyup) convention
+Plotting 864 oriented crystal sticks in three planes...
+
+=== Scanner Geometry with Crystal Sizes ===
+Total crystals: 864
+X range: -79.32 to 79.32 mm (span: 158.64 mm)
+Y range: 3.00 to 47.00 mm (span: 44.00 mm)
+Z range: -73.62 to 73.62 mm (span: 147.24 mm)
+Azimuth angles: 30.0° to 150.0° (span: 120.0°)
+Elevation angles: 0.0° to 0.0° (span: 0.0°)
+
+=== Crystal Dimension Statistics ===
+Width:  3.95 mm
+Height: 5.30 mm
+Depth:  25.00 mm
+Volume: 523.4 mm³
+Radial distances: 73.7 to 79.9 mm (avg: 76.0 mm)
+Saved: tests/files/ring6x1/ref_output/scanner_with_crystals.png
+
+=== Orientation Group Analysis ===
+Found 3 orientation groups:
+   30°:  288 crystals
+   90°:  288 crystals
+  150°:  288 crystals
+Saved: tests/files/ring6x1/ref_output/all_orientation_groups_combined.png
+
+=== Creating Superimposed Orientation Groups Plot ===
+Overlaying 3 orientation groups on three planes...
+Saved: tests/files/ring6x1/ref_output/all_orientation_groups_superimposed.png
+
+=== Debug: Single Crystal per Orientation Group ===
+Showing one crystal from each of 3 orientation groups...
+Saved: tests/files/ring6x1/ref_output/debug_single_crystals_per_group.png
+Y vs Radial Angle plot saved to: tests/files/ring6x1/ref_output/y_vs_radial_angle.png
+
+Scanner with crystal sizes visualizations saved to: tests/files/ring6x1/ref_output

@@ -1,0 +1,33 @@
+Creating FreeCAD document...
+
+============================================================
+Importing STEP file: Block.step
+File size: 0.0 MB
+============================================================
+Parsing STEP file geometry (this may take several minutes for large files)...
+Please wait ✓
+Processing objects...Processing objects... 8% (5/59)Processing objects... 16% (10/59)Processing objects... 25% (15/59)Processing objects... 33% (20/59)Processing objects... 42% (25/59)Processing objects... 50% (30/59)Processing objects... 59% (35/59)Processing objects... 84% (50/59) Done!
+Successfully loaded 43 volume(s) from 59 object(s)
+
+============================================================
+STEP file import completed in 0.1 seconds
+Total volumes loaded: 43
+============================================================
+
+
+=== Geometry Analysis ===
+Bounding box: 49.5mm x 27.0mm x 16.6mm
+Geometry center: (0.0, 13.5, 0.0) mm
+World size: 0.05m x 0.03m x 0.02m
+World position: (0.000, 0.013, 0.000) m
+World dimensions automatically set to: 0.05m x 0.03m x 0.02m
+==============================
+LYSO was imported successfully.
+Successfully loaded material 'LYSO'
+Loaded material mappings from src/material_mappings.json
+  Material assignment rules for GUIMeshCLI
+  Version: 1.0
+Material assignments summary:
+  LYSO: 36 volumes
+  G4_Si: 7 volumes
+GDML files written to tests/files/block/ref_output

@@ -23,6 +23,10 @@ WORKDIR /tmp
 COPY requirements.txt .
 RUN pip install --upgrade pip && pip install -r requirements.txt
 
+# Install test dependencies
+COPY requirements-test.txt .
+RUN pip install -r requirements-test.txt
+
 # Set working directory
 WORKDIR /usr/local/bin
 

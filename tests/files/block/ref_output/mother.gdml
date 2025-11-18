@@ -1,0 +1,243 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<gdml xmlns:gdml="../schema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../schema/gdml.xsd" >
+<define>
+<position name="geometry_offset" x="-0.0" y="-0.0135" z="-0.0" unit="m"/>
+<rotation name="identity" x="0" y="0" z="0"/>
+</define>
+<materials>
+<element name="Vacuum_el"  formula="Hv" Z="1">
+<atom value="1.008"/>
+</element> 
+<material name="Vacuum_ref">
+<D value="0.0000000000000000000001" unit="mg/cm3"/>
+<fraction n="1.0" ref="Vacuum_el"/>
+</material>
+</materials>
+<solids>
+<box name="WorldBox" x="0.054450000000000005" y="0.029700000000000004" z="0.01826000000000001" lunit="m"/>
+</solids>
+<structure>
+<volume name="World">
+<materialref ref="Vacuum_ref"/>
+<solidref ref="WorldBox"/>
+<physvol>
+<file name="Volumes/_detector_lyso_.gdml"/>
+<positionref ref="geometry_offset"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol>
+<file name="Volumes/_detector_lyso_001.gdml"/>
+<positionref ref="geometry_offset"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol>
+<file name="Volumes/_detector_lyso_002.gdml"/>
+<positionref ref="geometry_offset"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol>
+<file name="Volumes/_detector_lyso_003.gdml"/>
+<positionref ref="geometry_offset"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol>
+<file name="Volumes/_detector_lyso_004.gdml"/>
+<positionref ref="geometry_offset"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol>
+<file name="Volumes/_detector_lyso_005.gdml"/>
+<positionref ref="geometry_offset"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol>
+<file name="Volumes/_detector_lyso_006.gdml"/>
+<positionref ref="geometry_offset"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol>
+<file name="Volumes/_detector_lyso_007.gdml"/>
+<positionref ref="geometry_offset"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol>
+<file name="Volumes/_detector_lyso_008.gdml"/>
+<positionref ref="geometry_offset"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol>
+<file name="Volumes/_detector_lyso_009.gdml"/>
+<positionref ref="geometry_offset"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol>
+<file name="Volumes/_detector_lyso_010.gdml"/>
+<positionref ref="geometry_offset"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol>
+<file name="Volumes/_detector_lyso_011.gdml"/>
+<positionref ref="geometry_offset"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol>
+<file name="Volumes/_detector_lyso_012.gdml"/>
+<positionref ref="geometry_offset"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol>
+<file name="Volumes/_detector_lyso_013.gdml"/>
+<positionref ref="geometry_offset"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol>
+<file name="Volumes/_detector_lyso_014.gdml"/>
+<positionref ref="geometry_offset"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol>
+<file name="Volumes/_detector_lyso_015.gdml"/>
+<positionref ref="geometry_offset"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol>
+<file name="Volumes/_detector_lyso_016.gdml"/>
+<positionref ref="geometry_offset"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol>
+<file name="Volumes/_detector_lyso_017.gdml"/>
+<positionref ref="geometry_offset"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol>
+<file name="Volumes/_detector_lyso_018.gdml"/>
+<positionref ref="geometry_offset"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol>
+<file name="Volumes/_detector_lyso_019.gdml"/>
+<positionref ref="geometry_offset"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol>
+<file name="Volumes/_detector_lyso_020.gdml"/>
+<positionref ref="geometry_offset"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol>
+<file name="Volumes/_detector_lyso_021.gdml"/>
+<positionref ref="geometry_offset"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol>
+<file name="Volumes/_detector_lyso_022.gdml"/>
+<positionref ref="geometry_offset"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol>
+<file name="Volumes/_detector_lyso_023.gdml"/>
+<positionref ref="geometry_offset"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol>
+<file name="Volumes/_detector_lyso_024.gdml"/>
+<positionref ref="geometry_offset"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol>
+<file name="Volumes/_detector_lyso_025.gdml"/>
+<positionref ref="geometry_offset"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol>
+<file name="Volumes/_detector_lyso_026.gdml"/>
+<positionref ref="geometry_offset"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol>
+<file name="Volumes/_detector_lyso_027.gdml"/>
+<positionref ref="geometry_offset"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol>
+<file name="Volumes/_detector_lyso_028.gdml"/>
+<positionref ref="geometry_offset"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol>
+<file name="Volumes/_detector_lyso_029.gdml"/>
+<positionref ref="geometry_offset"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol>
+<file name="Volumes/_detector_lyso_030.gdml"/>
+<positionref ref="geometry_offset"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol>
+<file name="Volumes/_detector_lyso_031.gdml"/>
+<positionref ref="geometry_offset"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol>
+<file name="Volumes/sipm_si.gdml"/>
+<positionref ref="geometry_offset"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol>
+<file name="Volumes/sipm_si001.gdml"/>
+<positionref ref="geometry_offset"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol>
+<file name="Volumes/sipm_si002.gdml"/>
+<positionref ref="geometry_offset"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol>
+<file name="Volumes/sipm_si003.gdml"/>
+<positionref ref="geometry_offset"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol>
+<file name="Volumes/pcb-sipm_pcb.gdml"/>
+<positionref ref="geometry_offset"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol>
+<file name="Volumes/sipm_si004.gdml"/>
+<positionref ref="geometry_offset"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol>
+<file name="Volumes/sipm_si005.gdml"/>
+<positionref ref="geometry_offset"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol>
+<file name="Volumes/_detector_lyso_032.gdml"/>
+<positionref ref="geometry_offset"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol>
+<file name="Volumes/_detector_lyso_033.gdml"/>
+<positionref ref="geometry_offset"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol>
+<file name="Volumes/_detector_lyso_034.gdml"/>
+<positionref ref="geometry_offset"/>
+<rotationref ref="identity"/>
+</physvol>
+<physvol>
+<file name="Volumes/_detector_lyso_035.gdml"/>
+<positionref ref="geometry_offset"/>
+<rotationref ref="identity"/>
+</physvol>
+</volume>
+</structure>
+<setup name="Default" version="1.0">
+<world ref="World"/>
+</setup>
+</gdml>

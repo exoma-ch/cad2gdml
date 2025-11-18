@@ -20,3 +20,18 @@
 __pycache__/
 *.pyc
 *~
+
+# Virtual environment
+.venv/
+venv/
+env/
+
+# Coverage reports
+htmlcov/
+.coverage
+.coverage.*
+.pytest_cache/
+
+# Don't ignore anything in tests folder
+!tests/
+!tests/**

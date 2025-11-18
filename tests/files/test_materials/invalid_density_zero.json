@@ -1,0 +1,8 @@
+{
+  "name": "TestMaterial",
+  "density": 0.0,
+  "elements": [
+    {"name": "G4_Lu", "fraction": 1.0}
+  ]
+}
+
