@@ -40,6 +40,12 @@ import json
 # Add FreeCAD path
 #sys.path.append('/home/irene/dev/Programs/squashfs-root/usr/lib')
 sys.path.append('/usr/local/bin/squashfs-root/usr/lib')
+# Add PySide2 from FreeCAD's site-packages (needed for Draft module)
+# Use current Python version to find the correct site-packages path
+python_version = f"{sys.version_info.major}.{sys.version_info.minor}"
+pyside_path = f'/usr/local/bin/squashfs-root/usr/lib/python{python_version}/site-packages'
+if pyside_path not in sys.path:
+    sys.path.insert(0, pyside_path)
 
 
 try:
@@ -252,6 +258,7 @@ class GUIMeshCLI:
         assignments_count = {}
         custom_materials_needed = set()
         unmatched_volumes = []
+        missing_materials = {}  # Track missing materials: {material_name: [volume_labels]}
 
         for obj in self.list_of_objects:
             label_lower = str(obj.VolumeCAD.Label).lower()
@@ -267,7 +274,10 @@ class GUIMeshCLI:
             
             mat_obj = name_to_material.get(mat_name)
             if mat_obj is None:
-                print(f"Warning: Material '{mat_name}' not found for volume {obj.VolumeCAD.Label}. Load it via --load-material.")
+                # Track missing materials
+                if mat_name not in missing_materials:
+                    missing_materials[mat_name] = []
+                missing_materials[mat_name].append(obj.VolumeCAD.Label)
                 continue
             obj.VolumeMaterial = mat_obj
             assignments_count[mat_name] = assignments_count.get(mat_name, 0) + 1
@@ -276,6 +286,24 @@ class GUIMeshCLI:
             print("Material assignments summary:")
             for k, v in sorted(assignments_count.items(), key=lambda x: (-x[1], x[0])):
                 print(f"  {k}: {v} volumes")
+        
+        # Check for missing required materials first (most critical error)
+        if missing_materials:
+            print(f"\nERROR: Required materials not found. {len(missing_materials)} material(s) need to be loaded:")
+            for mat_name, volume_labels in sorted(missing_materials.items()):
+                print(f"  - Material '{mat_name}' (required for {len(volume_labels)} volume(s))")
+                # Show first few volumes that need this material
+                examples = volume_labels[:5]
+                for vol in examples:
+                    print(f"      • {vol}")
+                if len(volume_labels) > 5:
+                    print(f"      ... and {len(volume_labels) - 5} more")
+            print(f"\nTo fix this:")
+            print(f"  1. Load the missing material(s) using --load-materials")
+            print(f"     Example: --load-materials data/Materials/{list(missing_materials.keys())[0]}.json")
+            if len(missing_materials) > 1:
+                print(f"     (You may need multiple --load-materials flags for multiple materials)")
+            return False
         
         if unmatched_volumes:
             print(f"\n ERROR: {len(unmatched_volumes)} volumes have no matching material pattern:")

@@ -379,6 +379,17 @@ def extract_crystal_centers(list_of_objects, verbose=False, output_file=None, ou
                 csv_file = output_file + '.csv'
                 h5_file = output_file + '.h5'
         
+        # Create output directory if it doesn't exist
+        csv_dir = os.path.dirname(csv_file)
+        if csv_dir and not os.path.exists(csv_dir):
+            try:
+                os.makedirs(csv_dir, exist_ok=True)
+                if verbose:
+                    print(f"Created output directory: {csv_dir}")
+            except Exception as e:
+                print(f"Error creating output directory '{csv_dir}': {str(e)}")
+                return crystal_centers, False
+        
         # Save CSV file
         try:
             import csv
