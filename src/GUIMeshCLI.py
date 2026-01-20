@@ -376,21 +376,16 @@ class GUIMeshCLI:
             world_y = height * (1.0 + 2.0 * margin) / 1000.0
             world_z = depth * (1.0 + 2.0 * margin) / 1000.0
             
-            # World position: geometry center (convert mm to meters)
-            world_pos_x = center_x / 1000.0
-            world_pos_y = center_y / 1000.0
-            world_pos_z = center_z / 1000.0
-            
             print(f"\n=== Geometry Analysis ===")
             print(f"Bounding box: {width:.1f}mm x {height:.1f}mm x {depth:.1f}mm")
             print(f"Geometry center: ({center_x:.1f}, {center_y:.1f}, {center_z:.1f}) mm")
             print(f"World size: {world_x:.2f}m x {world_y:.2f}m x {world_z:.2f}m")
-            print(f"World position: ({world_pos_x:.3f}, {world_pos_y:.3f}, {world_pos_z:.3f}) m")
+            print("World position: (0.000, 0.000, 0.000) m (CAD origin preserved)")
             
-            # Set the calculated world size and position
+            # Set the calculated world size (keep origin at (0,0,0) to preserve CAD coordinates)
             self.world_dimensions = [world_x, world_y, world_z]
-            self.world_position = [world_pos_x, world_pos_y, world_pos_z]
-            print(f"World dimensions automatically set to: {world_x:.2f}m x {world_y:.2f}m x {world_z:.2f}m")
+            # NOTE: Do not modify self.world_position here – it stays at [0.0, 0.0, 0.0]
+            print(f"World dimensions automatically set to: {world_x:.2f}m x {world_y:.2f}m x {world_z:.2f}m (origin unchanged)")
             print("=" * 30)
             
         except Exception as e:

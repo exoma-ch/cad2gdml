@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <gdml xmlns:gdml="../schema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../schema/gdml.xsd" >
 <define>
-<position name="geometry_offset" x="-0.0" y="-0.0" z="0.14999999999999" unit="m"/>
+<position name="geometry_offset" x="-0.0" y="-0.0" z="-0.0" unit="m"/>
 <rotation name="identity" x="0" y="0" z="0"/>
 </define>
 <materials>
