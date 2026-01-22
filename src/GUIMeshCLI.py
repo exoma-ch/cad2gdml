@@ -342,7 +342,7 @@ class GUIMeshCLI:
             return
         
         try:
-            # Calculate bounding box for all loaded objects
+            # Calculate bounding box for all loaded objects (in mm, CAD coordinates)
             min_x = min_y = min_z = float('inf')
             max_x = max_y = max_z = float('-inf')
             
@@ -361,23 +361,57 @@ class GUIMeshCLI:
                     continue
             
             # Calculate dimensions
-            width = max_x - min_x
-            height = max_y - min_y
-            depth = max_z - min_z
+            width = max_x - min_x   # X extent of geometry (mm)
+            height = max_y - min_y  # Y extent of geometry (mm)
+            depth = max_z - min_z   # Z extent of geometry (mm)
             
             # Calculate geometry center (in mm)
             center_x = min_x + width / 2.0
             center_y = min_y + height / 2.0
             center_z = min_z + depth / 2.0
 
-            # World size: bounding box dimensions + margin on each side
-            margin = 0.05
-            world_x = width * (1.0 + 2.0 * margin) / 1000.0
-            world_y = height * (1.0 + 2.0 * margin) / 1000.0
-            world_z = depth * (1.0 + 2.0 * margin) / 1000.0
+            # IMPORTANT:
+            # The world volume is centered at the CAD origin (0, 0, 0) to preserve
+            # the original coordinates, but the geometry itself might NOT be
+            # centered at the origin. If we only use the width/height/depth,
+            # a geometry that lives mostly on one side of the origin could stick
+            # out of the world box.
+            #
+            # To avoid that, we compute the maximum distance from the origin
+            # to the geometry in each axis and size the world so that the
+            # half‑length is large enough to contain the most distant point
+            # (plus a margin).
+            #
+            # Example: geometry Y goes from 0 mm to 600 mm.
+            #   - height = 600 mm
+            #   - max_extent_y = max(|0|, |600|) = 600 mm
+            #   - world half‑length in Y ≥ max_extent_y * (1 + margin)
+            #   - world full length in Y = 2 * half‑length
+            #
+            # This keeps the world centered at 0 while still containing
+            # geometries that are not centered around the origin.
+
+            max_extent_x = max(abs(min_x), abs(max_x))  # mm
+            max_extent_y = max(abs(min_y), abs(max_y))  # mm
+            max_extent_z = max(abs(min_z), abs(max_z))  # mm
+
+            # World size: large enough half‑length to contain the furthest
+            # point from the origin, plus a relative margin.
+            margin = 0.05  # 5% margin on the half‑length
+            half_x = max_extent_x * (1.0 + margin)  # mm
+            half_y = max_extent_y * (1.0 + margin)  # mm
+            half_z = max_extent_z * (1.0 + margin)  # mm
+
+            # Convert to full lengths in meters for GDML world box (G4Box x,y,z are full lengths)
+            world_x = 2.0 * half_x / 1000.0
+            world_y = 2.0 * half_y / 1000.0
+            world_z = 2.0 * half_z / 1000.0
             
             print(f"\n=== Geometry Analysis ===")
             print(f"Bounding box: {width:.1f}mm x {height:.1f}mm x {depth:.1f}mm")
+            print(f"Extents from origin: X [{min_x:.1f}, {max_x:.1f}] mm, "
+                  f"Y [{min_y:.1f}, {max_y:.1f}] mm, "
+                  f"Z [{min_z:.1f}, {max_z:.1f}] mm")
             print(f"Geometry center: ({center_x:.1f}, {center_y:.1f}, {center_z:.1f}) mm")
             print(f"World size: {world_x:.2f}m x {world_y:.2f}m x {world_z:.2f}m")
             print("World position: (0.000, 0.000, 0.000) m (CAD origin preserved)")
