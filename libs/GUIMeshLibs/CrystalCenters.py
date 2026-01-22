@@ -46,7 +46,7 @@ def extract_crystal_number(volume_label):
     # If no number found, return None (will be handled later)
     return None
 
-def extract_crystal_centers(list_of_objects, verbose=False, output_file=None, output_dir=None, vertex_counts=None):
+def extract_crystal_centers(list_of_objects, verbose=False, output_file=None, output_dir=None, vertex_counts=None, translation=None):
     """Extract center coordinates of LYSO crystals only and optionally save to CSV
     
     Args:
@@ -55,6 +55,7 @@ def extract_crystal_centers(list_of_objects, verbose=False, output_file=None, ou
         output_file: Optional output CSV file path (or True for auto-generated name)
         output_dir: Optional output directory for auto-generated filenames
         vertex_counts: Optional list to append vertex counts to
+        translation: Optional translation vector [x, y, z] in mm to apply to crystal centers
     
     Returns:
         tuple: (crystal_centers_list, success)
@@ -71,6 +72,11 @@ def extract_crystal_centers(list_of_objects, verbose=False, output_file=None, ou
         vertex_counts = []
     
     print(f"\n=== LYSO Crystal Center Analysis ===")
+    if translation is not None:
+        print(f"Translation applied: ({translation[0]:.1f}, {translation[1]:.1f}, {translation[2]:.1f}) mm")
+        print(f"Coordinates are in transformed (centered) coordinate system")
+    else:
+        print(f"Using original CAD coordinates (no translation)")
     print(f"Using Direct Edge Vector Analysis for crystal orientation")
     print(f"Scanning {len(list_of_objects)} volumes for LYSO crystals...")
     
@@ -301,7 +307,13 @@ def extract_crystal_centers(list_of_objects, verbose=False, output_file=None, ou
             
             used_crystal_ids.add(final_crystal_id)
             
-            # Keep original center coordinates (no translation - geometry keeps CAD offset)
+            # Apply translation if provided (for geometry centering)
+            if translation is not None:
+                center_x = center_x + translation[0]
+                center_y = center_y + translation[1]
+                center_z = center_z + translation[2]
+            
+            # Store center coordinates (transformed if translation was applied)
             crystal_info = {
                 'crystal_id': final_crystal_id,
                 'volume_name': volume_label,

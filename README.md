@@ -107,11 +107,93 @@ python3 src/GUIMeshCLI.py \
 - `--extract-centers [filename]` - Optional: extract crystal center coordinates and orientations and write BOTH a CSV and an H5 file. If a CSV filename is provided, an H5 with the same stem is also written. If no filename is provided, both are auto-generated in the output directory
 - `--output-dir <dir>` - Output directory for GDML files
 - `--world-size <X> <Y> <Z>` - Optional: set world dimensions in meters (default: auto-calculated from geometry bounding box)
+- `--center-geometry` - Optional: translate and center geometry at origin (0,0,0) by centering the bounding box. This minimizes world size and transforms crystal coordinates to the centered coordinate system
 - `--verbose` - Enable detailed progress messages
 
 ### Outputs
 - GDML: `mother.gdml` plus `Volumes/*.gdml`
 - Crystal data: `<name>.csv` and `<name>.h5` (both created by `--extract-centers`)
+- Transformation info: `geometry_transform.json` (created when using `--center-geometry`)
+
+## Geometry Centering
+
+The `--center-geometry` flag allows you to optionally translate and center the geometry's bounding box at the origin (0, 0, 0). This feature provides several benefits:
+
+### Benefits
+
+- **Minimized world size**: Reduces simulation volume by using bounding box dimensions instead of maximum extents from origin
+- **Better performance**: Smaller world volumes reduce memory usage and computation time
+- **Standardized coordinates**: All geometries centered at origin for easier comparison
+- **Automatic coordinate transformation**: Crystal center coordinates are automatically transformed to the centered coordinate system
+
+### How It Works
+
+**Without `--center-geometry` (default):**
+- Preserves original CAD coordinates
+- World size calculated from maximum extent from origin (accommodates off-center geometry)
+- Crystal coordinates in original CAD coordinate system
+
+**With `--center-geometry`:**
+- Translates geometry so bounding box center is at (0, 0, 0)
+- World size optimized to bounding box dimensions + margin (typically 30-50% smaller)
+- Crystal coordinates transformed to centered coordinate system
+- Translation information saved in `geometry_transform.json`
+
+### Example Usage
+
+```bash
+# Without centering (preserves original CAD coordinates)
+python3 src/GUIMeshCLI.py \
+  --step data/STEPfiles/ring_12x1_irene.step \
+  --load-materials data/Materials/LYSO.json \
+  --assign-materials \
+  --extract-centers \
+  --output-dir output/test_no_center
+
+# With centering (optimized world size, transformed coordinates)
+python3 src/GUIMeshCLI.py \
+  --step data/STEPfiles/ring_12x1_irene.step \
+  --load-materials data/Materials/LYSO.json \
+  --assign-materials \
+  --extract-centers \
+  --center-geometry \
+  --output-dir output/test_centered
+```
+
+### Coordinate Transformation
+
+When `--center-geometry` is used:
+- A `geometry_transform.json` file is created with translation values
+- All crystal center coordinates in CSV/H5 files are in the transformed (centered) coordinate system
+- To convert back to original CAD coordinates, subtract the translation values from `geometry_transform.json`
+
+**Example transformation:**
+```json
+{
+  "geometry_centered": true,
+  "translation_mm": {"x": -150.5, "y": -200.3, "z": -75.2},
+  "translation_m": {"x": -0.1505, "y": -0.2003, "z": -0.0752}
+}
+```
+
+If a crystal center in the output is at `(10.5, 20.3, 15.7)` mm (centered coordinates), the original CAD coordinate would be:
+- CAD X = 10.5 - (-150.5) = 161.0 mm
+- CAD Y = 20.3 - (-200.3) = 220.6 mm
+- CAD Z = 15.7 - (-75.2) = 90.9 mm
+
+### When to Use Centering
+
+**Use `--center-geometry` when:**
+- You want to minimize world size for better simulation performance
+- You need standardized coordinates (all geometries centered at origin)
+- Coordinate system transformation is acceptable for your workflow
+
+**Don't use `--center-geometry` when:**
+- You need to preserve exact original CAD coordinates
+- Coordinates must match other CAD-derived data
+- Existing analysis tools expect original coordinates
+
+For detailed information, see `GEOMETRY_CENTERING.md`.
 
 ### Loading materials examples
 

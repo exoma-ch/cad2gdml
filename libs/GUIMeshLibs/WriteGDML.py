@@ -29,6 +29,20 @@ def CreateMother(dir_path,object_list,world,world_pos=[0.0,0.0,0.0]):
     F=open(str(dir_path)+"/mother.gdml","w")
     F.write('<?xml version="1.0" encoding="UTF-8" ?>\n')
     F.write('<gdml xmlns:gdml="../schema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../schema/gdml.xsd" >\n')
+    F.write('<!--\n')
+    F.write('  Geometry Transformation Information:\n')
+    if world_pos != [0.0, 0.0, 0.0]:
+        F.write('  Geometry has been translated to center the bounding box at (0, 0, 0).\n')
+        # The actual translation applied to geometry is -world_pos (see geometry_offset below)
+        translation_applied = [-world_pos[0], -world_pos[1], -world_pos[2]]
+        F.write('  Translation applied to geometry: ({:.6f}, {:.6f}, {:.6f}) m\n'.format(translation_applied[0], translation_applied[1], translation_applied[2]))
+        F.write('  Translation in mm: ({:.3f}, {:.3f}, {:.3f}) mm\n'.format(translation_applied[0]*1000.0, translation_applied[1]*1000.0, translation_applied[2]*1000.0))
+        F.write('  Crystal center coordinates in output files are in the transformed (centered) coordinate system.\n')
+        F.write('  To convert back to original CAD coordinates, subtract the translation values.\n')
+    else:
+        F.write('  Geometry uses original CAD coordinates (no translation applied).\n')
+    F.write('  For detailed transformation information, see geometry_transform.json in the output directory.\n')
+    F.write('-->\n')
     F.write('<define>\n')
     # Translate geometry volumes to center them in world box (world is at origin)
     # Negative of world position to center geometry in world

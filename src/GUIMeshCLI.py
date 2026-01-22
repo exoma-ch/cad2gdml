@@ -82,6 +82,8 @@ class GUIMeshCLI:
         self.file_status = 0
         self.verbose = False
         self.vertex_counts = []  # Track vertex counts for statistics
+        self.center_geometry = False  # Flag to enable geometry centering
+        self.geometry_translation = [0.0, 0.0, 0.0]  # Translation to center geometry (in mm, CAD coordinates)
 
     def load_materials(self, material_path):
         """Load material(s) from a file or directory
@@ -326,12 +328,15 @@ class GUIMeshCLI:
 
     def extract_crystal_centers(self, output_file=None):
         """Extract center coordinates of LYSO crystals only and optionally save to CSV"""
+        # Apply translation if geometry centering is enabled
+        translation = self.geometry_translation if self.center_geometry else None
         crystal_centers, success = CrystalCenters.extract_crystal_centers(
             list_of_objects=self.list_of_objects,
             verbose=self.verbose,
             output_file=output_file,
             output_dir=getattr(self, 'output_dir', None),
-            vertex_counts=self.vertex_counts
+            vertex_counts=self.vertex_counts,
+            translation=translation
         )
         
         return success
@@ -370,56 +375,86 @@ class GUIMeshCLI:
             center_y = min_y + height / 2.0
             center_z = min_z + depth / 2.0
 
-            # IMPORTANT:
-            # The world volume is centered at the CAD origin (0, 0, 0) to preserve
-            # the original coordinates, but the geometry itself might NOT be
-            # centered at the origin. If we only use the width/height/depth,
-            # a geometry that lives mostly on one side of the origin could stick
-            # out of the world box.
-            #
-            # To avoid that, we compute the maximum distance from the origin
-            # to the geometry in each axis and size the world so that the
-            # half‑length is large enough to contain the most distant point
-            # (plus a margin).
-            #
-            # Example: geometry Y goes from 0 mm to 600 mm.
-            #   - height = 600 mm
-            #   - max_extent_y = max(|0|, |600|) = 600 mm
-            #   - world half‑length in Y ≥ max_extent_y * (1 + margin)
-            #   - world full length in Y = 2 * half‑length
-            #
-            # This keeps the world centered at 0 while still containing
-            # geometries that are not centered around the origin.
+            if self.center_geometry:
+                # CENTERING MODE: Translate geometry to center it at origin
+                # Translation is negative of center to move center to (0,0,0)
+                self.geometry_translation = [-center_x, -center_y, -center_z]  # mm
+                
+                # After translation, geometry will be centered at origin
+                # World size is just the bounding box dimensions + margin
+                margin = 0.05  # 5% margin
+                world_x = width * (1.0 + margin) / 1000.0  # meters
+                world_y = height * (1.0 + margin) / 1000.0  # meters
+                world_z = depth * (1.0 + margin) / 1000.0  # meters
+                
+                # World position will be set to translation (in meters) when writing GDML
+                # This applies the translation to center the geometry
+                
+                print(f"\n=== Geometry Analysis (CENTERING MODE) ===")
+                print(f"Bounding box: {width:.1f}mm x {height:.1f}mm x {depth:.1f}mm")
+                print(f"Extents from origin: X [{min_x:.1f}, {max_x:.1f}] mm, "
+                      f"Y [{min_y:.1f}, {max_y:.1f}] mm, "
+                      f"Z [{min_z:.1f}, {max_z:.1f}] mm")
+                print(f"Original geometry center: ({center_x:.1f}, {center_y:.1f}, {center_z:.1f}) mm")
+                print(f"Translation to center: ({self.geometry_translation[0]:.1f}, "
+                      f"{self.geometry_translation[1]:.1f}, {self.geometry_translation[2]:.1f}) mm")
+                print(f"World size: {world_x:.2f}m x {world_y:.2f}m x {world_z:.2f}m")
+                print("World position: will be set to translation (geometry centered at origin)")
+                print("=" * 30)
+            else:
+                # NON-CENTERING MODE: Preserve CAD coordinates
+                # IMPORTANT:
+                # The world volume is centered at the CAD origin (0, 0, 0) to preserve
+                # the original coordinates, but the geometry itself might NOT be
+                # centered at the origin. If we only use the width/height/depth,
+                # a geometry that lives mostly on one side of the origin could stick
+                # out of the world box.
+                #
+                # To avoid that, we compute the maximum distance from the origin
+                # to the geometry in each axis and size the world so that the
+                # half‑length is large enough to contain the most distant point
+                # (plus a margin).
+                #
+                # Example: geometry Y goes from 0 mm to 600 mm.
+                #   - height = 600 mm
+                #   - max_extent_y = max(|0|, |600|) = 600 mm
+                #   - world half‑length in Y ≥ max_extent_y * (1 + margin)
+                #   - world full length in Y = 2 * half‑length
+                #
+                # This keeps the world centered at 0 while still containing
+                # geometries that are not centered around the origin.
 
-            max_extent_x = max(abs(min_x), abs(max_x))  # mm
-            max_extent_y = max(abs(min_y), abs(max_y))  # mm
-            max_extent_z = max(abs(min_z), abs(max_z))  # mm
+                max_extent_x = max(abs(min_x), abs(max_x))  # mm
+                max_extent_y = max(abs(min_y), abs(max_y))  # mm
+                max_extent_z = max(abs(min_z), abs(max_z))  # mm
 
-            # World size: large enough half‑length to contain the furthest
-            # point from the origin, plus a relative margin.
-            margin = 0.05  # 5% margin on the half‑length
-            half_x = max_extent_x * (1.0 + margin)  # mm
-            half_y = max_extent_y * (1.0 + margin)  # mm
-            half_z = max_extent_z * (1.0 + margin)  # mm
+                # World size: large enough half‑length to contain the furthest
+                # point from the origin, plus a relative margin.
+                margin = 0.05  # 5% margin on the half‑length
+                half_x = max_extent_x * (1.0 + margin)  # mm
+                half_y = max_extent_y * (1.0 + margin)  # mm
+                half_z = max_extent_z * (1.0 + margin)  # mm
 
-            # Convert to full lengths in meters for GDML world box (G4Box x,y,z are full lengths)
-            world_x = 2.0 * half_x / 1000.0
-            world_y = 2.0 * half_y / 1000.0
-            world_z = 2.0 * half_z / 1000.0
+                # Convert to full lengths in meters for GDML world box (G4Box x,y,z are full lengths)
+                world_x = 2.0 * half_x / 1000.0
+                world_y = 2.0 * half_y / 1000.0
+                world_z = 2.0 * half_z / 1000.0
+                
+                # Reset translation (no centering)
+                self.geometry_translation = [0.0, 0.0, 0.0]
+                
+                print(f"\n=== Geometry Analysis ===")
+                print(f"Bounding box: {width:.1f}mm x {height:.1f}mm x {depth:.1f}mm")
+                print(f"Extents from origin: X [{min_x:.1f}, {max_x:.1f}] mm, "
+                      f"Y [{min_y:.1f}, {max_y:.1f}] mm, "
+                      f"Z [{min_z:.1f}, {max_z:.1f}] mm")
+                print(f"Geometry center: ({center_x:.1f}, {center_y:.1f}, {center_z:.1f}) mm")
+                print(f"World size: {world_x:.2f}m x {world_y:.2f}m x {world_z:.2f}m")
+                print("World position: (0.000, 0.000, 0.000) m (CAD origin preserved)")
             
-            print(f"\n=== Geometry Analysis ===")
-            print(f"Bounding box: {width:.1f}mm x {height:.1f}mm x {depth:.1f}mm")
-            print(f"Extents from origin: X [{min_x:.1f}, {max_x:.1f}] mm, "
-                  f"Y [{min_y:.1f}, {max_y:.1f}] mm, "
-                  f"Z [{min_z:.1f}, {max_z:.1f}] mm")
-            print(f"Geometry center: ({center_x:.1f}, {center_y:.1f}, {center_z:.1f}) mm")
-            print(f"World size: {world_x:.2f}m x {world_y:.2f}m x {world_z:.2f}m")
-            print("World position: (0.000, 0.000, 0.000) m (CAD origin preserved)")
-            
-            # Set the calculated world size (keep origin at (0,0,0) to preserve CAD coordinates)
+            # Set the calculated world size
             self.world_dimensions = [world_x, world_y, world_z]
-            # NOTE: Do not modify self.world_position here – it stays at [0.0, 0.0, 0.0]
-            print(f"World dimensions automatically set to: {world_x:.2f}m x {world_y:.2f}m x {world_z:.2f}m (origin unchanged)")
+            print(f"World dimensions automatically set to: {world_x:.2f}m x {world_y:.2f}m x {world_z:.2f}m")
             print("=" * 30)
             
         except Exception as e:
@@ -455,7 +490,17 @@ class GUIMeshCLI:
             volumes_path = output_path / "Volumes"
             volumes_path.mkdir(exist_ok=True)
 
-            WriteGDML.CreateMother(str(output_path), self.list_of_objects, self.world_dimensions, self.world_position)
+            # Apply translation to world_position if centering is enabled
+            # WriteGDML.CreateMother uses -world_pos for geometry_offset, so we need to negate
+            # Convert from mm to meters
+            if self.center_geometry:
+                world_pos = [-self.geometry_translation[0] / 1000.0,
+                           -self.geometry_translation[1] / 1000.0,
+                           -self.geometry_translation[2] / 1000.0]
+            else:
+                world_pos = self.world_position
+
+            WriteGDML.CreateMother(str(output_path), self.list_of_objects, self.world_dimensions, world_pos)
             
             for i, obj in enumerate(self.list_of_objects, 1):
                 if obj.VolumeGDMLoption == 1:
@@ -463,6 +508,39 @@ class GUIMeshCLI:
 
             # Normalize base volumes at the end (keeping original names)
             WriteGDML.normalize_base_volumes(str(volumes_path))
+
+            # Save transformation info to JSON file
+            if self.center_geometry:
+                # Note: world_pos is negated version of translation (due to WriteGDML logic)
+                # The actual translation applied is geometry_translation
+                transform_info = {
+                    "geometry_centered": True,
+                    "translation_mm": {
+                        "x": self.geometry_translation[0],
+                        "y": self.geometry_translation[1],
+                        "z": self.geometry_translation[2]
+                    },
+                    "translation_m": {
+                        "x": self.geometry_translation[0] / 1000.0,
+                        "y": self.geometry_translation[1] / 1000.0,
+                        "z": self.geometry_translation[2] / 1000.0
+                    },
+                    "description": "Geometry has been translated to center the bounding box at (0, 0, 0). "
+                                 "Crystal center coordinates in output files are in the transformed (centered) coordinate system. "
+                                 "To convert back to original CAD coordinates, subtract the translation values (translation_mm)."
+                }
+            else:
+                transform_info = {
+                    "geometry_centered": False,
+                    "translation_mm": {"x": 0.0, "y": 0.0, "z": 0.0},
+                    "translation_m": {"x": 0.0, "y": 0.0, "z": 0.0},
+                    "description": "Geometry uses original CAD coordinates (no translation applied)."
+                }
+            
+            transform_file = output_path / "geometry_transform.json"
+            with open(transform_file, 'w') as f:
+                json.dump(transform_info, f, indent=2)
+            print(f"Transformation info saved to {transform_file}")
 
             print(f"GDML files written to {output_dir}")
             return True
@@ -482,6 +560,7 @@ def main():
     parser.add_argument('--verbose', action='store_true', help='Enable verbose logging and progress messages')
     parser.add_argument('--assign-materials', nargs='?', const='material_mappings.json', default=None, help='Assign materials based on volume name patterns. Optionally specify JSON config file (default: material_mappings.json)')
     parser.add_argument('--extract-centers', nargs='?', const=True, help='Extract crystal center coordinates and save to CSV file. Optionally specify output filename.')
+    parser.add_argument('--center-geometry', action='store_true', help='Translate and center geometry at origin (0,0,0) by centering the bounding box. This minimizes world size and transforms crystal coordinates.')
     
     args = parser.parse_args()
 
@@ -491,6 +570,7 @@ def main():
 
     mesh = GUIMeshCLI()
     mesh.verbose = bool(args.verbose)
+    mesh.center_geometry = bool(args.center_geometry)
     
     # Set output directory for files
     mesh.output_dir = args.output_dir
