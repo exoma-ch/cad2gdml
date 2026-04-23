@@ -29,6 +29,21 @@
       "material": "G4_Al",
       "description": "Aluminum material (short form)",
       "requires_custom": false
+    },
+    "screw": {
+      "material": "StainlessSteel",
+      "description": "Stainless steel for fasteners",
+      "requires_custom": true
+    },
+    "washer": {
+      "material": "StainlessSteel",
+      "description": "Stainless steel for washers",
+      "requires_custom": true
+    },
+    "carbon": {
+      "material": "G4_C",
+      "description": "Carbon/graphite material",
+      "requires_custom": false
     }
   },
   "fallback_material": {

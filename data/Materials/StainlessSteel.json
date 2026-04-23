@@ -1,0 +1,10 @@
+{
+  "name": "StainlessSteel",
+  "density": 7.9,
+  "elements": [
+    {"name": "G4_Fe", "fraction": 0.70},
+    {"name": "G4_Cr", "fraction": 0.18},
+    {"name": "G4_Ni", "fraction": 0.10},
+    {"name": "G4_Mn", "fraction": 0.02}
+  ]
+}
