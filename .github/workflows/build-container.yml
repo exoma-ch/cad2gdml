@@ -6,7 +6,10 @@ on:
       - main
       - master
     tags:
-      - 'v*'  # Tag pushes always build
+      - 'v*'
+    paths:
+      - 'build/Podman/**'
+      - '.github/workflows/build-container.yml'
   pull_request:
     branches:
       - main
@@ -28,8 +31,6 @@ jobs:
     permissions:
       contents: read
       packages: write
-    # Only build on branch pushes if container files changed (tags always build)
-    if: startsWith(github.ref, 'refs/tags/') || github.event_name != 'push' || contains(github.event.head_commit.modified, 'build/Podman') || contains(github.event.head_commit.modified, '.github/workflows') || contains(github.event.head_commit.added, 'build/Podman') || contains(github.event.head_commit.added, '.github/workflows') || github.event.head_commit == null
 
     steps:
       - name: Checkout repository
