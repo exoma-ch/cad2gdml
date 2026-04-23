@@ -9,45 +9,20 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
-    
-    strategy:
-      matrix:
-        python-version: ["3.11"]
-    
+    permissions:
+      contents: read
+      packages: read
+
+    container:
+      image: ghcr.io/morepet/cadtogeant4/cadtogeant4:latest
+      credentials:
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+
     steps:
     - uses: actions/checkout@v4
-    
-    - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v5
-      with:
-        python-version: ${{ matrix.python-version }}
-        cache: 'pip'
-    
-    - name: Install system dependencies
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y \
-          libgl1 \
-          libglx-mesa0 \
-          libxrender1 \
-          libxext6 \
-          libglib2.0-0 \
-          libsm6 \
-          libx11-6 \
-          libxcb1 \
-          libxkbcommon0
-    
-    - name: Install Python dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install -r build/Podman/requirements.txt
-        pip install -r build/Podman/requirements-test.txt
-    
+
     - name: Run tests
       run: |
+        export PYTHONPATH="$GITHUB_WORKSPACE:$PYTHONPATH"
         pytest tests/ -v
-      env:
-        # Some tests may require FreeCAD, but unit tests should work without it
-        # Integration tests will be skipped if FreeCAD is not available
-        PYTHONPATH: ${{ github.workspace }}
-
