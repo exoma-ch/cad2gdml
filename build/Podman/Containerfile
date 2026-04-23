@@ -36,9 +36,14 @@ RUN wget -O FreeCAD.AppImage \
     chmod +x FreeCAD.AppImage && \
     ./FreeCAD.AppImage --appimage-extract
 
-# Add FreeCAD libraries to PYTHONPATH and LD_LIBRARY_PATH
+# Expose FreeCAD's bundled Python modules on PYTHONPATH so `import FreeCAD`
+# works without manual sys.path setup. LD_LIBRARY_PATH is intentionally not
+# set here: doing so makes the image's python3 load FreeCAD's libpython via
+# the dynamic linker, which leaves sys.version in a mixed conda-forge/slim
+# state and breaks libraries (coverage, etc.) that parse sys.version.
+# FreeCAD's own .so files find their siblings via rpath, so they don't need
+# LD_LIBRARY_PATH to import successfully.
 ENV PYTHONPATH="/usr/local/bin/squashfs-root/usr/lib"
-ENV LD_LIBRARY_PATH="/usr/local/bin/squashfs-root/usr/lib"
 
 # Mount GUIMesh code
 VOLUME ["/mnt/guimesh"]
