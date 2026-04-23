@@ -8,7 +8,7 @@
 <element name="Vacuum_el"  formula="Hv" Z="1">
 <atom value="1.008"/>
 </element> 
-<material name="Vacuum_ref">
+<material name="Vacuum">
 <D value="0.0000000000000000000001" unit="mg/cm3"/>
 <fraction n="1.0" ref="Vacuum_el"/>
 </material>
@@ -18,7 +18,7 @@
 </solids>
 <structure>
 <volume name="World">
-<materialref ref="Vacuum_ref"/>
+<materialref ref="Vacuum"/>
 <solidref ref="WorldBox"/>
 <physvol>
 <file name="Volumes/_detector_lyso_.gdml"/>

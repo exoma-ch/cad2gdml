@@ -54,7 +54,7 @@ def CreateMother(dir_path,object_list,world,world_pos=[0.0,0.0,0.0]):
     F.write('<element name="Vacuum_el"  formula="Hv" Z="1">\n')
     F.write('<atom value="1.008"/>\n')
     F.write('</element> \n')
-    F.write('<material name="Vacuum_ref">\n')
+    F.write('<material name="Vacuum">\n')
     F.write('<D value="0.0000000000000000000001" unit="mg/cm3"/>\n')
     F.write('<fraction n="1.0" ref="Vacuum_el"/>\n')
     F.write('</material>\n')
@@ -66,7 +66,7 @@ def CreateMother(dir_path,object_list,world,world_pos=[0.0,0.0,0.0]):
     #write structure
     F.write('<structure>\n')
     F.write('<volume name="World">\n')
-    F.write('<materialref ref="Vacuum_ref"/>\n')
+    F.write('<materialref ref="Vacuum"/>\n')
     F.write('<solidref ref="WorldBox"/>\n')
     for i in range(0,len(object_list)):
         if (object_list[i].VolumeGDMLoption==1):
