@@ -1,5 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <gdml xmlns:gdml="../schema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../schema/gdml.xsd" >
+<!--
+  Geometry Transformation Information:
+  Geometry uses original CAD coordinates (no translation applied).
+  For detailed transformation information, see geometry_transform.json in the output directory.
+-->
 <define>
 <position name="geometry_offset" x="-0.0" y="-0.0" z="-0.0" unit="m"/>
 <rotation name="identity" x="0" y="0" z="0"/>
@@ -14,7 +19,7 @@
 </material>
 </materials>
 <solids>
-<box name="WorldBox" x="0.25451177438862926" y="0.24942891218280203" z="0.41800000000000004" lunit="m"/>
+<box name="WorldBox" x="0.24294305737096425" y="0.23809123435631102" z="0.713999999999979" lunit="m"/>
 </solids>
 <structure>
 <volume name="World">

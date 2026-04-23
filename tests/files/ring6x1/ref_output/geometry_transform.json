@@ -1,0 +1,14 @@
+{
+  "geometry_centered": false,
+  "translation_mm": {
+    "x": 0.0,
+    "y": 0.0,
+    "z": 0.0
+  },
+  "translation_m": {
+    "x": 0.0,
+    "y": 0.0,
+    "z": 0.0
+  },
+  "description": "Geometry uses original CAD coordinates (no translation applied)."
+}
