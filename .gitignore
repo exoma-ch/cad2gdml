@@ -1,8 +1,5 @@
 # Ignore all output folders
-/output/gdml/*
-/output/analysis/*.csv
-/output/analysis/*.txt
-/output/analysis/*.h5
+/output/*
 *.gdml
 /log*.txt
 *.csv
@@ -32,6 +29,9 @@ htmlcov/
 .coverage.*
 .pytest_cache/
 
-# Don't ignore anything in tests folder
+# Don't ignore anything in tests folder (except cache files)
 !tests/
 !tests/**
+# But still ignore cache files in tests
+tests/**/__pycache__/
+tests/**/*.pyc
