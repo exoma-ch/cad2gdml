@@ -1,0 +1,37 @@
+# Slim runtime image — CAD-to-Geant4 conversion only, no Jupyter or test deps.
+# Build:  podman build -f Containerfile.slim -t cadtogeant4:slim .
+# Run:    podman run --rm -v /your/files:/mnt/guimesh cadtogeant4:slim python GUIMeshCLI.py ...
+FROM python:3.11-slim
+
+# Runtime X11/OpenGL libs FreeCAD needs; wget+fuse only for the AppImage download
+# and are purged in the same layer so they don't bloat the final image.
+RUN apt-get update && apt-get install -y \
+    libgl1 \
+    libglx-mesa0 \
+    libxrender1 \
+    libxext6 \
+    libglib2.0-0 \
+    libsm6 \
+    libx11-6 \
+    libxcb1 \
+    libxkbcommon0 \
+    wget \
+    fuse \
+    ca-certificates \
+    && wget -q -O /tmp/FreeCAD.AppImage \
+        https://github.com/FreeCAD/FreeCAD/releases/download/1.0.1/FreeCAD_1.0.1-conda-Linux-x86_64-py311.AppImage \
+    && chmod +x /tmp/FreeCAD.AppImage \
+    && cd /usr/local/bin && /tmp/FreeCAD.AppImage --appimage-extract \
+    && rm /tmp/FreeCAD.AppImage \
+    && apt-get purge -y wget fuse \
+    && apt-get autoremove -y \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+# No pip install needed: GUIMeshCLI.py and all src/ files use only stdlib + FreeCAD.
+ENV PYTHONPATH="/usr/local/bin/squashfs-root/usr/lib"
+
+VOLUME ["/mnt/guimesh"]
+WORKDIR /mnt/guimesh
+
+CMD ["bash"]
