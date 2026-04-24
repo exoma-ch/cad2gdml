@@ -326,6 +326,24 @@ class GUIMeshCLI:
         
         return True
 
+    def dump_part_list(self, output_file):
+        """Write all volume labels from the loaded STEP file to a plain-text file, one per line."""
+        if not self.list_of_objects:
+            print("Error: No volumes loaded")
+            return False
+
+        labels = [str(obj.VolumeCAD.Label) for obj in self.list_of_objects]
+
+        try:
+            with open(output_file, 'w') as f:
+                for label in labels:
+                    f.write(label + '\n')
+            print(f"Wrote {len(labels)} part labels to {output_file}")
+            return True
+        except Exception as e:
+            print(f"Error writing part list: {str(e)}")
+            return False
+
     def extract_crystal_centers(self, output_file=None):
         """Extract center coordinates of LYSO crystals only and optionally save to CSV"""
         # Apply translation if geometry centering is enabled
@@ -561,6 +579,7 @@ def main():
     parser.add_argument('--assign-materials', nargs='?', const='material_mappings.json', default=None, help='Assign materials based on volume name patterns. Optionally specify JSON config file (default: material_mappings.json)')
     parser.add_argument('--extract-centers', nargs='?', const=True, help='Extract crystal center coordinates and save to CSV file. Optionally specify output filename.')
     parser.add_argument('--center-geometry', action='store_true', help='Translate and center geometry at origin (0,0,0) by centering the bounding box. This minimizes world size and transforms crystal coordinates.')
+    parser.add_argument('--dump-parts', metavar='OUTPUT_FILE', help='Load STEP file and write all part labels to a plain-text file (one per line), then exit. Useful for discovering part names before writing material_mappings.json.')
     
     args = parser.parse_args()
 
@@ -575,6 +594,11 @@ def main():
     # Set output directory for files
     mesh.output_dir = args.output_dir
 
+    # --dump-parts requires a STEP file
+    if args.dump_parts and not args.step:
+        print("Error: --dump-parts requires --step")
+        return
+
     # Check material mappings file BEFORE loading STEP file (if --assign-materials is used)
     if args.assign_materials:
         config_file = args.assign_materials
@@ -587,6 +611,10 @@ def main():
     if args.step:
         if not mesh.load_step_file(args.step):
             return
+
+    if args.dump_parts:
+        mesh.dump_part_list(args.dump_parts)
+        return
 
     if args.world_size:
         if not mesh.set_world_size(*args.world_size):
