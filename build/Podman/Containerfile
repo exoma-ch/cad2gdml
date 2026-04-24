@@ -1,6 +1,5 @@
 FROM python:3.11-slim
 
-# Install required system dependencies
 RUN apt-get update && apt-get install -y \
     libgl1 \
     libglx-mesa0 \
@@ -11,43 +10,27 @@ RUN apt-get update && apt-get install -y \
     libx11-6 \
     libxcb1 \
     libxkbcommon0 \
-    git \
     wget \
     fuse \
     ca-certificates \
+    && wget -q -O /tmp/FreeCAD.AppImage \
+        https://github.com/FreeCAD/FreeCAD/releases/download/1.0.1/FreeCAD_1.0.1-conda-Linux-x86_64-py311.AppImage \
+    && chmod +x /tmp/FreeCAD.AppImage \
+    && cd /usr/local/bin && /tmp/FreeCAD.AppImage --appimage-extract \
+    && rm /tmp/FreeCAD.AppImage \
+    && apt-get purge -y wget fuse \
+    && apt-get autoremove -y \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-# Install Python dependencies
 WORKDIR /tmp
-COPY requirements.txt .
-RUN pip install --upgrade pip && pip install -r requirements.txt
+COPY requirements.txt requirements-test.txt ./
+RUN pip install --upgrade pip && pip install -r requirements.txt -r requirements-test.txt
 
-# Install test dependencies
-COPY requirements-test.txt .
-RUN pip install -r requirements-test.txt
-
-# Set working directory
-WORKDIR /usr/local/bin
-
-# Download FreeCAD AppImage
-RUN wget -O FreeCAD.AppImage \
-    https://github.com/FreeCAD/FreeCAD/releases/download/1.0.1/FreeCAD_1.0.1-conda-Linux-x86_64-py311.AppImage && \
-    chmod +x FreeCAD.AppImage && \
-    ./FreeCAD.AppImage --appimage-extract
-
-# Expose FreeCAD's bundled Python modules on PYTHONPATH so `import FreeCAD`
-# works without manual sys.path setup. LD_LIBRARY_PATH is intentionally not
-# set here: doing so makes the image's python3 load FreeCAD's libpython via
-# the dynamic linker, which leaves sys.version in a mixed conda-forge/slim
-# state and breaks libraries (coverage, etc.) that parse sys.version.
-# FreeCAD's own .so files find their siblings via rpath, so they don't need
-# LD_LIBRARY_PATH to import successfully.
+# See Containerfile.slim for why LD_LIBRARY_PATH is intentionally not set.
 ENV PYTHONPATH="/usr/local/bin/squashfs-root/usr/lib"
 
-# Mount GUIMesh code
 VOLUME ["/mnt/guimesh"]
 WORKDIR /mnt/guimesh
 
-# Default command: open shell
 CMD ["bash"]

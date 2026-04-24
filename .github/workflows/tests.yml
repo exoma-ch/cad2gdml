@@ -15,7 +15,7 @@ jobs:
       packages: read
 
     container:
-      image: ghcr.io/morepet/cadtogeant4/cadtogeant4:latest
+      image: ghcr.io/morepet/cadtogeant4/cadtogeant4:dev
       credentials:
         username: ${{ github.actor }}
         password: ${{ secrets.GITHUB_TOKEN }}
