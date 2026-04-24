@@ -1,4 +1,4 @@
-# GUIMeshCLI – STEP to GDML Converter
+# CAD2Geant4: STEP to GDML Converter
 
 Converts CAD geometry (STEP format) to GDML for use in Geant4 Monte Carlo simulations. Based on [GUIMesh3](https://github.com/MPintoSpace/GUIMesh3).
 
