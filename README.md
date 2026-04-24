@@ -45,7 +45,7 @@ Replace `/path/to/CADtoGeant4` with the absolute path to your cloned repository.
 - `--step <file>` — **Required.** Input STEP file to convert
 - `--load-materials <file_or_dir>` — Load material definitions from a JSON file or directory (all `.json` files). Repeatable
 - `--assign-materials [config.json]` — Assign materials to volumes by name pattern. Uses `src/material_mappings.json` by default, or pass a custom file
-- `--extract-centers [filename]` — Extract volume center coordinates and orientations; writes both a CSV and an H5 file. Filename is auto-generated if omitted
+- `--extract-centers [filename]` — Extract LYSO crystal center coordinates and orientations (volumes whose name contains "lyso" or whose material is LYSO); writes both a CSV and an H5 file. Filename is auto-generated if omitted
 - `--output-dir <dir>` — Output directory for GDML files
 - `--world-size X Y Z` — World volume dimensions in meters (default: auto from bounding box + 10% margin)
 - `--center-geometry` — Translate geometry so its bounding box center is at the origin; saves the applied translation to `geometry_transform.json`
@@ -56,7 +56,7 @@ Replace `/path/to/CADtoGeant4` with the absolute path to your cloned repository.
 
 - `mother.gdml` — Top-level GDML file (world + includes)
 - `Volumes/*.gdml` — Per-volume GDML files
-- `<name>.csv` + `<name>.h5` — Volume centers and orientations (when using `--extract-centers`)
+- `<name>.csv` + `<name>.h5` — LYSO crystal centers and orientations (when using `--extract-centers`)
 - `geometry_transform.json` — Applied translation (when using `--center-geometry`)
 
 ## Discovering part names

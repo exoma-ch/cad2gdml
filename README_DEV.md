@@ -1,4 +1,4 @@
-# GUIMeshCLI - Developer Documentation
+# Developer Documentation
 
 ## Development Environment
 
