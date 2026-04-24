@@ -18,7 +18,7 @@ cd CADtoGeant4
 **Pull from Docker Hub (recommended):**
 
 ```bash
-podman pull morepet/cad2geant4:latest
+podman pull pipsin/cad2geant4:latest
 ```
 
 All dependencies (FreeCAD, Python packages) are bundled in the image — no manual installation required.
@@ -27,7 +27,7 @@ All dependencies (FreeCAD, Python packages) are bundled in the image — no manu
 
 ```bash
 cd build/Podman
-podman build -f Containerfile.slim -t morepet/cad2geant4:latest .
+podman build -f Containerfile.slim -t pipsin/cad2geant4:latest .
 ```
 
 ### 3. Run a conversion
@@ -35,7 +35,7 @@ podman build -f Containerfile.slim -t morepet/cad2geant4:latest .
 ```bash
 podman run --rm \
   -v /path/to/CADtoGeant4:/mnt/guimesh \
-  morepet/cad2geant4:latest \
+  pipsin/cad2geant4:latest \
   python3 src/GUIMeshCLI.py \
     --step data/STEPfiles/your_geometry.step \
     --load-materials data/Materials/MyMaterial.json \
@@ -74,7 +74,7 @@ If you don't know the part names in your STEP file, dump them first:
 ```bash
 podman run --rm \
   -v /path/to/CADtoGeant4:/mnt/guimesh \
-  morepet/cad2geant4:latest \
+  pipsin/cad2geant4:latest \
   python3 src/GUIMeshCLI.py \
     --step data/STEPfiles/your_geometry.step \
     --dump-parts output/parts.txt

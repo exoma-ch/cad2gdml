@@ -42,7 +42,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: morepet/cad2geant4
+          images: pipsin/cad2geant4
           tags: |
             type=ref,event=branch
             type=ref,event=pr
