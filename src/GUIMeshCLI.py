@@ -84,6 +84,7 @@ class GUIMeshCLI:
         self.vertex_counts = []  # Track vertex counts for statistics
         self.center_geometry = False  # Flag to enable geometry centering
         self.geometry_translation = [0.0, 0.0, 0.0]  # Translation to center geometry (in mm, CAD coordinates)
+        self.world_material_name = None  # Name of world fill material (read from mappings JSON, looked up in Material_List at write time)
 
     def load_materials(self, material_path):
         """Load material(s) from a file or directory
@@ -236,10 +237,13 @@ class GUIMeshCLI:
             return False
         
         mappings = config.get("material_mappings", {})
-        
+
         if not mappings:
             print("Error: No material mappings found in configuration file.")
             return False
+
+        # Optional world fill material name (must be loaded via --load-materials before write_gdml)
+        self.world_material_name = config.get("world_material")
 
         def choose_material_name(label_lower: str) -> tuple:
             """Return (material_name, description, requires_custom) for a given label."""
@@ -518,7 +522,17 @@ class GUIMeshCLI:
             else:
                 world_pos = self.world_position
 
-            WriteGDML.CreateMother(str(output_path), self.list_of_objects, self.world_dimensions, world_pos)
+            world_material_obj = None
+            if self.world_material_name:
+                for mat in self.Material_List:
+                    if mat.Name == self.world_material_name:
+                        world_material_obj = mat
+                        break
+                if world_material_obj is None:
+                    print(f"Error: world_material '{self.world_material_name}' is declared in the mappings file but was not loaded. Pass --load-materials with a JSON that defines it (e.g. data/Materials/{self.world_material_name}.json).")
+                    return False
+
+            WriteGDML.CreateMother(str(output_path), self.list_of_objects, self.world_dimensions, world_pos, world_material=world_material_obj)
             
             for i, obj in enumerate(self.list_of_objects, 1):
                 if obj.VolumeGDMLoption == 1:
@@ -576,7 +590,7 @@ def main():
     parser.add_argument('--output-dir', help='Output directory for GDML files')
     parser.add_argument('--load-materials', action='append', help='Load material(s) from a JSON file or directory containing JSON files. Can be used multiple times.')
     parser.add_argument('--verbose', action='store_true', help='Enable verbose logging and progress messages')
-    parser.add_argument('--assign-materials', nargs='?', const='material_mappings.json', default=None, help='Assign materials based on volume name patterns. Optionally specify JSON config file (default: material_mappings.json)')
+    parser.add_argument('--assign-materials', nargs='?', const='__no_arg__', default=None, help='Assign materials based on volume name patterns. Requires a config path, e.g. src/material_mappings/pet_ring.json or src/material_mappings/cavity.json.')
     parser.add_argument('--extract-centers', nargs='?', const=True, help='Extract crystal center coordinates and save to CSV file. Optionally specify output filename.')
     parser.add_argument('--center-geometry', action='store_true', help='Translate and center geometry at origin (0,0,0) by centering the bounding box. This minimizes world size and transforms crystal coordinates.')
     parser.add_argument('--dump-parts', metavar='OUTPUT_FILE', help='Load STEP file and write all part labels to a plain-text file (one per line), then exit. Useful for discovering part names before writing material_mappings.json.')
@@ -601,6 +615,11 @@ def main():
 
     # Check material mappings file BEFORE loading STEP file (if --assign-materials is used)
     if args.assign_materials:
+        if args.assign_materials == '__no_arg__':
+            print("Error: --assign-materials requires a config path. Available bundled configs:")
+            print("  src/material_mappings/pet_ring.json   (LYSO crystals, SiPMs, PCBs; world fill = Vacuum_ref for g4ring compatibility)")
+            print("  src/material_mappings/cavity.json     (screws, washers, aluminum, carbon; world fill = Vacuum)")
+            return
         config_file = args.assign_materials
         if mesh.check_material_mappings_file(config_file) is None:
             print(f"   ERROR: Material mappings file '{config_file}' not found.")

@@ -23,8 +23,40 @@ import os
 from GUIMeshLibs import Materials
 from GUIMeshLibs import Volumes
 
+def _write_inline_default_vacuum(F):
+    """Legacy hardcoded vacuum block kept for backward compatibility when no
+    world material is supplied via mappings + --load-materials."""
+    F.write('<element name="Vacuum_el"  formula="Hv" Z="1">\n')
+    F.write('<atom value="1.008"/>\n')
+    F.write('</element> \n')
+    F.write('<material name="Vacuum">\n')
+    F.write('<D value="0.0000000000000000000001" unit="mg/cm3"/>\n')
+    F.write('<fraction n="1.0" ref="Vacuum_el"/>\n')
+    F.write('</material>\n')
+
+
+def _write_world_material_from_object(F, mat):
+    """Render a Material object using the same style as per-volume GDMLs."""
+    F.write('<material name="'+str(mat.Name)+'" state="solid">\n')
+    F.write('<D unit="g/cm3" value="'+str(mat.Density)+'"/>\n')
+    for i in range(mat.Nelements):
+        F.write('<fraction n="'+str(mat.ElementFractions[i])+'" ref="'+str(mat.Elements[i])+'"/>\n')
+    F.write('</material>\n')
+
+
 #Write Mother.gdml file
-def CreateMother(dir_path,object_list,world,world_pos=[0.0,0.0,0.0]):
+def CreateMother(dir_path,object_list,world,world_pos=[0.0,0.0,0.0],world_material=None):
+    """Write mother.gdml.
+
+    world_material:
+      - None (default): emit the legacy inline ``Vacuum`` block (Vacuum_el / mg/cm3 form).
+        Preserves byte-stable output for existing test references and any GDML consumer
+        that depends on the historical format.
+      - A loaded ``Materials.Material`` object: render that material using the same
+        per-volume style (state, g/cm3 density, NIST-element fraction refs).
+        The world's ``<materialref>`` is the material's name.
+    """
+    world_material_name = world_material.Name if world_material is not None else "Vacuum"
     #write headers and globals
     F=open(str(dir_path)+"/mother.gdml","w")
     F.write('<?xml version="1.0" encoding="UTF-8" ?>\n')
@@ -50,14 +82,11 @@ def CreateMother(dir_path,object_list,world,world_pos=[0.0,0.0,0.0]):
     F.write('<rotation name="identity" x="0" y="0" z="0"/>\n')
     F.write('</define>\n')
     #write material information
-    F.write('<materials>\n')  
-    F.write('<element name="Vacuum_el"  formula="Hv" Z="1">\n')
-    F.write('<atom value="1.008"/>\n')
-    F.write('</element> \n')
-    F.write('<material name="Vacuum">\n')
-    F.write('<D value="0.0000000000000000000001" unit="mg/cm3"/>\n')
-    F.write('<fraction n="1.0" ref="Vacuum_el"/>\n')
-    F.write('</material>\n')
+    F.write('<materials>\n')
+    if world_material is None:
+        _write_inline_default_vacuum(F)
+    else:
+        _write_world_material_from_object(F, world_material)
     F.write('</materials>\n')
     #write solid information (world volume)
     F.write('<solids>\n')
@@ -66,7 +95,7 @@ def CreateMother(dir_path,object_list,world,world_pos=[0.0,0.0,0.0]):
     #write structure
     F.write('<structure>\n')
     F.write('<volume name="World">\n')
-    F.write('<materialref ref="Vacuum"/>\n')
+    F.write('<materialref ref="'+world_material_name+'"/>\n')
     F.write('<solidref ref="WorldBox"/>\n')
     for i in range(0,len(object_list)):
         if (object_list[i].VolumeGDMLoption==1):

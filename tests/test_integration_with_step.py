@@ -280,12 +280,12 @@ class TestIntegrationWithStepFile:
         assert os.path.exists(result)
     
     def test_check_material_mappings_file_default(self):
-        """Test checking for default material mappings file."""
+        """Test that the bundled per-domain mappings files are discoverable in src/."""
         mesh = GUIMeshCLI()
-        # Should find it in src/ directory
-        result = mesh.check_material_mappings_file("material_mappings.json")
-        assert result is not None
-        assert os.path.exists(result)
+        for rel in ("material_mappings/pet_ring.json", "material_mappings/cavity.json"):
+            result = mesh.check_material_mappings_file(rel)
+            assert result is not None, f"Expected to find {rel} in src/"
+            assert os.path.exists(result)
     
     def test_auto_set_world_size(self, step_file):
         """Test automatic world size calculation."""
