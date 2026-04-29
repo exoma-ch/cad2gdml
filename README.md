@@ -46,6 +46,31 @@ podman run --rm \
 
 Replace `/path/to/CADtoGeant4` with the absolute path to your cloned repository. The container mounts it at `/mnt/guimesh`; all paths in the examples below are relative to that root.
 
+### Working with files outside the repo
+
+The container can only see what you explicitly bind-mount with `-v`. Files outside `/path/to/CADtoGeant4` (or whatever you mounted) are invisible — passing a path the container can't reach produces a "file not found" error, not a permission error, which can be confusing.
+
+Two ways to handle inputs/outputs that don't live in the repo:
+
+**(a) Copy them into the repo first.** Drop your STEP file into `data/STEPfiles/` and write outputs to `output/`. Simplest, no extra flags.
+
+**(b) Bind-mount the external location too.** Add another `-v` flag and reference the in-container path in the CLI args:
+
+```bash
+podman run --rm \
+  -v /path/to/CADtoGeant4:/mnt/guimesh \
+  -v /home/me/cad_projects:/data \
+  docker.io/pipsin/cad2geant4:latest \
+  python3 src/GUIMeshCLI.py \
+    --step /data/some_geometry.step \
+    --output-dir /data/gdml_out/ \
+    --assign-materials src/material_mappings/<config>.json
+```
+
+The container sees `/home/me/cad_projects` as `/data`, so `--step /data/some_geometry.step` resolves correctly. Outputs written to `/data/gdml_out/` land in `/home/me/cad_projects/gdml_out/` on the host.
+
+A common mistake: passing host paths (`--step /home/me/foo.step`) without mounting the parent directory — the container sees no such file. The error message will say "file not found" rather than "not mounted", so check your `-v` flags first when this happens.
+
 ## Usage
 
 ### Flags
