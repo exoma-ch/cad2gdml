@@ -1,0 +1,32 @@
+{
+  "material_mappings": {
+    "crystal": {
+      "material": "LYSO",
+      "description": "Custom LYSO scintillator material",
+      "requires_custom": true
+    },
+    "wrapping": {
+      "material": "G4_TEFLON",
+      "description": "Teflon (PTFE) crystal wrapping / reflector",
+      "requires_custom": false
+    },
+    "source": {
+      "material": "G4_PLEXIGLASS",
+      "description": "PMMA/acrylic source capsule",
+      "requires_custom": false
+    },
+    "housing": {
+      "material": "G4_POLYETHYLENE",
+      "description": "Plastic detector housing",
+      "requires_custom": false
+    }
+  },
+  "fallback_material": {
+    "material": "G4_Si",
+    "description": "Default fallback material",
+    "requires_custom": false
+  },
+  "world_material": "Vacuum_ref",
+  "version": "1.0",
+  "description": "Material mappings for SDMD geometry (LYSO crystals, Teflon wrapping, PMMA source). World fill is Vacuum_ref to avoid name collision with the C++-side Vacuum material in g4ring."
+}
