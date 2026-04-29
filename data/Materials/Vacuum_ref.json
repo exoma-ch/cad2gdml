@@ -1,0 +1,7 @@
+{
+  "name": "Vacuum_ref",
+  "density": 1e-25,
+  "elements": [
+    {"name": "G4_H", "fraction": 1.0}
+  ]
+}

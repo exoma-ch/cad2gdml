@@ -2,7 +2,7 @@
 
 Converts CAD geometry (STEP format) to GDML for use in Geant4 Monte Carlo simulations. Based on [GUIMesh3](https://github.com/MPintoSpace/GUIMesh3).
 
-**How it works:** You name your CAD parts so that the material is identifiable from the name — e.g., `bracket_alu`, `crystal_lyso`, `housing_carbon`. The tool reads those names, matches them against a configurable pattern file (`src/material_mappings.json`), and assigns Geant4 materials automatically. If you don't know the names in an existing STEP file, use `--dump-parts` to list them before writing your mappings.
+**How it works:** You name your CAD parts so that the material is identifiable from the name — e.g., `bracket_alu`, `crystal_lyso`, `housing_carbon`. The tool reads those names, matches them against a configurable pattern file, and assigns Geant4 materials automatically. If you don't know the names in an existing STEP file, use `--dump-parts` to list them before writing your mappings.
 
 ## Setup
 
@@ -39,7 +39,7 @@ podman run --rm \
   python3 src/GUIMeshCLI.py \
     --step data/STEPfiles/your_geometry.step \
     --load-materials data/Materials/MyMaterial.json \
-    --assign-materials \
+    --assign-materials src/material_mappings/<config>.json \
     --output-dir output/gdml/ \
     --verbose
 ```
@@ -52,7 +52,7 @@ Replace `/path/to/CADtoGeant4` with the absolute path to your cloned repository.
 
 - `--step <file>` — **Required.** Input STEP file to convert
 - `--load-materials <file_or_dir>` — Load material definitions from a JSON file or directory (all `.json` files). Repeatable
-- `--assign-materials [config.json]` — Assign materials to volumes by name pattern. Uses `src/material_mappings.json` by default, or pass a custom file
+- `--assign-materials <config.json>` — Assign materials to volumes by name pattern. Path is required; see `src/material_mappings/` for bundled configs
 - `--extract-centers [filename]` — Extract LYSO crystal center coordinates and orientations (volumes whose name contains "lyso" or whose material is LYSO); writes both a CSV and an H5 file. Filename is auto-generated if omitted
 - `--output-dir <dir>` — Output directory for GDML files
 - `--world-size X Y Z` — World volume dimensions in meters (default: auto from bounding box + 10% margin)
@@ -80,7 +80,7 @@ podman run --rm \
     --dump-parts output/parts.txt
 ```
 
-Open `parts.txt`, identify the naming patterns (e.g., `_alu`, `_lyso`, `_carbon`), then write `src/material_mappings.json` accordingly.
+Open `parts.txt`, identify the naming patterns (e.g., `_alu`, `_lyso`, `_carbon`), then either reuse one of the bundled configs in `src/material_mappings/` or add a new one alongside.
 
 ## Materials
 
@@ -94,7 +94,7 @@ The tool assigns materials by matching substrings in volume names (case-insensit
 | `shield_aluminum` | `aluminum` | `G4_Al` |
 | `window_quartz_03` | `quartz` | custom (requires `--load-materials`) |
 
-### Material mapping file (`src/material_mappings.json`)
+### Material mapping file (`src/material_mappings/<domain>.json`)
 
 ```json
 {
@@ -109,12 +109,14 @@ The tool assigns materials by matching substrings in volume names (case-insensit
       "description": "Fused silica",
       "requires_custom": true
     }
-  }
+  },
+  "world_material": "Vacuum"
 }
 ```
 
 - `material`: Geant4 material name — `G4_*` for NIST materials, or a custom name
 - `requires_custom: true`: material must also be loaded with `--load-materials`
+- `world_material` (optional): the **name** of a material to fill the world volume. The named material must be loaded via `--load-materials` (`data/Materials/Vacuum.json` and `data/Materials/Vacuum_ref.json` ship with the repo). Omit to use the legacy hardcoded `Vacuum` block. Use `Vacuum_ref` whenever the GDML will be loaded into [g4ring](gPET-sim/g4ring/src/DetectorConstruction.cpp), which creates its own C++-side material called `Vacuum` and would otherwise duplicate-name-collide.
 
 ### Custom material definition
 

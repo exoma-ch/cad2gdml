@@ -1,0 +1,37 @@
+{
+  "material_mappings": {
+    "screw": {
+      "material": "StainlessSteel",
+      "description": "Stainless steel for fasteners",
+      "requires_custom": true
+    },
+    "washer": {
+      "material": "StainlessSteel",
+      "description": "Stainless steel for washers",
+      "requires_custom": true
+    },
+    "aluminum": {
+      "material": "G4_Al",
+      "description": "Aluminum material",
+      "requires_custom": false
+    },
+    "al": {
+      "material": "G4_Al",
+      "description": "Aluminum material (short form)",
+      "requires_custom": false
+    },
+    "carbon": {
+      "material": "G4_C",
+      "description": "Carbon/graphite material",
+      "requires_custom": false
+    }
+  },
+  "fallback_material": {
+    "material": "G4_Si",
+    "description": "Default fallback material",
+    "requires_custom": false
+  },
+  "world_material": "Vacuum",
+  "version": "1.0",
+  "description": "Material mappings for cavity / general-purpose mechanical assemblies (screws, washers, aluminum, carbon). World fill is Vacuum (loaded from data/Materials/Vacuum.json). Not intended for use with g4ring."
+}
