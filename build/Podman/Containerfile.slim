@@ -28,7 +28,9 @@ RUN apt-get update && apt-get install -y \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-# No pip install needed: GUIMeshCLI.py and all src/ files use only stdlib + FreeCAD.
+# h5py is needed for --extract-centers H5 output; everything else uses stdlib + FreeCAD.
+RUN pip install --no-cache-dir h5py
+
 ENV PYTHONPATH="/usr/local/bin/squashfs-root/usr/lib"
 
 VOLUME ["/mnt/guimesh"]

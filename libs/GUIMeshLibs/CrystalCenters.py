@@ -34,8 +34,10 @@ def extract_crystal_number(volume_label):
         r'(\d+)',                # Any number (fallback)
     ]
     
-    # Special case: _detector_lyso_ (no number) should be crystal 0
-    if volume_label == '_detector_lyso_':
+    # Special case: bare label with no numeric suffix is crystal 0
+    # (e.g. FreeCAD's first instance is 'Crystal' before duplicates become
+    # 'Crystal001', 'Crystal002', ...; same for '_detector_lyso_')
+    if volume_label in ('_detector_lyso_', 'Crystal'):
         return 0
     
     for pattern in patterns:
@@ -290,7 +292,7 @@ def extract_crystal_centers(list_of_objects, verbose=False, output_file=None, ou
                 print(f"  1. Check that volume names contain numbers")
                 print(f"  2. Verify the naming convention in your STEP file")
                 print(f"  3. Only '_detector_lyso_' (no number) is allowed as crystal 0")
-                return [], {}, False
+                return [], False
             elif crystal_number in used_crystal_ids:
                 # Duplicate found - this is an error
                 print(f"\n ERROR: Duplicate crystal ID {crystal_number} found in volume name '{volume_label}'")
