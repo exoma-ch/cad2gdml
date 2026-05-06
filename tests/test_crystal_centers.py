@@ -404,10 +404,10 @@ class TestExtractCrystalCenters:
     def test_extract_centers_coordinate_ranges(self, loaded_volumes):
         """Test that coordinates are reasonable (not NaN or infinite)."""
         centers, success = CrystalCenters.extract_crystal_centers(loaded_volumes)
-        
+
         assert success is True
         assert len(centers) > 0
-        
+
         for center in centers:
             assert not (np.isnan(center['center_x']) or np.isinf(center['center_x']))
             assert not (np.isnan(center['center_y']) or np.isinf(center['center_y']))
@@ -415,4 +415,58 @@ class TestExtractCrystalCenters:
             assert not (np.isnan(center['dir_x']) or np.isinf(center['dir_x']))
             assert not (np.isnan(center['dir_y']) or np.isinf(center['dir_y']))
             assert not (np.isnan(center['dir_z']) or np.isinf(center['dir_z']))
+
+    # ------------------------------------------------------------------ #
+    # Value-level invariants for the ring6x1 fixture                     #
+    # ring6x1 = 6 blocks × 1 axial layer; long axes are radial (depth).  #
+    # ------------------------------------------------------------------ #
+
+    @staticmethod
+    def _detect_axial(centers):
+        """Smallest mean(dir²) component identifies the scanner axial axis."""
+        n = len(centers)
+        means = {axis: sum(c[f'dir_{axis}'] ** 2 for c in centers) / n
+                 for axis in 'xyz'}
+        return min(means, key=means.get)
+
+    def test_extract_centers_directions_lie_in_ring_plane(self, loaded_volumes):
+        """Block-arranged crystals have long axes in the ring plane (perpendicular to scanner axial)."""
+        centers, success = CrystalCenters.extract_crystal_centers(loaded_volumes)
+        assert success and centers
+
+        axial = self._detect_axial(centers)
+        axial_key = f'dir_{axial}'
+        for c in centers:
+            assert abs(c[axial_key]) < 1e-6, (
+                f"Crystal {c['crystal_id']}: long-axis component along axial '{axial}' "
+                f"is {c[axial_key]:.4g}, expected ~0 for a block-ring scanner"
+            )
+
+    def test_extract_centers_block_count(self, loaded_volumes):
+        """ring6x1 has 6 blocks at 60° → 3 unique line-orientations after sign canonicalization."""
+        centers, success = CrystalCenters.extract_crystal_centers(loaded_volumes)
+        assert success and centers
+
+        unique_dirs = {(round(c['dir_x'], 3), round(c['dir_y'], 3), round(c['dir_z'], 3))
+                       for c in centers}
+        assert len(unique_dirs) == 3, (
+            f"Expected 3 line-orientations for the 6-block ring fixture, "
+            f"got {len(unique_dirs)}: {unique_dirs}"
+        )
+
+    def test_extract_centers_on_thin_ring_shell(self, loaded_volumes):
+        """Ring-mounted crystals all sit on a narrow radial shell."""
+        centers, success = CrystalCenters.extract_crystal_centers(loaded_volumes)
+        assert success and centers
+
+        axial = self._detect_axial(centers)
+        in_plane = [a for a in 'xyz' if a != axial]
+        radii = [(c[f'center_{in_plane[0]}'] ** 2 + c[f'center_{in_plane[1]}'] ** 2) ** 0.5
+                 for c in centers]
+        spread = max(radii) - min(radii)
+        mean_r = sum(radii) / len(radii)
+        assert spread < 0.2 * mean_r, (
+            f"Radial spread {spread:.2f} mm is large relative to mean radius "
+            f"{mean_r:.2f} mm — centers don't lie on a thin shell"
+        )
 
