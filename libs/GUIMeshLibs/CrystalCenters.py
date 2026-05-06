@@ -47,23 +47,6 @@ def _canonical_sign(vec, eps=1e-9):
     return tuple(vec)
 
 
-def _bbox_longest_axis(bbox):
-    """Unit vector along the longest bbox extent (axis-aligned, world frame).
-
-    Used only when edge-graph analysis fails — e.g. on a degenerate or
-    over-tessellated crystal. Assumes the crystal is roughly axis-aligned in
-    the CAD frame; if that's wrong the answer is wrong, but at least it's
-    deterministic and points along *some* world axis.
-    """
-    extents = [
-        ('x', bbox.XMax - bbox.XMin),
-        ('y', bbox.YMax - bbox.YMin),
-        ('z', bbox.ZMax - bbox.ZMin),
-    ]
-    axis = max(extents, key=lambda kv: kv[1])[0]
-    return {'x': (1.0, 0.0, 0.0), 'y': (0.0, 1.0, 0.0), 'z': (0.0, 0.0, 1.0)}[axis]
-
-
 def _long_axis_from_vertices(vertices):
     """Long-axis unit vector of a parallelepiped from its 8 tessellated vertices.
 
@@ -162,6 +145,18 @@ def extract_crystal_centers(list_of_objects, verbose=False, output_file=None,
     convention it needs. This makes the extractor agnostic to whether the CAD
     has its scanner axial axis along X, Y, or Z.
 
+    Assumptions on the input geometry (no fallback if violated):
+      - Each LYSO volume is a clean parallelepiped that tessellates to exactly
+        8 vertices. Curved or chamfered shapes will fail.
+      - The three edge lengths are distinct enough that one is unambiguously the
+        long axis (typical PET crystal: depth ≫ width ≈ height).
+      - That long axis is the physically meaningful crystal axis (the depth
+        direction, ~radial in a ring scanner). The extractor does not check
+        that — it just trusts the geometry.
+
+    Crystals that violate the parallelepiped assumption (vertex count != 8 or
+    no edge triple summing to the body diagonal) are skipped with a warning.
+
     Args:
         list_of_objects: List of volume objects (FreeCAD-style with .VolumeCAD/.VolumeMaterial).
         verbose: Enable verbose output.
@@ -212,25 +207,22 @@ def extract_crystal_centers(list_of_objects, verbose=False, output_file=None,
             cy = (bbox.YMin + bbox.YMax) / 2.0
             cz = (bbox.ZMin + bbox.ZMax) / 2.0
 
-            try:
-                triangles = obj.VolumeCAD.Shape.tessellate(0.1)
-                vertices = triangles[0]
-                if vertices:
-                    vertex_counts.append(len(vertices))
-                    if verbose:
-                        print(f"  Crystal {volume_label}: {len(vertices)} vertices")
-                    direction = _long_axis_from_vertices(vertices)
-                    if direction is None:
-                        if verbose:
-                            print(f"  Warning: edge analysis failed for {volume_label}; "
-                                  f"falling back to longest bbox axis.")
-                        direction = _bbox_longest_axis(bbox)
-                else:
-                    direction = _bbox_longest_axis(bbox)
-            except Exception as e:
-                if verbose:
-                    print(f"Warning: Could not analyze geometry for {volume_label}: {e}")
-                direction = _bbox_longest_axis(bbox)
+            triangles = obj.VolumeCAD.Shape.tessellate(0.1)
+            vertices = triangles[0]
+            vertex_counts.append(len(vertices))
+            if verbose:
+                print(f"  Crystal {volume_label}: {len(vertices)} vertices")
+            direction = _long_axis_from_vertices(vertices)
+            if direction is None:
+                # Hard assumption: LYSO volumes are clean parallelepipeds with a
+                # clearly identifiable long axis. If we get here, the input
+                # violates that — skip with a prominent warning rather than
+                # invent a wrong direction.
+                print(f"  WARNING: {volume_label} is not a valid parallelepiped "
+                      f"(vertex count={len(vertices)}, no edge triple summed to "
+                      f"the body diagonal). Skipping this crystal.")
+                lyso_count -= 1
+                continue
 
             dx, dy, dz = _canonical_sign(direction)
 
