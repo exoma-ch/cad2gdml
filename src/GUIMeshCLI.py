@@ -358,7 +358,7 @@ class GUIMeshCLI:
             output_file=output_file,
             output_dir=getattr(self, 'output_dir', None),
             vertex_counts=self.vertex_counts,
-            translation=translation
+            translation=translation,
         )
         
         return success
@@ -591,7 +591,7 @@ def main():
     parser.add_argument('--load-materials', action='append', help='Load material(s) from a JSON file or directory containing JSON files. Can be used multiple times.')
     parser.add_argument('--verbose', action='store_true', help='Enable verbose logging and progress messages')
     parser.add_argument('--assign-materials', nargs='?', const='__no_arg__', default=None, help='Assign materials based on volume name patterns. Requires a config path, e.g. src/material_mappings/pet_ring.json or src/material_mappings/cavity.json.')
-    parser.add_argument('--extract-centers', nargs='?', const=True, help='Extract crystal center coordinates and save to CSV file. Optionally specify output filename.')
+    parser.add_argument('--extract-centers', nargs='?', const=True, help='Extract crystal center coordinates and long-axis direction vectors. Optionally specify output filename.')
     parser.add_argument('--center-geometry', action='store_true', help='Translate and center geometry at origin (0,0,0) by centering the bounding box. This minimizes world size and transforms crystal coordinates.')
     parser.add_argument('--dump-parts', metavar='OUTPUT_FILE', help='Load STEP file and write all part labels to a plain-text file (one per line), then exit. Useful for discovering part names before writing material_mappings.json.')
     
@@ -604,7 +604,7 @@ def main():
     mesh = GUIMeshCLI()
     mesh.verbose = bool(args.verbose)
     mesh.center_geometry = bool(args.center_geometry)
-    
+
     # Set output directory for files
     mesh.output_dir = args.output_dir
 
