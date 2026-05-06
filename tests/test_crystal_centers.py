@@ -9,7 +9,6 @@ import os
 import tempfile
 import shutil
 from pathlib import Path
-import csv
 import h5py
 import numpy as np
 
@@ -246,16 +245,18 @@ class TestExtractCrystalCenters:
             assert 'center_x' in center
             assert 'center_y' in center
             assert 'center_z' in center
-            assert 'azimuth_angle' in center
-            assert 'elevation_angle' in center
-            
+            assert 'dir_x' in center
+            assert 'dir_y' in center
+            assert 'dir_z' in center
+
             # Check types
             assert isinstance(center['crystal_id'], int)
             assert isinstance(center['center_x'], (int, float))
             assert isinstance(center['center_y'], (int, float))
             assert isinstance(center['center_z'], (int, float))
-            assert isinstance(center['azimuth_angle'], (int, float))
-            assert isinstance(center['elevation_angle'], (int, float))
+            assert isinstance(center['dir_x'], (int, float))
+            assert isinstance(center['dir_y'], (int, float))
+            assert isinstance(center['dir_z'], (int, float))
     
     def test_extract_centers_verbose(self, loaded_volumes):
         """Test extract_crystal_centers with verbose mode."""
@@ -267,39 +268,8 @@ class TestExtractCrystalCenters:
         assert success is True
         assert len(centers) > 0
     
-    def test_extract_centers_with_csv_output(self, loaded_volumes):
-        """Test extract_crystal_centers with CSV output."""
-        temp_dir = tempfile.mkdtemp(prefix="guimesh_test_")
-        try:
-            csv_file = os.path.join(temp_dir, 'test_crystals.csv')
-            centers, success = CrystalCenters.extract_crystal_centers(
-                loaded_volumes,
-                output_file=csv_file
-            )
-            
-            assert success is True
-            assert len(centers) > 0
-            assert os.path.exists(csv_file)
-            
-            # Verify CSV file contents
-            with open(csv_file, 'r') as f:
-                reader = csv.DictReader(f)
-                rows = list(reader)
-                assert len(rows) == len(centers)
-                
-                # Check first row
-                first_row = rows[0]
-                assert 'crystal_id' in first_row
-                assert 'center_x' in first_row
-                assert 'center_y' in first_row
-                assert 'center_z' in first_row
-                assert 'azimuth_angle' in first_row
-                assert 'elevation_angle' in first_row
-        finally:
-            shutil.rmtree(temp_dir)
-    
     def test_extract_centers_with_h5_output(self, loaded_volumes):
-        """Test extract_crystal_centers with H5 output."""
+        """Test extract_crystal_centers writes a complete H5 file (datasets + attrs)."""
         temp_dir = tempfile.mkdtemp(prefix="guimesh_test_")
         try:
             h5_file = os.path.join(temp_dir, 'test_crystals.h5')
@@ -307,52 +277,75 @@ class TestExtractCrystalCenters:
                 loaded_volumes,
                 output_file=h5_file
             )
-            
+
             assert success is True
             assert len(centers) > 0
-            
-            # Check that CSV was also created
-            csv_file = os.path.join(temp_dir, 'test_crystals.csv')
-            assert os.path.exists(csv_file)
-            
-            # Verify H5 file contents if h5py is available
-            try:
-                with h5py.File(h5_file, 'r') as f:
-                    assert 'crystal_id' in f
-                    assert 'center_x' in f
-                    assert 'center_y' in f
-                    assert 'center_z' in f
-                    assert 'azimuth_angle' in f
-                    assert 'elevation_angle' in f
-                    assert 'volume_name' in f
-                    
-                    # Check metadata
-                    assert 'n_crystals' in f.attrs
-                    assert f.attrs['n_crystals'] == len(centers)
-            except ImportError:
-                pytest.skip("h5py not available")
+            assert os.path.exists(h5_file)
+
+            with h5py.File(h5_file, 'r') as f:
+                # Per-crystal datasets.
+                for col in ('crystal_id', 'volume_name',
+                            'center_x', 'center_y', 'center_z',
+                            'dir_x', 'dir_y', 'dir_z'):
+                    assert col in f, f"Missing dataset {col!r}"
+                assert f['crystal_id'].shape[0] == len(centers)
+
+                # File-level metadata.
+                assert f.attrs['n_crystals'] == len(centers)
+                axial = f.attrs['scanner_axial_axis']
+                if isinstance(axial, bytes):
+                    axial = axial.decode('utf-8')
+                assert axial in ('x', 'y', 'z')
+                for size_attr in ('crystal_size_radial_mm',
+                                  'crystal_size_axial_mm',
+                                  'crystal_size_tangential_mm'):
+                    assert size_attr in f.attrs, f"Missing attr {size_attr!r}"
+                    assert float(f.attrs[size_attr]) > 0
+                # Radial (long edge) is the longest of the three.
+                assert float(f.attrs['crystal_size_radial_mm']) >= float(f.attrs['crystal_size_axial_mm'])
+                assert float(f.attrs['crystal_size_radial_mm']) >= float(f.attrs['crystal_size_tangential_mm'])
         finally:
             shutil.rmtree(temp_dir)
-    
+
+    def test_extract_centers_no_csv_emitted(self, loaded_volumes):
+        """CSV output is no longer produced; only the H5 file should land."""
+        temp_dir = tempfile.mkdtemp(prefix="guimesh_test_")
+        try:
+            h5_file = os.path.join(temp_dir, 'test_crystals.h5')
+            _, success = CrystalCenters.extract_crystal_centers(
+                loaded_volumes, output_file=h5_file
+            )
+            assert success is True
+            assert not any(p.endswith('.csv') for p in os.listdir(temp_dir)), (
+                f"Unexpected CSV in {temp_dir}: {os.listdir(temp_dir)}"
+            )
+
+            # If a .csv path is passed, the extractor should normalise to .h5.
+            csv_path = os.path.join(temp_dir, 'legacy_name.csv')
+            _, success = CrystalCenters.extract_crystal_centers(
+                loaded_volumes, output_file=csv_path
+            )
+            assert success is True
+            assert not os.path.exists(csv_path)
+            assert os.path.exists(os.path.join(temp_dir, 'legacy_name.h5'))
+        finally:
+            shutil.rmtree(temp_dir)
+
     def test_extract_centers_auto_filename(self, loaded_volumes):
-        """Test extract_crystal_centers with auto-generated filename."""
+        """Auto-generated filename produces lyso_crystal_centers.h5 only."""
         temp_dir = tempfile.mkdtemp(prefix="guimesh_test_")
         try:
             centers, success = CrystalCenters.extract_crystal_centers(
                 loaded_volumes,
-                output_file=True,  # Auto-generate filename
-                output_dir=temp_dir
+                output_file=True,
+                output_dir=temp_dir,
             )
-            
             assert success is True
             assert len(centers) > 0
-            
-            # Check that default files were created
-            csv_file = os.path.join(temp_dir, 'lyso_crystal_centers_3d_angles.csv')
-            h5_file = os.path.join(temp_dir, 'lyso_crystal_centers_3d_angles.h5')
-            
-            assert os.path.exists(csv_file)
-            # H5 might not exist if h5py is not available, but CSV should
+
+            h5_file = os.path.join(temp_dir, 'lyso_crystal_centers.h5')
+            assert os.path.exists(h5_file)
+            assert not os.path.exists(os.path.join(temp_dir, 'lyso_crystal_centers.csv'))
         finally:
             shutil.rmtree(temp_dir)
     
@@ -370,25 +363,22 @@ class TestExtractCrystalCenters:
         assert len(vertex_counts) > 0
         assert all(isinstance(vc, int) and vc > 0 for vc in vertex_counts)
     
-    def test_extract_centers_angle_ranges(self, loaded_volumes):
-        """Test that extracted angles are in valid ranges."""
+    def test_extract_centers_direction_is_unit_vector(self, loaded_volumes):
+        """Test that direction vectors are unit-length and sign-canonicalized."""
         centers, success = CrystalCenters.extract_crystal_centers(loaded_volumes)
-        
+
         assert success is True
         assert len(centers) > 0
-        
+
         for center in centers:
-            # Azimuth should be 0-180° (normalized)
-            assert 0 <= center['azimuth_angle'] < 180.0
-            
-            # Elevation should be 0-360° 
-            # Note: The code normalizes 360.0 to 0.0, but due to rounding it might still be 360.0
-            # So we allow both 0.0 and values < 360.0
-            elevation = center['elevation_angle']
-            assert 0 <= elevation <= 360.0
-            # After normalization, it should be either 0.0 or < 360.0
-            # But due to floating point precision, we allow exactly 360.0 as well
-            assert elevation == 0.0 or elevation < 360.0 or elevation == 360.0
+            dx, dy, dz = center['dir_x'], center['dir_y'], center['dir_z']
+            norm = (dx * dx + dy * dy + dz * dz) ** 0.5
+            assert abs(norm - 1.0) < 1e-6, f"Direction is not a unit vector: norm={norm}"
+            # Sign canonicalization: the first significant component is non-negative.
+            for component in (dx, dy, dz):
+                if abs(component) > 1e-9:
+                    assert component > 0, "Sign canonicalization failed"
+                    break
     
     def test_extract_centers_unique_ids(self, loaded_volumes):
         """Test that all crystal IDs are unique."""
@@ -403,14 +393,69 @@ class TestExtractCrystalCenters:
     def test_extract_centers_coordinate_ranges(self, loaded_volumes):
         """Test that coordinates are reasonable (not NaN or infinite)."""
         centers, success = CrystalCenters.extract_crystal_centers(loaded_volumes)
-        
+
         assert success is True
         assert len(centers) > 0
-        
+
         for center in centers:
             assert not (np.isnan(center['center_x']) or np.isinf(center['center_x']))
             assert not (np.isnan(center['center_y']) or np.isinf(center['center_y']))
             assert not (np.isnan(center['center_z']) or np.isinf(center['center_z']))
-            assert not (np.isnan(center['azimuth_angle']) or np.isinf(center['azimuth_angle']))
-            assert not (np.isnan(center['elevation_angle']) or np.isinf(center['elevation_angle']))
+            assert not (np.isnan(center['dir_x']) or np.isinf(center['dir_x']))
+            assert not (np.isnan(center['dir_y']) or np.isinf(center['dir_y']))
+            assert not (np.isnan(center['dir_z']) or np.isinf(center['dir_z']))
+
+    # ------------------------------------------------------------------ #
+    # Value-level invariants for the ring6x1 fixture                     #
+    # ring6x1 = 6 blocks × 1 axial layer; long axes are radial (depth).  #
+    # ------------------------------------------------------------------ #
+
+    @staticmethod
+    def _detect_axial(centers):
+        """Smallest mean(dir²) component identifies the scanner axial axis."""
+        n = len(centers)
+        means = {axis: sum(c[f'dir_{axis}'] ** 2 for c in centers) / n
+                 for axis in 'xyz'}
+        return min(means, key=means.get)
+
+    def test_extract_centers_directions_lie_in_ring_plane(self, loaded_volumes):
+        """Block-arranged crystals have long axes in the ring plane (perpendicular to scanner axial)."""
+        centers, success = CrystalCenters.extract_crystal_centers(loaded_volumes)
+        assert success and centers
+
+        axial = self._detect_axial(centers)
+        axial_key = f'dir_{axial}'
+        for c in centers:
+            assert abs(c[axial_key]) < 1e-6, (
+                f"Crystal {c['crystal_id']}: long-axis component along axial '{axial}' "
+                f"is {c[axial_key]:.4g}, expected ~0 for a block-ring scanner"
+            )
+
+    def test_extract_centers_block_count(self, loaded_volumes):
+        """ring6x1 has 6 blocks at 60° → 3 unique line-orientations after sign canonicalization."""
+        centers, success = CrystalCenters.extract_crystal_centers(loaded_volumes)
+        assert success and centers
+
+        unique_dirs = {(round(c['dir_x'], 3), round(c['dir_y'], 3), round(c['dir_z'], 3))
+                       for c in centers}
+        assert len(unique_dirs) == 3, (
+            f"Expected 3 line-orientations for the 6-block ring fixture, "
+            f"got {len(unique_dirs)}: {unique_dirs}"
+        )
+
+    def test_extract_centers_on_thin_ring_shell(self, loaded_volumes):
+        """Ring-mounted crystals all sit on a narrow radial shell."""
+        centers, success = CrystalCenters.extract_crystal_centers(loaded_volumes)
+        assert success and centers
+
+        axial = self._detect_axial(centers)
+        in_plane = [a for a in 'xyz' if a != axial]
+        radii = [(c[f'center_{in_plane[0]}'] ** 2 + c[f'center_{in_plane[1]}'] ** 2) ** 0.5
+                 for c in centers]
+        spread = max(radii) - min(radii)
+        mean_r = sum(radii) / len(radii)
+        assert spread < 0.2 * mean_r, (
+            f"Radial spread {spread:.2f} mm is large relative to mean radius "
+            f"{mean_r:.2f} mm — centers don't lie on a thin shell"
+        )
 

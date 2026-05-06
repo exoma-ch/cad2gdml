@@ -1,832 +1,370 @@
 #!/usr/bin/env python3
-"""
-Plot scanner geometry with crystal dimensions and orientations.
-Shows three orthogonal plane views: XY, XZ, and YZ.
+"""Plot scanner geometry from per-crystal centers and long-axis directions.
+
+Reads the H5 file produced by ``--extract-centers`` (per-crystal center +
+long-axis unit vector, plus file-level metadata: scanner axial axis and
+crystal sizes). Visualisation is axis-agnostic: stick endpoints are
+``center ± (L/2) · direction`` projected into XY, XZ, YZ. The axial axis
+is read from the H5 attrs (or auto-detected as a fallback) and used only
+for labels and block grouping.
 """
 
-import matplotlib.pyplot as plt
-import csv
-import math
-import sys
-import os
 import argparse
+import glob
+import math
+import os
+import sys
 
-def normalize_elevation_angle(elevation):
-    """Normalize elevation angle: 0° and 360° are equivalent"""
-    elevation = elevation % 360.0
-    if elevation == 360.0:
-        elevation = 0.0
-    return elevation
+import h5py
+import matplotlib.pyplot as plt
 
-def normalize_coordinates(crystals):
+
+AXIS_INDEX = {'x': 0, 'y': 1, 'z': 2}
+
+
+def read_crystal_data(h5_file):
+    """Load per-crystal records and file-level metadata from the H5.
+
+    Returns (crystals, metadata) where ``crystals`` is a list of dicts with
+    keys (id, name, x, y, z, dx, dy, dz) and ``metadata`` carries the H5
+    attrs (scanner_axial_axis, crystal_size_*_mm) when present.
     """
-    Normalize coordinates to make plots axis-independent.
-    This handles different axis conventions (yup vs noyup) by:
-    1. Normalizing elevation angles (0° = 360°)
-    2. Transforming to a canonical coordinate system (noyup convention)
-    
-    The transformation detects if y and z are swapped (yup convention)
-    and converts to the canonical (noyup) convention where:
-    - y values are typically positive
-    - z values are typically negative
-    - y and z are swapped compared to yup
-    """
-    if not crystals:
-        return crystals
-    
-    normalized = []
-    
-    # Detect coordinate system convention by checking y and z value patterns
-    # In yup: y values are distributed around 0 (mean_y ≈ 0), z values have non-zero mean
-    # In noyup: y values have non-zero mean, z values are distributed around 0 (mean_z ≈ 0)
-    y_values = [c['y'] for c in crystals]
-    z_values = [c['z'] for c in crystals]
-    
-    # Calculate means to determine which coordinate is centered around 0
-    mean_y = sum(y_values) / len(y_values)
-    mean_z = sum(z_values) / len(z_values)
-    
-    # Tolerance for "near zero" (within 1 mm)
-    tolerance = 1.0
-    
-    # Determine if we need to swap and transform
-    # If mean_y ≈ 0 and mean_z ≠ 0, likely yup (needs swap to noyup)
-    # If mean_y ≠ 0 and mean_z ≈ 0, likely noyup (already correct)
-    needs_swap = (abs(mean_y) < tolerance and abs(mean_z) > tolerance)
-    
-    if needs_swap:
-        print("Detected yup coordinate convention - transforming to canonical (noyup) convention")
-        for crystal in crystals:
-            # Swap y and z, and negate z to match noyup convention
-            # yup: (y, z) -> noyup: (z, -y) but we want (y, z) in noyup
-            # Actually: yup(y, z) -> noyup(-z, y)
-            elevation = normalize_elevation_angle(crystal['elevation'])
-            normalized_crystal = {
-                'id': crystal['id'],
-                'name': crystal['name'],
-                'x': crystal['x'],
-                'y': -crystal['z'],  # Swap: use -z as y
-                'z': crystal['y'],   # Swap: use y as z
-                'azimuth': crystal['azimuth'],
-                'elevation': elevation
-            }
-            normalized.append(normalized_crystal)
-    else:
-        print("Using canonical (noyup) coordinate convention")
-        for crystal in crystals:
-            elevation = normalize_elevation_angle(crystal['elevation'])
-            normalized_crystal = {
-                'id': crystal['id'],
-                'name': crystal['name'],
-                'x': crystal['x'],
-                'y': crystal['y'],
-                'z': crystal['z'],
-                'azimuth': crystal['azimuth'],
-                'elevation': elevation
-            }
-            normalized.append(normalized_crystal)
-    
-    return normalized
-
-def read_crystal_data(csv_file):
-    """Read crystal data from CSV file"""
+    required = ('crystal_id', 'volume_name',
+                'center_x', 'center_y', 'center_z',
+                'dir_x', 'dir_y', 'dir_z')
     crystals = []
-    
-    try:
-        with open(csv_file, 'r') as f:
-            reader = csv.DictReader(f)
-            for row in reader:
-                crystal = {
-                    'id': int(row['crystal_id']),
-                    'name': row['volume_name'],
-                    'x': float(row['center_x']),
-                    'y': float(row['center_y']),
-                    'z': float(row['center_z']),
-                    'azimuth': float(row['azimuth_angle']),
-                    'elevation': float(row['elevation_angle'])
-                }
-                crystals.append(crystal)
-        
-        print(f"Loaded {len(crystals)} crystal centers from {csv_file}")
-        
-        # Normalize coordinates to make plots axis-independent
-        crystals = normalize_coordinates(crystals)
-        
-        return crystals
-        
-    except FileNotFoundError:
-        print(f"Error reading CSV file: {csv_file}")
-        return []
-    except Exception as e:
-        print(f"Error reading CSV file: {e}")
-        return []
+    metadata = {}
+    with h5py.File(h5_file, 'r') as f:
+        missing = [k for k in required if k not in f]
+        if missing:
+            raise ValueError(
+                f"{h5_file} is missing required datasets: {missing}.\n"
+                f"Re-run --extract-centers with the current code."
+            )
+        ids = f['crystal_id'][:]
+        names = f['volume_name'][:]
+        cx, cy, cz = f['center_x'][:], f['center_y'][:], f['center_z'][:]
+        dx, dy, dz = f['dir_x'][:], f['dir_y'][:], f['dir_z'][:]
+        for i in range(len(ids)):
+            name = names[i]
+            if isinstance(name, bytes):
+                name = name.decode('utf-8')
+            crystals.append({
+                'id': int(ids[i]), 'name': name,
+                'x': float(cx[i]), 'y': float(cy[i]), 'z': float(cz[i]),
+                'dx': float(dx[i]), 'dy': float(dy[i]), 'dz': float(dz[i]),
+            })
+        for key in ('scanner_axial_axis',
+                    'crystal_size_radial_mm',
+                    'crystal_size_axial_mm',
+                    'crystal_size_tangential_mm'):
+            if key in f.attrs:
+                value = f.attrs[key]
+                if isinstance(value, bytes):
+                    value = value.decode('utf-8')
+                metadata[key] = value
+    print(f"Loaded {len(crystals)} crystal records from {h5_file}")
+    if metadata:
+        bits = []
+        if 'scanner_axial_axis' in metadata:
+            bits.append(f"axial={str(metadata['scanner_axial_axis']).upper()}")
+        for k, label in (('crystal_size_radial_mm', 'radial'),
+                         ('crystal_size_axial_mm', 'axial-dim'),
+                         ('crystal_size_tangential_mm', 'tangential')):
+            if k in metadata:
+                bits.append(f"{label}={float(metadata[k]):.3f}mm")
+        if bits:
+            print(f"H5 metadata: {', '.join(bits)}")
+    return crystals, metadata
 
 
-def plot_scanner_with_crystals(crystals, width, height, depth, save_dir=None):
-    """Plot scanner geometry with crystal dimensions in three orthogonal planes"""
-    
+def detect_axial_axis(crystals):
+    """Pick the world axis (x/y/z) that is the scanner axial axis.
+
+    Crystal long-axis directions live in the ring plane (perpendicular to the
+    scanner axis), so the axis with the smallest mean-squared direction
+    component is the axial axis.
+    """
+    n = len(crystals)
+    components = {
+        'x': sum(c['dx'] ** 2 for c in crystals) / n,
+        'y': sum(c['dy'] ** 2 for c in crystals) / n,
+        'z': sum(c['dz'] ** 2 for c in crystals) / n,
+    }
+    axial = min(components, key=components.get)
+    print(f"Detected axial axis: {axial.upper()}  (mean dir²: "
+          f"x={components['x']:.3f}, y={components['y']:.3f}, z={components['z']:.3f})")
+    return axial
+
+
+def stick_endpoints(crystal, length, plane):
+    """Return ((u0, v0), (u1, v1)) for the stick projected onto ``plane``.
+
+    ``plane`` is two characters from 'xyz' naming the horizontal and vertical
+    axes of the projection (e.g. 'xz' for an XZ plot).
+    """
+    pos = (crystal['x'], crystal['y'], crystal['z'])
+    direction = (crystal['dx'], crystal['dy'], crystal['dz'])
+    half = length / 2.0
+    u, v = AXIS_INDEX[plane[0]], AXIS_INDEX[plane[1]]
+    return (
+        (pos[u] - half * direction[u], pos[v] - half * direction[v]),
+        (pos[u] + half * direction[u], pos[v] + half * direction[v]),
+    )
+
+
+def around_axis_angle(crystal, axial):
+    """Position angle of the crystal around the scanner axis, in [0, 360)°."""
+    a = AXIS_INDEX[axial]
+    others = [i for i in (0, 1, 2) if i != a]
+    pos = (crystal['x'], crystal['y'], crystal['z'])
+    return math.degrees(math.atan2(pos[others[1]], pos[others[0]])) % 360.0
+
+
+def cluster_by_direction(crystals, precision=2):
+    """Cluster crystals by rounded direction vector (one cluster per block)."""
+    groups = {}
+    for c in crystals:
+        key = (round(c['dx'], precision), round(c['dy'], precision), round(c['dz'], precision))
+        groups.setdefault(key, []).append(c)
+    return groups
+
+
+PLANES = (('xz', 'X (mm)', 'Z (mm)'),
+          ('xy', 'X (mm)', 'Y (mm)'),
+          ('yz', 'Y (mm)', 'Z (mm)'))
+
+
+def _ring_plane_label(axial):
+    """The two-axis plane perpendicular to the scanner axial axis."""
+    return ''.join(a for a in 'xyz' if a != axial)
+
+
+def _is_ring_plane(plane, axial):
+    return set(plane) == set(_ring_plane_label(axial))
+
+
+def plot_scanner_with_crystals(crystals, depth, axial, save_dir=None):
+    """Three orthogonal projections coloured by around-axis angle."""
     if not crystals:
         print("No crystal data to plot")
         return
-    
-    # Extract coordinates
-    x = [c['x'] for c in crystals]
-    y = [c['y'] for c in crystals]
-    z = [c['z'] for c in crystals]
-    azimuth_angles = [c['azimuth'] for c in crystals]
-    elevation_angles = [c['elevation'] for c in crystals]
-    
-    # Create figure with three orthogonal plane views
-    fig = plt.figure(figsize=(18, 6))
-    
-    # Create a colormap for azimuth angles
+
+    angles = [around_axis_angle(c, axial) for c in crystals]
     cmap = plt.cm.hsv
-    norm = plt.Normalize(vmin=min(azimuth_angles), vmax=max(azimuth_angles))
-    
-    # Plot a subset of crystals to avoid overcrowding
+    norm = plt.Normalize(vmin=0.0, vmax=360.0)
+
     max_crystals = 500
     step = max(1, len(crystals) // max_crystals)
-    subset_crystals = crystals[::step]
-    
-    print(f"Plotting {len(subset_crystals)} oriented crystal sticks in three planes...")
-    
-    # 1. Top view (XZ plane) - looking down from above
-    ax1 = fig.add_subplot(131)
-    
-    for i, crystal in enumerate(subset_crystals):
-        azimuth_rad = math.radians(crystal['azimuth'])
-        stick_length = depth  # 20mm in the depth direction
-        
-        # Calculate stick endpoints in XZ plane
-        dx = (stick_length/2) * math.cos(azimuth_rad)
-        dz = (stick_length/2) * math.sin(azimuth_rad)
-        
-        x_start = crystal['x'] - dx
-        x_end = crystal['x'] + dx
-        z_start = crystal['z'] - dz
-        z_end = crystal['z'] + dz
-        
-        color = cmap(norm(crystal['azimuth']))
-        ax1.plot([x_start, x_end], [z_start, z_end], 
-                color=color, linewidth=2, alpha=0.8)
-    
-    ax1.set_xlabel('X (mm)')
-    ax1.set_ylabel('Z (mm)')
-    ax1.set_title('Top View (XZ plane)')
-    ax1.grid(True, alpha=0.3)
-    ax1.set_aspect('equal')
-    
-    # 2. Side view (XY plane) - looking from the side
-    ax2 = fig.add_subplot(132)
-    
-    for i, crystal in enumerate(subset_crystals):
-        azimuth_rad = math.radians(crystal['azimuth'])
-        elevation_rad = math.radians(crystal['elevation'])  # Read elevation from CSV
-        stick_length = depth  # 20mm in the depth direction
-        
-        # Calculate stick endpoints in XY plane using both angles
-        dx = (stick_length/2) * math.cos(azimuth_rad) * math.cos(elevation_rad)
-        dy = (stick_length/2) * math.sin(elevation_rad)
-        
-        x_start = crystal['x'] - dx
-        x_end = crystal['x'] + dx
-        y_start = crystal['y'] - dy
-        y_end = crystal['y'] + dy
-        
-        color = cmap(norm(crystal['azimuth']))
-        ax2.plot([x_start, x_end], [y_start, y_end], 
-                color=color, linewidth=2, alpha=0.8)
-    
-    ax2.set_xlabel('X (mm)')
-    ax2.set_ylabel('Y (mm)')
-    ax2.set_title('Side View (XY plane)')
-    ax2.grid(True, alpha=0.3)
-    ax2.set_aspect('equal')
-    
-    # 3. Front view (YZ plane) - looking from the front
-    ax3 = fig.add_subplot(133)
-    
-    for i, crystal in enumerate(subset_crystals):
-        azimuth_rad = math.radians(crystal['azimuth'])
-        elevation_rad = math.radians(crystal['elevation'])  # Read elevation from CSV
-        stick_length = depth  # 20mm in the depth direction
-        
-        # Calculate stick endpoints in YZ plane using both angles
-        dz = (stick_length/2) * math.sin(azimuth_rad) * math.cos(elevation_rad)
-        dy = (stick_length/2) * math.sin(elevation_rad)
-        
-        z_start = crystal['z'] - dz
-        z_end = crystal['z'] + dz
-        y_start = crystal['y'] - dy
-        y_end = crystal['y'] + dy
-        
-        color = cmap(norm(crystal['azimuth']))
-        ax3.plot([z_start, z_end], [y_start, y_end], 
-                color=color, linewidth=2, alpha=0.8)
-    
-    ax3.set_xlabel('Z (mm)')
-    ax3.set_ylabel('Y (mm)')
-    ax3.set_title('Front View (YZ plane)')
-    ax3.grid(True, alpha=0.3)
-    ax3.set_aspect('equal')
-    
-    # Add colorbar
+    subset = list(zip(crystals[::step], angles[::step]))
+
+    fig, axes = plt.subplots(1, 3, figsize=(18, 6))
+    print(f"Plotting {len(subset)} oriented crystal sticks in three planes...")
+
+    for ax, (plane, xlabel, ylabel) in zip(axes, PLANES):
+        for crystal, angle in subset:
+            (u0, v0), (u1, v1) = stick_endpoints(crystal, depth, plane)
+            ax.plot([u0, u1], [v0, v1], color=cmap(norm(angle)), linewidth=2, alpha=0.8)
+        title = f"{plane.upper()} plane"
+        if _is_ring_plane(plane, axial):
+            title += "  (ring plane)"
+        ax.set(xlabel=xlabel, ylabel=ylabel, title=title)
+        ax.grid(True, alpha=0.3)
+        ax.set_aspect('equal')
+
     sm = plt.cm.ScalarMappable(cmap=cmap, norm=norm)
     sm.set_array([])
-    cbar = plt.colorbar(sm, ax=[ax1, ax2, ax3], shrink=0.6, aspect=20)
-    cbar.set_label('Azimuth Angle (degrees)')
-    
-    # Add overall title
-    fig.suptitle(f'Scanner Geometry - Three Orthogonal Views\n{len(subset_crystals)} crystals shown', fontsize=14)
-    
-    # Statistics
-    print(f"\n=== Scanner Geometry with Crystal Sizes ===")
+    cbar = plt.colorbar(sm, ax=list(axes), shrink=0.6, aspect=20)
+    cbar.set_label(f'Position angle around {axial.upper()} axis (°)')
+
+    fig.suptitle(f'Scanner geometry — three orthogonal views ({len(subset)} crystals shown)',
+                 fontsize=14)
+
+    _print_geometry_stats(crystals, depth, axial)
+
+    out = os.path.join(save_dir or '.', 'scanner_with_crystals.png')
+    plt.savefig(out, dpi=300, bbox_inches='tight')
+    print(f"Saved: {out}")
+    plt.show()
+
+    plot_orientation_groups(crystals, depth, axial, save_dir)
+
+
+def _print_geometry_stats(crystals, depth, axial):
+    xs = [c['x'] for c in crystals]
+    ys = [c['y'] for c in crystals]
+    zs = [c['z'] for c in crystals]
+
+    a = AXIS_INDEX[axial]
+    others = [i for i in (0, 1, 2) if i != a]
+    radial = [math.sqrt((c['x'], c['y'], c['z'])[others[0]] ** 2
+                        + (c['x'], c['y'], c['z'])[others[1]] ** 2)
+              for c in crystals]
+
+    print(f"\n=== Scanner geometry ===")
     print(f"Total crystals: {len(crystals)}")
-    print(f"X range: {min(x):.2f} to {max(x):.2f} mm (span: {max(x)-min(x):.2f} mm)")
-    print(f"Y range: {min(y):.2f} to {max(y):.2f} mm (span: {max(y)-min(y):.2f} mm)")
-    print(f"Z range: {min(z):.2f} to {max(z):.2f} mm (span: {max(z)-min(z):.2f} mm)")
-    print(f"Azimuth angles: {min(azimuth_angles):.1f}° to {max(azimuth_angles):.1f}° (span: {max(azimuth_angles)-min(azimuth_angles):.1f}°)")
-    print(f"Elevation angles: {min(elevation_angles):.1f}° to {max(elevation_angles):.1f}° (span: {max(elevation_angles)-min(elevation_angles):.1f}°)")
-    
-    print(f"\n=== Crystal Dimension Statistics ===")
-    print(f"Width:  {width:.2f} mm")
-    print(f"Height: {height:.2f} mm")
-    print(f"Depth:  {depth:.2f} mm")
-    print(f"Volume: {width * height * depth:.1f} mm³")
-    
-    # Calculate radial distances
-    radial_distances = [math.sqrt(c['x']**2 + c['z']**2) for c in crystals]
-    print(f"Radial distances: {min(radial_distances):.1f} to {max(radial_distances):.1f} mm (avg: {sum(radial_distances)/len(radial_distances):.1f} mm)")
-    
-    # Save the plot
-    if save_dir:
-        output_file = os.path.join(save_dir, 'scanner_with_crystals.png')
-        plt.savefig(output_file, dpi=300, bbox_inches='tight')
-        print(f"Saved: {output_file}")
-    else:
-        plt.savefig('scanner_with_crystals.png', dpi=300, bbox_inches='tight')
-        print("Saved: ./scanner_with_crystals.png")
-    
-    plt.show()
-    
-    # Now create orientation group plots
-    plot_orientation_groups(crystals, width, height, depth, save_dir)
+    print(f"X range: {min(xs):.2f} to {max(xs):.2f} mm (span: {max(xs)-min(xs):.2f} mm)")
+    print(f"Y range: {min(ys):.2f} to {max(ys):.2f} mm (span: {max(ys)-min(ys):.2f} mm)")
+    print(f"Z range: {min(zs):.2f} to {max(zs):.2f} mm (span: {max(zs)-min(zs):.2f} mm)")
+    print(f"Crystal long-axis length used for sticks: {depth:.2f} mm")
+    print(f"Radial distance from {axial.upper()} axis: "
+          f"{min(radial):.1f} to {max(radial):.1f} mm "
+          f"(avg: {sum(radial)/len(radial):.1f} mm)")
 
-def plot_orientation_groups(crystals, width, height, depth, save_dir=None):
-    """Plot all orientation groups in a single combined figure"""
-    
-    if not crystals:
-        return
-    
-    # Group crystals by orientation angle using modulo 180° (opposite directions are the same)
-    orientation_groups = {}
-    for crystal in crystals:
-        # Use modulo 180° to group opposite directions (0° = 180°, 30° = 210°, etc.)
-        group_angle = crystal['azimuth'] % 180
-        
-        # Round to nearest 10 degrees for cleaner grouping
-        group_angle = round(group_angle / 10) * 10
-        
-        # Special case: if angle is exactly 180°, map it to 0° to group with 0°
-        if group_angle == 180:
-            group_angle = 0
-        
-        if group_angle not in orientation_groups:
-            orientation_groups[group_angle] = []
-        orientation_groups[group_angle].append(crystal)
-    
-    print(f"\n=== Orientation Group Analysis ===")
-    print(f"Found {len(orientation_groups)} orientation groups:")
-    for angle in sorted(orientation_groups.keys()):
-        count = len(orientation_groups[angle])
-        print(f"  {angle:3.0f}°: {count:4d} crystals")
-    
-    # Create a single combined figure with all orientation groups
-    n_groups = len(orientation_groups)
-    if n_groups == 0:
-        return
-    
-    # Create a grid layout: 3 columns (top, side, front views) and multiple rows
-    n_cols = 3  # Top, Side, Front views
-    n_rows = n_groups
-    
-    fig = plt.figure(figsize=(18, 6 * n_rows))
-    fig.suptitle(f'All Orientation Groups - Combined View', fontsize=16)
-    
-    # Define colors for each orientation group
-    colors = ['blue', 'red', 'green', 'orange', 'purple', 'brown', 'pink', 'gray']
-    
-    row = 0
-    for group_angle in sorted(orientation_groups.keys()):
-        group_crystals = orientation_groups[group_angle]
-        
-        if len(group_crystals) < 5:  # Skip groups with too few crystals
-            continue
-        
-        color = colors[row % len(colors)]
-        
-        # 1. Top view (XZ plane)
-        ax1 = fig.add_subplot(n_rows, n_cols, row * n_cols + 1)
-        for crystal in group_crystals:
-            azimuth_rad = math.radians(crystal['azimuth'])
-            stick_length = depth
-            
-            dx = (stick_length/2) * math.cos(azimuth_rad)
-            dz = (stick_length/2) * math.sin(azimuth_rad)
-            
-            x_start = crystal['x'] - dx
-            x_end = crystal['x'] + dx
-            z_start = crystal['z'] - dz
-            z_end = crystal['z'] + dz
-            
-            ax1.plot([x_start, x_end], [z_start, z_end], 
-                    color=color, linewidth=1.5, alpha=0.7)
-        
-        ax1.set_xlabel('X (mm)')
-        ax1.set_ylabel('Z (mm)')
-        ax1.set_title(f'Top View - {group_angle:.0f}° ({len(group_crystals)} crystals)')
-        ax1.grid(True, alpha=0.3)
-        ax1.set_aspect('equal')
-        
-        # 2. Side view (XY plane)
-        ax2 = fig.add_subplot(n_rows, n_cols, row * n_cols + 2)
-        for crystal in group_crystals:
-            azimuth_rad = math.radians(crystal['azimuth'])
-            elevation_rad = math.radians(crystal['elevation'])  # Read elevation from CSV
-            stick_length = depth
-            
-            dx = (stick_length/2) * math.cos(azimuth_rad) * math.cos(elevation_rad)
-            dy = (stick_length/2) * math.sin(elevation_rad)
-            
-            x_start = crystal['x'] - dx
-            x_end = crystal['x'] + dx
-            y_start = crystal['y'] - dy
-            y_end = crystal['y'] + dy
-            
-            ax2.plot([x_start, x_end], [y_start, y_end], 
-                    color=color, linewidth=1.5, alpha=0.7)
-        
-        ax2.set_xlabel('X (mm)')
-        ax2.set_ylabel('Y (mm)')
-        ax2.set_title(f'Side View - {group_angle:.0f}°')
-        ax2.grid(True, alpha=0.3)
-        ax2.set_aspect('equal')
-        
-        # 3. Front view (YZ plane)
-        ax3 = fig.add_subplot(n_rows, n_cols, row * n_cols + 3)
-        for crystal in group_crystals:
-            azimuth_rad = math.radians(crystal['azimuth'])
-            elevation_rad = math.radians(crystal['elevation'])  # Read elevation from CSV
-            stick_length = depth
-            
-            dz = (stick_length/2) * math.sin(azimuth_rad) * math.cos(elevation_rad)
-            dy = (stick_length/2) * math.sin(elevation_rad)
-            
-            z_start = crystal['z'] - dz
-            z_end = crystal['z'] + dz
-            y_start = crystal['y'] - dy
-            y_end = crystal['y'] + dy
-            
-            ax3.plot([z_start, z_end], [y_start, y_end], 
-                    color=color, linewidth=1.5, alpha=0.7)
-        
-        ax3.set_xlabel('Z (mm)')
-        ax3.set_ylabel('Y (mm)')
-        ax3.set_title(f'Front View - {group_angle:.0f}°')
-        ax3.grid(True, alpha=0.3)
-        ax3.set_aspect('equal')
-        
-        row += 1
-    
-    # Save the combined plot
-    if save_dir:
-        output_file = os.path.join(save_dir, 'all_orientation_groups_combined.png')
-        plt.savefig(output_file, dpi=300, bbox_inches='tight')
-        print(f"Saved: {output_file}")
-    else:
-        plt.savefig('all_orientation_groups_combined.png', dpi=300, bbox_inches='tight')
-        print(f"Saved: ./all_orientation_groups_combined.png")
-    
-    plt.show()
-    
-    # Create superimposed plot with all orientation groups overlaid
-    plot_superimposed_orientation_groups(crystals, width, height, depth, save_dir)
 
-def plot_superimposed_orientation_groups(crystals, width, height, depth, save_dir=None):
-    """Plot all orientation groups superimposed on the same three planes"""
-    
-    if not crystals:
+def plot_orientation_groups(crystals, depth, axial, save_dir=None):
+    """One row per block (clustered by direction), three projections per row,
+    plus a single superimposed view that overlays all blocks."""
+    groups = cluster_by_direction(crystals)
+    # Drop tiny clusters (likely fallback/noise) and order by around-axis angle of the block.
+    groups = {k: v for k, v in groups.items() if len(v) >= 5}
+    if not groups:
+        print("No orientation groups large enough to plot.")
         return
-    
-    # Group crystals by orientation angle using modulo 180° (opposite directions are the same)
-    orientation_groups = {}
-    for crystal in crystals:
-        # Use modulo 180° to group opposite directions (0° = 180°, 30° = 210°, etc.)
-        group_angle = crystal['azimuth'] % 180
-        
-        # Round to nearest 10 degrees for cleaner grouping
-        group_angle = round(group_angle / 10) * 10
-        
-        # Special case: if angle is exactly 180°, map it to 0° to group with 0°
-        if group_angle == 180:
-            group_angle = 0
-        
-        if group_angle not in orientation_groups:
-            orientation_groups[group_angle] = []
-        orientation_groups[group_angle].append(crystal)
-    
-    print(f"\n=== Creating Superimposed Orientation Groups Plot ===")
-    print(f"Overlaying {len(orientation_groups)} orientation groups on three planes...")
-    
-    # Create figure with three orthogonal plane views
-    fig = plt.figure(figsize=(18, 6))
-    fig.suptitle('All Orientation Groups - Superimposed View', fontsize=16)
-    
-    # Define colors for each orientation group
-    colors = ['blue', 'red', 'green', 'orange', 'purple', 'brown', 'pink', 'gray']
-    
-    # 1. Top view (XZ plane) - all groups superimposed
-    ax1 = fig.add_subplot(131)
-    for i, (group_angle, group_crystals) in enumerate(sorted(orientation_groups.items())):
-        if len(group_crystals) < 5:  # Skip groups with too few crystals
-            continue
-        
-        color = colors[i % len(colors)]
-        alpha = 0.6  # Slightly transparent for overlay effect
-        
-        for crystal in group_crystals:
-            azimuth_rad = math.radians(crystal['azimuth'])
-            stick_length = depth
-            
-            dx = (stick_length/2) * math.cos(azimuth_rad)
-            dz = (stick_length/2) * math.sin(azimuth_rad)
-            
-            x_start = crystal['x'] - dx
-            x_end = crystal['x'] + dx
-            z_start = crystal['z'] - dz
-            z_end = crystal['z'] + dz
-            
-            ax1.plot([x_start, x_end], [z_start, z_end], 
-                    color=color, linewidth=1.0, alpha=alpha)
-    
-    ax1.set_xlabel('X (mm)')
-    ax1.set_ylabel('Z (mm)')
-    ax1.set_title('Top View - All Groups Superimposed')
-    ax1.grid(True, alpha=0.3)
-    ax1.set_aspect('equal')
-    
-    # 2. Side view (XY plane) - all groups superimposed
-    ax2 = fig.add_subplot(132)
-    for i, (group_angle, group_crystals) in enumerate(sorted(orientation_groups.items())):
-        if len(group_crystals) < 5:  # Skip groups with too few crystals
-            continue
-        
-        color = colors[i % len(colors)]
-        alpha = 0.6  # Slightly transparent for overlay effect
-        
-        for crystal in group_crystals:
-            azimuth_rad = math.radians(crystal['azimuth'])
-            elevation_rad = math.radians(crystal['elevation'])  # Read elevation from CSV
-            stick_length = depth
-            
-            dx = (stick_length/2) * math.cos(azimuth_rad) * math.cos(elevation_rad)
-            dy = (stick_length/2) * math.sin(elevation_rad)
-            
-            x_start = crystal['x'] - dx
-            x_end = crystal['x'] + dx
-            y_start = crystal['y'] - dy
-            y_end = crystal['y'] + dy
-            
-            ax2.plot([x_start, x_end], [y_start, y_end], 
-                    color=color, linewidth=1.0, alpha=alpha)
-    
-    ax2.set_xlabel('X (mm)')
-    ax2.set_ylabel('Y (mm)')
-    ax2.set_title('Side View - All Groups Superimposed')
-    ax2.grid(True, alpha=0.3)
-    ax2.set_aspect('equal')
-    
-    # 3. Front view (YZ plane) - all groups superimposed
-    ax3 = fig.add_subplot(133)
-    for i, (group_angle, group_crystals) in enumerate(sorted(orientation_groups.items())):
-        if len(group_crystals) < 5:  # Skip groups with too few crystals
-            continue
-        
-        color = colors[i % len(colors)]
-        alpha = 0.6  # Slightly transparent for overlay effect
-        
-        for crystal in group_crystals:
-            azimuth_rad = math.radians(crystal['azimuth'])
-            elevation_rad = math.radians(crystal['elevation'])  # Read elevation from CSV
-            stick_length = depth
-            
-            dz = (stick_length/2) * math.sin(azimuth_rad) * math.cos(elevation_rad)
-            dy = (stick_length/2) * math.sin(elevation_rad)
-            
-            z_start = crystal['z'] - dz
-            z_end = crystal['z'] + dz
-            y_start = crystal['y'] - dy
-            y_end = crystal['y'] + dy
-            
-            ax3.plot([z_start, z_end], [y_start, y_end], 
-                    color=color, linewidth=1.0, alpha=alpha)
-    
-    ax3.set_xlabel('Z (mm)')
-    ax3.set_ylabel('Y (mm)')
-    ax3.set_title('Front View - All Groups Superimposed')
-    ax3.grid(True, alpha=0.3)
-    ax3.set_aspect('equal')
-    
-    # Add legend showing orientation groups
-    legend_elements = []
-    for i, (group_angle, group_crystals) in enumerate(sorted(orientation_groups.items())):
-        if len(group_crystals) >= 5:  # Only include groups with enough crystals
-            color = colors[i % len(colors)]
-            legend_elements.append(plt.Line2D([0], [0], color=color, linewidth=2, 
-                                           label=f'{group_angle:.0f}° ({len(group_crystals)} crystals)'))
-    
-    fig.legend(handles=legend_elements, loc='center', bbox_to_anchor=(0.5, 0.02), 
-               ncol=3, fontsize=10)
-    
-    # Save the superimposed plot
-    if save_dir:
-        output_file = os.path.join(save_dir, 'all_orientation_groups_superimposed.png')
-        plt.savefig(output_file, dpi=300, bbox_inches='tight')
-        print(f"Saved: {output_file}")
-    else:
-        plt.savefig('all_orientation_groups_superimposed.png', dpi=300, bbox_inches='tight')
-        print(f"Saved: ./all_orientation_groups_superimposed.png")
-    
-    plt.show()
-    
-    # Create debug plot with one crystal per orientation group
-    plot_debug_single_crystals(crystals, width, height, depth, save_dir)
 
-def plot_debug_single_crystals(crystals, width, height, depth, save_dir=None):
-    """Plot one crystal per orientation group for debugging"""
-    
-    if not crystals:
-        return
-    
-    # Group crystals by orientation angle using modulo 180° (opposite directions are the same)
-    orientation_groups = {}
-    for crystal in crystals:
-        # Use modulo 180° to group opposite directions (0° = 180°, 30° = 210°, etc.)
-        group_angle = crystal['azimuth'] % 180
-        
-        # Round to nearest 10 degrees for cleaner grouping
-        group_angle = round(group_angle / 10) * 10
-        
-        # Special case: if angle is exactly 180°, map it to 0° to group with 0°
-        if group_angle == 180:
-            group_angle = 0
-        
-        if group_angle not in orientation_groups:
-            orientation_groups[group_angle] = []
-        orientation_groups[group_angle].append(crystal)
-    
-    print(f"\n=== Debug: Single Crystal per Orientation Group ===")
-    print(f"Showing one crystal from each of {len(orientation_groups)} orientation groups...")
-    
-    # Create figure with three orthogonal plane views
-    fig = plt.figure(figsize=(18, 6))
-    fig.suptitle('Debug: One Crystal per Orientation Group', fontsize=16)
-    
-    # Define colors for each orientation group
-    colors = ['blue', 'red', 'green', 'orange', 'purple', 'brown', 'pink', 'gray']
-    
-    # 1. Top view (XZ plane) - one crystal per group
-    ax1 = fig.add_subplot(131)
-    for i, (group_angle, group_crystals) in enumerate(sorted(orientation_groups.items())):
-        if len(group_crystals) < 5:  # Skip groups with too few crystals
-            continue
-        
-        # Take the first crystal from each group
-        crystal = group_crystals[0]
-        color = colors[i % len(colors)]
-        
-        azimuth_rad = math.radians(crystal['azimuth'])
-        stick_length = depth
-        
-        dx = (stick_length/2) * math.cos(azimuth_rad)
-        dz = (stick_length/2) * math.sin(azimuth_rad)
-        
-        x_start = crystal['x'] - dx
-        x_end = crystal['x'] + dx
-        z_start = crystal['z'] - dz
-        z_end = crystal['z'] + dz
-        
-        ax1.plot([x_start, x_end], [z_start, z_end], 
-                color=color, linewidth=3, alpha=0.8, label=f'{group_angle:.0f}°')
-        
-        # Add crystal center point
-        ax1.plot(crystal['x'], crystal['z'], 'o', color=color, markersize=6, alpha=0.8)
-    
-    ax1.set_xlabel('X (mm)')
-    ax1.set_ylabel('Z (mm)')
-    ax1.set_title('Top View - One Crystal per Group')
-    ax1.grid(True, alpha=0.3)
-    ax1.set_aspect('equal')
-    ax1.legend(bbox_to_anchor=(1.05, 1), loc='upper left')
-    
-    # 2. Side view (XY plane) - one crystal per group
-    ax2 = fig.add_subplot(132)
-    for i, (group_angle, group_crystals) in enumerate(sorted(orientation_groups.items())):
-        if len(group_crystals) < 5:  # Skip groups with too few crystals
-            continue
-        
-        # Take the first crystal from each group
-        crystal = group_crystals[0]
-        color = colors[i % len(colors)]
-        
-        azimuth_rad = math.radians(crystal['azimuth'])
-        elevation_rad = math.radians(crystal['elevation'])  # Read elevation from CSV
-        stick_length = depth
-        
-        dx = (stick_length/2) * math.cos(azimuth_rad) * math.cos(elevation_rad)
-        dy = (stick_length/2) * math.sin(elevation_rad)
-        
-        x_start = crystal['x'] - dx
-        x_end = crystal['x'] + dx
-        y_start = crystal['y'] - dy
-        y_end = crystal['y'] + dy
-        
-        ax2.plot([x_start, x_end], [y_start, y_end], 
-                color=color, linewidth=3, alpha=0.8, label=f'{group_angle:.0f}°')
-        
-        # Add crystal center point
-        ax2.plot(crystal['x'], crystal['y'], 'o', color=color, markersize=6, alpha=0.8)
-    
-    ax2.set_xlabel('X (mm)')
-    ax2.set_ylabel('Y (mm)')
-    ax2.set_title('Side View - One Crystal per Group')
-    ax2.grid(True, alpha=0.3)
-    ax2.set_aspect('equal')
-    ax2.legend(bbox_to_anchor=(1.05, 1), loc='upper left')
-    
-    # 3. Front view (YZ plane) - one crystal per group
-    ax3 = fig.add_subplot(133)
-    for i, (group_angle, group_crystals) in enumerate(sorted(orientation_groups.items())):
-        if len(group_crystals) < 5:  # Skip groups with too few crystals
-            continue
-        
-        # Take the first crystal from each group
-        crystal = group_crystals[0]
-        color = colors[i % len(colors)]
-        
-        azimuth_rad = math.radians(crystal['azimuth'])
-        elevation_rad = math.radians(crystal['elevation'])  # Read elevation from CSV
-        stick_length = depth
-        
-        dz = (stick_length/2) * math.sin(azimuth_rad) * math.cos(elevation_rad)
-        dy = (stick_length/2) * math.sin(elevation_rad)
-        
-        z_start = crystal['z'] - dz
-        z_end = crystal['z'] + dz
-        y_start = crystal['y'] - dy
-        y_end = crystal['y'] + dy
-        
-        ax3.plot([z_start, z_end], [y_start, y_end], 
-                color=color, linewidth=3, alpha=0.8, label=f'{group_angle:.0f}°')
-        
-        # Add crystal center point
-        ax3.plot(crystal['z'], crystal['y'], 'o', color=color, markersize=6, alpha=0.8)
-    
-    ax3.set_xlabel('Z (mm)')
-    ax3.set_ylabel('Y (mm)')
-    ax3.set_title('Front View - One Crystal per Group')
-    ax3.grid(True, alpha=0.3)
-    ax3.set_aspect('equal')
-    ax3.legend(bbox_to_anchor=(1.05, 1), loc='upper left')
-    
-    # Save the debug plot
-    if save_dir:
-        output_file = os.path.join(save_dir, 'debug_single_crystals_per_group.png')
-        plt.savefig(output_file, dpi=300, bbox_inches='tight')
-        print(f"Saved: {output_file}")
-    else:
-        plt.savefig('debug_single_crystals_per_group.png', dpi=300, bbox_inches='tight')
-        print(f"Saved: ./debug_single_crystals_per_group.png")
-    
+    def block_angle(direction):
+        a = AXIS_INDEX[axial]
+        others = [i for i in (0, 1, 2) if i != a]
+        return math.degrees(math.atan2(direction[others[1]], direction[others[0]])) % 360.0
+
+    ordered_keys = sorted(groups.keys(), key=block_angle)
+    print(f"\n=== Orientation groups (blocks) ===")
+    print(f"Found {len(ordered_keys)} blocks (clusters with ≥5 crystals):")
+    for key in ordered_keys:
+        n = len(groups[key])
+        print(f"  dir=({key[0]:+.2f},{key[1]:+.2f},{key[2]:+.2f})  "
+              f"around-{axial.upper()}={block_angle(key):6.1f}°  count={n}")
+
+    palette = plt.cm.tab20
+    colors = {k: palette(i % palette.N) for i, k in enumerate(ordered_keys)}
+
+    # Superimposed view
+    fig, axes = plt.subplots(1, 3, figsize=(18, 6))
+    fig.suptitle('Orientation groups — superimposed', fontsize=14)
+    for ax, (plane, xlabel, ylabel) in zip(axes, PLANES):
+        for key in ordered_keys:
+            for crystal in groups[key]:
+                (u0, v0), (u1, v1) = stick_endpoints(crystal, depth, plane)
+                ax.plot([u0, u1], [v0, v1], color=colors[key], linewidth=1.0, alpha=0.6)
+        title = f"{plane.upper()} plane"
+        if _is_ring_plane(plane, axial):
+            title += "  (ring plane)"
+        ax.set(xlabel=xlabel, ylabel=ylabel, title=title)
+        ax.grid(True, alpha=0.3)
+        ax.set_aspect('equal')
+
+    legend_handles = [plt.Line2D([0], [0], color=colors[k], linewidth=2,
+                                 label=f"{block_angle(k):.0f}° ({len(groups[k])})")
+                      for k in ordered_keys]
+    fig.legend(handles=legend_handles, loc='center', bbox_to_anchor=(0.5, 0.02),
+               ncol=min(6, len(legend_handles)), fontsize=9)
+    fig.subplots_adjust(bottom=0.18)
+
+    out = os.path.join(save_dir or '.', 'orientation_groups_superimposed.png')
+    plt.savefig(out, dpi=300, bbox_inches='tight')
+    print(f"Saved: {out}")
     plt.show()
 
-def plot_y_vs_radial_angle(crystals, save_dir=None):
-    """Plot Y position vs radial angle (azimuth) to show all crystals"""
-    fig, ax = plt.subplots(1, 1, figsize=(12, 8))
-    
-    # Extract data
-    y_positions = [crystal['y'] for crystal in crystals]
-    azimuth_angles = [crystal['azimuth'] for crystal in crystals]
-    
-    # Create scatter plot
-    scatter = ax.scatter(azimuth_angles, y_positions, c=azimuth_angles, cmap='viridis', 
-                       alpha=0.7, s=20, edgecolors='black', linewidth=0.5)
-    
-    # Add colorbar
-    cbar = plt.colorbar(scatter, ax=ax)
-    cbar.set_label('Azimuth Angle (degrees)', rotation=270, labelpad=20)
-    
-    # Customize plot
-    ax.set_xlabel('Radial Angle (Azimuth) [degrees]', fontsize=12)
-    ax.set_ylabel('Y Position [mm]', fontsize=12)
-    ax.set_title('Crystal Distribution: Y Position vs Radial Angle', fontsize=14, fontweight='bold')
+    # One-stick-per-block debug view
+    fig, axes = plt.subplots(1, 3, figsize=(18, 6))
+    fig.suptitle('Orientation groups — one crystal per block', fontsize=14)
+    for ax, (plane, xlabel, ylabel) in zip(axes, PLANES):
+        for key in ordered_keys:
+            crystal = groups[key][0]
+            (u0, v0), (u1, v1) = stick_endpoints(crystal, depth, plane)
+            ax.plot([u0, u1], [v0, v1], color=colors[key], linewidth=3, alpha=0.9,
+                    label=f"{block_angle(key):.0f}°")
+            u_idx, v_idx = AXIS_INDEX[plane[0]], AXIS_INDEX[plane[1]]
+            pos = (crystal['x'], crystal['y'], crystal['z'])
+            ax.plot(pos[u_idx], pos[v_idx], 'o', color=colors[key], markersize=6)
+        title = f"{plane.upper()} plane"
+        if _is_ring_plane(plane, axial):
+            title += "  (ring plane)"
+        ax.set(xlabel=xlabel, ylabel=ylabel, title=title)
+        ax.grid(True, alpha=0.3)
+        ax.set_aspect('equal')
+        ax.legend(bbox_to_anchor=(1.02, 1), loc='upper left', fontsize=8)
+
+    out = os.path.join(save_dir or '.', 'orientation_groups_debug.png')
+    plt.savefig(out, dpi=300, bbox_inches='tight')
+    print(f"Saved: {out}")
+    plt.show()
+
+
+def plot_axial_vs_around(crystals, axial, save_dir=None):
+    """Scatter of (around-axis angle, axial position) — one dot per crystal."""
+    a = AXIS_INDEX[axial]
+    axial_pos = [(c['x'], c['y'], c['z'])[a] for c in crystals]
+    angles = [around_axis_angle(c, axial) for c in crystals]
+
+    fig, ax = plt.subplots(figsize=(12, 8))
+    sc = ax.scatter(angles, axial_pos, c=angles, cmap='viridis',
+                    alpha=0.7, s=20, edgecolors='black', linewidth=0.5)
+    cbar = plt.colorbar(sc, ax=ax)
+    cbar.set_label(f'Around-{axial.upper()} angle (°)', rotation=270, labelpad=20)
+
+    ax.set_xlabel(f'Position angle around {axial.upper()} (°)', fontsize=12)
+    ax.set_ylabel(f'{axial.upper()} position (mm)', fontsize=12)
+    ax.set_title(f'Crystal distribution: {axial.upper()} vs around-{axial.upper()} angle',
+                 fontsize=13, fontweight='bold')
     ax.grid(True, alpha=0.3)
-    
-    # Set axis limits with some padding
-    ax.set_xlim(min(azimuth_angles) - 5, max(azimuth_angles) + 5)
-    ax.set_ylim(min(y_positions) - 5, max(y_positions) + 5)
-    
-    # Add statistics text
-    stats_text = f'Total Crystals: {len(crystals)}\n'
-    stats_text += f'Y Range: {min(y_positions):.1f} to {max(y_positions):.1f} mm\n'
-    stats_text += f'Azimuth Range: {min(azimuth_angles):.1f} to {max(azimuth_angles):.1f}°'
-    
-    ax.text(0.02, 0.98, stats_text, transform=ax.transAxes, fontsize=10,
+
+    stats = (f'Total crystals: {len(crystals)}\n'
+             f'{axial.upper()} range: {min(axial_pos):.1f} to {max(axial_pos):.1f} mm\n'
+             f'Angle range: {min(angles):.1f} to {max(angles):.1f}°')
+    ax.text(0.02, 0.98, stats, transform=ax.transAxes, fontsize=10,
             verticalalignment='top', bbox=dict(boxstyle='round', facecolor='white', alpha=0.8))
-    
+
     plt.tight_layout()
-    
-    # Save plot
-    if save_dir:
-        filename = os.path.join(save_dir, "y_vs_radial_angle.png")
-        plt.savefig(filename, dpi=300, bbox_inches='tight')
-        print(f"Y vs Radial Angle plot saved to: {filename}")
-    
+    out = os.path.join(save_dir or '.', 'axial_vs_around_axis.png')
+    plt.savefig(out, dpi=300, bbox_inches='tight')
+    print(f"Saved: {out}")
     plt.show()
+
+
+def main(argv=None):
+    parser = argparse.ArgumentParser(
+        description="Plot scanner geometry from crystal centers + direction vectors.",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
+    parser.add_argument('h5_file', nargs='?',
+                        help='H5 from --extract-centers (default: auto-detect).')
+    parser.add_argument('--depth', type=float, default=None,
+                        help='Crystal long-axis length used for stick rendering (mm). '
+                             'Defaults to crystal_size_radial_mm from the H5 attrs.')
+    parser.add_argument('--save-dir', default='.',
+                        help='Directory to save output plots.')
+    parser.add_argument('--axial-axis', choices=['x', 'y', 'z'], default=None,
+                        help='Override scanner axial axis from H5 attrs / auto-detect.')
+    args = parser.parse_args(argv)
+
+    h5_file = args.h5_file
+    if not h5_file:
+        candidates = sorted(glob.glob('lyso_crystal_centers*.h5'))
+        h5_file = candidates[0] if candidates else 'lyso_crystal_centers.h5'
+
+    print(f"Plotting scanner from: {h5_file}")
+
+    crystals, metadata = read_crystal_data(h5_file)
+    if not crystals:
+        print("No crystal data loaded.")
+        return 1
+
+    depth = args.depth
+    if depth is None:
+        depth = float(metadata.get('crystal_size_radial_mm', 25.0))
+    print(f"Stick length (long axis): {depth:.2f} mm")
+
+    axial = args.axial_axis or metadata.get('scanner_axial_axis') or detect_axial_axis(crystals)
+    if isinstance(axial, bytes):
+        axial = axial.decode('utf-8')
+    print(f"Scanner axial axis: {axial.upper()}")
+
+    plot_scanner_with_crystals(crystals, depth, axial, save_dir=args.save_dir)
+    plot_axial_vs_around(crystals, axial, save_dir=args.save_dir)
+    print(f"\nPlots saved to: {args.save_dir}")
+    return 0
+
 
 if __name__ == "__main__":
-    import glob
-    
-    parser = argparse.ArgumentParser(
-        description="Plot scanner geometry with crystal dimensions and orientations",
-        formatter_class=argparse.RawDescriptionHelpFormatter,
-        epilog="""
-Examples:
-  %(prog)s
-  %(prog)s crystal_centers.csv
-  %(prog)s --width 15.92 --height 5.30 --depth 23.63
-  %(prog)s crystal_centers.csv --width 15.92 --height 5.30 --depth 23.63
-        """
-    )
-    
-    parser.add_argument(
-        'csv_file',
-        nargs='?',
-        help='CSV file with crystal center data (default: auto-detect)'
-    )
-    
-    parser.add_argument(
-        '--width',
-        type=float,
-        default=3.95,
-        help='Crystal width in mm (default: 3.95)'
-    )
-    
-    parser.add_argument(
-        '--height',
-        type=float,
-        default=5.3,
-        help='Crystal height in mm (default: 25.0)'
-    )
-    
-    parser.add_argument(
-        '--depth',
-        type=float,
-        default=25.0,
-        help='Crystal depth in mm (default: 5.3)'
-    )
-    
-    parser.add_argument(
-        '--save-dir',
-        type=str,
-        default='.',
-        help='Directory to save output plots (default: current directory)'
-    )
-    
-    args = parser.parse_args()
-    
-    # Auto-detect CSV file if not provided
-    csv_file = args.csv_file
-    if not csv_file:
-        csv_files = glob.glob("lyso_crystal_centers_3d_angles*.csv")
-        if csv_files:
-            csv_file = csv_files[0]  # Use the first one found
-        else:
-            csv_file = "lyso_crystal_centers_3d_angles.csv"  # Fallback
-    
-    print(f"Plotting scanner with crystal sizes from: {csv_file}")
-    print(f"Crystal dimensions: {args.width:.2f} × {args.height:.2f} × {args.depth:.2f} mm")
-    
-    # Read crystal data
-    crystals = read_crystal_data(csv_file)
-    
-    if crystals:
-        # Main geometry plot with crystal sizes
-        plot_scanner_with_crystals(crystals, args.width, args.height, args.depth, save_dir=args.save_dir)
-        
-        # Y vs Radial Angle plot
-        plot_y_vs_radial_angle(crystals, save_dir=args.save_dir)
-        
-        print(f"\nScanner with crystal sizes visualizations saved to: {args.save_dir}")
-    else:
-        print("No crystal data loaded.")
+    sys.exit(main())

@@ -78,7 +78,7 @@ A common mistake: passing host paths (`--step /home/me/foo.step`) without mounti
 - `--step <file>` — **Required.** Input STEP file to convert
 - `--load-materials <file_or_dir>` — Load material definitions from a JSON file or directory (all `.json` files). Repeatable
 - `--assign-materials <config.json>` — Assign materials to volumes by name pattern. Path is required; see `src/material_mappings/` for bundled configs
-- `--extract-centers [filename]` — Extract LYSO crystal center coordinates and orientations (volumes whose name contains "lyso" or whose material is LYSO); writes both a CSV and an H5 file. Filename is auto-generated if omitted
+- `--extract-centers [filename]` — Write the crystal map (H5) for every LYSO volume. Schema below. Volumes that aren't clean 8-vertex parallelepipeds are skipped with a warning. Filename is auto-generated if omitted
 - `--output-dir <dir>` — Output directory for GDML files
 - `--world-size X Y Z` — World volume dimensions in meters (default: auto from bounding box + 10% margin)
 - `--center-geometry` — Translate geometry so its bounding box center is at the origin; saves the applied translation to `geometry_transform.json`
@@ -89,8 +89,28 @@ A common mistake: passing host paths (`--step /home/me/foo.step`) without mounti
 
 - `mother.gdml` — Top-level GDML file (world + includes)
 - `Volumes/*.gdml` — Per-volume GDML files
-- `<name>.csv` + `<name>.h5` — LYSO crystal centers and orientations (when using `--extract-centers`)
+- `<name>.h5` — Crystal map (when using `--extract-centers`)
 - `geometry_transform.json` — Applied translation (when using `--center-geometry`)
+
+### Crystal map (`<name>.h5`)
+
+Per-crystal datasets (one row per LYSO volume):
+
+| Field | Type | Source |
+|---|---|---|
+| `crystal_id` | int32 | parsed from the volume name (regex) |
+| `volume_name` | bytes | original CAD label |
+| `center_x/y/z` | float64, mm | bounding-box center, in CAD frame (post-translation if `--center-geometry`) |
+| `dir_x/y/z` | float64, unit | the longest of the three principal edges of the tessellated parallelepiped, sign-canonicalized |
+
+File-level attrs (one per file, identical for every crystal):
+
+| Attr | Type | Source |
+|---|---|---|
+| `scanner_axial_axis` | `'x' \| 'y' \| 'z'` | world axis with smallest mean(`dir²`) — the axis the long axes avoid |
+| `crystal_size_radial_mm` | float64 | length of the long edge |
+| `crystal_size_axial_mm` | float64 | transverse edge whose direction is most parallel to `scanner_axial_axis` |
+| `crystal_size_tangential_mm` | float64 | the remaining transverse edge |
 
 ## Discovering part names
 

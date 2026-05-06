@@ -44,15 +44,21 @@ STEP file
 
 Volume names are lowercased; the first matching pattern in `material_mappings.json` wins. Materials marked `requires_custom: true` must also be loaded via `--load-materials`.
 
-### Crystal Orientation Algorithm (Direct Edge Vector Analysis)
+### Crystal Orientation Algorithm
 
-1. Extract all vertices from the tessellated shape
-2. Compute all pairwise edge vectors
-3. For each edge, count parallel edges
-4. Select the longest edge that has exactly 3 parallel edges (parallelepiped property)
-5. Derive azimuth (`atan2(z, x)`) and elevation (`atan2(y, sqrt(x²+z²))`) from that axis
+The extractor assumes each LYSO volume is a clean parallelepiped that tessellates to exactly 8 vertices, with one unambiguously longest edge. This is true for typical PET crystals (depth ≫ width ≈ height) and is intentionally a strong assumption — there is no fallback for curved, chamfered, or otherwise non-parallelepiped shapes.
 
-This works well for rectangular parallelepiped crystals and is more reliable than PCA for regular geometries.
+From any reference vertex, the 7 outbound vectors are 3 edges, 3 face diagonals, and 1 body diagonal. The body diagonal is the longest. The 3 edges are the unique triple of the remaining 6 vectors that sums to the body diagonal — no other triple does, because face-diagonal-containing triples produce duplicated edge contributions. Sorted by length, the three edges give the radial (long) and the two transverse dimensions. The long-axis unit vector is sign-canonicalized (first significant component non-negative) so opposite-pointing parallel crystals share a direction key.
+
+### File-level metadata
+
+The extractor also emits H5 attrs (no per-row redundancy):
+
+- `scanner_axial_axis` — picked as the world axis with the smallest mean(`dir²`); long axes lie in the ring plane, so this is the axis they avoid.
+- `crystal_size_radial_mm` — the long edge length.
+- `crystal_size_axial_mm` / `crystal_size_tangential_mm` — the two transverse edge lengths, assigned by which one's edge vector is most parallel to `scanner_axial_axis` (per crystal, aggregated). Identical values for square cross-sections.
+
+If a volume violates the parallelepiped assumption (vertex count != 8 or no edge triple summing to the body diagonal), it is skipped with a prominent warning rather than getting a guessed direction.
 
 ## Testing
 

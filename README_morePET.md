@@ -47,15 +47,14 @@ podman run --rm -v /path/to/CADtoGeant4:/mnt/guimesh cadtogeant4:slim \
 
 ## Crystal Center Extraction (`--extract-centers`)
 
-For each volume whose name matches the `lyso` pattern, the tool extracts:
+Output is a single `<name>.h5` with the schema described in the [main README](README.md#crystal-map-nameh5):
 
-- `center_x/y/z` — bounding box center in mm
-- `azimuth_angle` — rotation in the XZ plane (degrees, 0–360°)
-- `elevation_angle` — tilt relative to the XZ plane (degrees, 0–90°)
+- per-crystal datasets `crystal_id`, `volume_name`, `center_x/y/z`, `dir_x/y/z`
+- file-level attrs `scanner_axial_axis`, `crystal_size_radial_mm`, `crystal_size_axial_mm`, `crystal_size_tangential_mm`
 
-Orientation is computed by Direct Edge Vector Analysis: the longest edge of the tessellated crystal that has exactly 3 parallel counterparts (a parallelepiped property) defines the crystal axis.
+> **Strong assumption (no fallback):** each LYSO volume must be a clean parallelepiped tessellating to 8 vertices, with one unambiguously longest edge — typically the radial/depth direction of a PET crystal. Volumes that don't satisfy this are skipped with a warning.
 
-Output files: `<name>.csv` and `<name>.h5`, both containing the same data.
+`dir_*` is the long axis (depth direction); see [README_DEV.md](README_DEV.md#crystal-orientation-algorithm) for the edge-identification algorithm. The Geant4 side uses the H5 attrs to recover the full crystal pose — see [docs/geant4_integration.md](docs/geant4_integration.md).
 
 ## Geometry Centering (`--center-geometry`)
 
