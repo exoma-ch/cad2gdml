@@ -9,7 +9,6 @@ import os
 import tempfile
 import shutil
 from pathlib import Path
-import csv
 import h5py
 import numpy as np
 
@@ -269,40 +268,8 @@ class TestExtractCrystalCenters:
         assert success is True
         assert len(centers) > 0
     
-    def test_extract_centers_with_csv_output(self, loaded_volumes):
-        """Test extract_crystal_centers with CSV output."""
-        temp_dir = tempfile.mkdtemp(prefix="guimesh_test_")
-        try:
-            csv_file = os.path.join(temp_dir, 'test_crystals.csv')
-            centers, success = CrystalCenters.extract_crystal_centers(
-                loaded_volumes,
-                output_file=csv_file
-            )
-            
-            assert success is True
-            assert len(centers) > 0
-            assert os.path.exists(csv_file)
-            
-            # Verify CSV file contents
-            with open(csv_file, 'r') as f:
-                reader = csv.DictReader(f)
-                rows = list(reader)
-                assert len(rows) == len(centers)
-                
-                # Check first row
-                first_row = rows[0]
-                assert 'crystal_id' in first_row
-                assert 'center_x' in first_row
-                assert 'center_y' in first_row
-                assert 'center_z' in first_row
-                assert 'dir_x' in first_row
-                assert 'dir_y' in first_row
-                assert 'dir_z' in first_row
-        finally:
-            shutil.rmtree(temp_dir)
-    
     def test_extract_centers_with_h5_output(self, loaded_volumes):
-        """Test extract_crystal_centers with H5 output."""
+        """Test extract_crystal_centers writes a complete H5 file (datasets + attrs)."""
         temp_dir = tempfile.mkdtemp(prefix="guimesh_test_")
         try:
             h5_file = os.path.join(temp_dir, 'test_crystals.h5')
@@ -310,53 +277,75 @@ class TestExtractCrystalCenters:
                 loaded_volumes,
                 output_file=h5_file
             )
-            
+
             assert success is True
             assert len(centers) > 0
-            
-            # Check that CSV was also created
-            csv_file = os.path.join(temp_dir, 'test_crystals.csv')
-            assert os.path.exists(csv_file)
-            
-            # Verify H5 file contents if h5py is available
-            try:
-                with h5py.File(h5_file, 'r') as f:
-                    assert 'crystal_id' in f
-                    assert 'center_x' in f
-                    assert 'center_y' in f
-                    assert 'center_z' in f
-                    assert 'dir_x' in f
-                    assert 'dir_y' in f
-                    assert 'dir_z' in f
-                    assert 'volume_name' in f
-                    
-                    # Check metadata
-                    assert 'n_crystals' in f.attrs
-                    assert f.attrs['n_crystals'] == len(centers)
-            except ImportError:
-                pytest.skip("h5py not available")
+            assert os.path.exists(h5_file)
+
+            with h5py.File(h5_file, 'r') as f:
+                # Per-crystal datasets.
+                for col in ('crystal_id', 'volume_name',
+                            'center_x', 'center_y', 'center_z',
+                            'dir_x', 'dir_y', 'dir_z'):
+                    assert col in f, f"Missing dataset {col!r}"
+                assert f['crystal_id'].shape[0] == len(centers)
+
+                # File-level metadata.
+                assert f.attrs['n_crystals'] == len(centers)
+                axial = f.attrs['scanner_axial_axis']
+                if isinstance(axial, bytes):
+                    axial = axial.decode('utf-8')
+                assert axial in ('x', 'y', 'z')
+                for size_attr in ('crystal_size_radial_mm',
+                                  'crystal_size_axial_mm',
+                                  'crystal_size_tangential_mm'):
+                    assert size_attr in f.attrs, f"Missing attr {size_attr!r}"
+                    assert float(f.attrs[size_attr]) > 0
+                # Radial (long edge) is the longest of the three.
+                assert float(f.attrs['crystal_size_radial_mm']) >= float(f.attrs['crystal_size_axial_mm'])
+                assert float(f.attrs['crystal_size_radial_mm']) >= float(f.attrs['crystal_size_tangential_mm'])
         finally:
             shutil.rmtree(temp_dir)
-    
+
+    def test_extract_centers_no_csv_emitted(self, loaded_volumes):
+        """CSV output is no longer produced; only the H5 file should land."""
+        temp_dir = tempfile.mkdtemp(prefix="guimesh_test_")
+        try:
+            h5_file = os.path.join(temp_dir, 'test_crystals.h5')
+            _, success = CrystalCenters.extract_crystal_centers(
+                loaded_volumes, output_file=h5_file
+            )
+            assert success is True
+            assert not any(p.endswith('.csv') for p in os.listdir(temp_dir)), (
+                f"Unexpected CSV in {temp_dir}: {os.listdir(temp_dir)}"
+            )
+
+            # If a .csv path is passed, the extractor should normalise to .h5.
+            csv_path = os.path.join(temp_dir, 'legacy_name.csv')
+            _, success = CrystalCenters.extract_crystal_centers(
+                loaded_volumes, output_file=csv_path
+            )
+            assert success is True
+            assert not os.path.exists(csv_path)
+            assert os.path.exists(os.path.join(temp_dir, 'legacy_name.h5'))
+        finally:
+            shutil.rmtree(temp_dir)
+
     def test_extract_centers_auto_filename(self, loaded_volumes):
-        """Test extract_crystal_centers with auto-generated filename."""
+        """Auto-generated filename produces lyso_crystal_centers.h5 only."""
         temp_dir = tempfile.mkdtemp(prefix="guimesh_test_")
         try:
             centers, success = CrystalCenters.extract_crystal_centers(
                 loaded_volumes,
-                output_file=True,  # Auto-generate filename
-                output_dir=temp_dir
+                output_file=True,
+                output_dir=temp_dir,
             )
-            
             assert success is True
             assert len(centers) > 0
-            
-            # Check that default files were created
-            csv_file = os.path.join(temp_dir, 'lyso_crystal_centers.csv')
-            h5_file = os.path.join(temp_dir, 'lyso_crystal_centers.h5')
 
-            assert os.path.exists(csv_file)
-            # H5 might not exist if h5py is not available, but CSV should
+            h5_file = os.path.join(temp_dir, 'lyso_crystal_centers.h5')
+            assert os.path.exists(h5_file)
+            assert not os.path.exists(os.path.join(temp_dir, 'lyso_crystal_centers.csv'))
         finally:
             shutil.rmtree(temp_dir)
     
