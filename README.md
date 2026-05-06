@@ -78,7 +78,7 @@ A common mistake: passing host paths (`--step /home/me/foo.step`) without mounti
 - `--step <file>` — **Required.** Input STEP file to convert
 - `--load-materials <file_or_dir>` — Load material definitions from a JSON file or directory (all `.json` files). Repeatable
 - `--assign-materials <config.json>` — Assign materials to volumes by name pattern. Path is required; see `src/material_mappings/` for bundled configs
-- `--extract-centers [filename]` — Extract LYSO crystal center coordinates and orientations (volumes whose name contains "lyso" or whose material is LYSO); writes both a CSV and an H5 file. Filename is auto-generated if omitted
+- `--extract-centers [filename]` — Extract LYSO crystal centers (`center_x/y/z`) and long-axis unit vectors (`dir_x/y/z`) to CSV + H5. **Assumes each LYSO volume is a clean parallelepiped that tessellates to 8 vertices with one unambiguously longest edge** (typical PET crystal: depth ≫ width ≈ height); volumes that don't satisfy that are skipped with a warning. Filename is auto-generated if omitted
 - `--output-dir <dir>` — Output directory for GDML files
 - `--world-size X Y Z` — World volume dimensions in meters (default: auto from bounding box + 10% margin)
 - `--center-geometry` — Translate geometry so its bounding box center is at the origin; saves the applied translation to `geometry_transform.json`

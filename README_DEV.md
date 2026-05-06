@@ -44,15 +44,17 @@ STEP file
 
 Volume names are lowercased; the first matching pattern in `material_mappings.json` wins. Materials marked `requires_custom: true` must also be loaded via `--load-materials`.
 
-### Crystal Orientation Algorithm (Direct Edge Vector Analysis)
+### Crystal Orientation Algorithm
 
-1. Extract all vertices from the tessellated shape
-2. Compute all pairwise edge vectors
-3. For each edge, count parallel edges
-4. Select the longest edge that has exactly 3 parallel edges (parallelepiped property)
-5. Derive azimuth (`atan2(z, x)`) and elevation (`atan2(y, sqrt(x²+z²))`) from that axis
+The extractor assumes each LYSO volume is a clean parallelepiped that tessellates to exactly 8 vertices, with three distinct edge lengths so that the longest edge is unambiguous. This is true for typical PET crystals (depth ≫ width ≈ height) and is intentionally a strong assumption — there is no fallback for curved, chamfered, or otherwise non-parallelepiped shapes.
 
-This works well for rectangular parallelepiped crystals and is more reliable than PCA for regular geometries.
+From any reference vertex, the 7 outbound vectors are 3 edges, 3 face diagonals, and 1 body diagonal. The body diagonal is the longest. The 3 edges are the unique triple of the remaining 6 vectors that sums to the body diagonal — no other triple does, because face-diagonal-containing triples produce duplicated edge contributions. The longest edge is the crystal's long axis.
+
+The result is sign-canonicalized (first significant component non-negative) so that opposite-pointing parallel crystals share a direction key — useful for downstream block clustering.
+
+The output is a raw direction vector in the CAD frame. Downstream consumers (plotting, Geant4 export) apply their own axial-axis convention; the extractor itself is convention-free, which keeps the same code working whether the CAD has axial=X, Y, or Z.
+
+If a volume violates the parallelepiped assumption (vertex count != 8 or no edge triple summing to the body diagonal), it is skipped with a prominent warning rather than getting a guessed direction.
 
 ## Testing
 
