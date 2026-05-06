@@ -1,53 +1,81 @@
 #!/usr/bin/env python3
 """Plot scanner geometry from per-crystal centers and long-axis directions.
 
-The CSV (or H5) is expected to provide each crystal's center (mm) and a unit
-vector along its long axis, both in the same coordinate frame. Visualisation
-is intentionally axis-agnostic: stick endpoints are just
-``center ± (L/2) · direction`` projected into XY, XZ, YZ. The scanner axial
-axis is detected from the data and used only for labels and block grouping.
+Reads the H5 file produced by ``--extract-centers`` (per-crystal center +
+long-axis unit vector, plus file-level metadata: scanner axial axis and
+crystal sizes). Visualisation is axis-agnostic: stick endpoints are
+``center ± (L/2) · direction`` projected into XY, XZ, YZ. The axial axis
+is read from the H5 attrs (or auto-detected as a fallback) and used only
+for labels and block grouping.
 """
 
 import argparse
-import csv
 import glob
 import math
 import os
 import sys
 
+import h5py
 import matplotlib.pyplot as plt
 
 
 AXIS_INDEX = {'x': 0, 'y': 1, 'z': 2}
 
 
-def read_crystal_data(csv_file):
-    """Load (center, direction) records from the new-schema CSV."""
+def read_crystal_data(h5_file):
+    """Load per-crystal records and file-level metadata from the H5.
+
+    Returns (crystals, metadata) where ``crystals`` is a list of dicts with
+    keys (id, name, x, y, z, dx, dy, dz) and ``metadata`` carries the H5
+    attrs (scanner_axial_axis, crystal_size_*_mm) when present.
+    """
+    required = ('crystal_id', 'volume_name',
+                'center_x', 'center_y', 'center_z',
+                'dir_x', 'dir_y', 'dir_z')
     crystals = []
-    with open(csv_file, 'r') as f:
-        reader = csv.DictReader(f)
-        required = {'crystal_id', 'volume_name', 'center_x', 'center_y', 'center_z',
-                    'dir_x', 'dir_y', 'dir_z'}
-        missing = required - set(reader.fieldnames or [])
+    metadata = {}
+    with h5py.File(h5_file, 'r') as f:
+        missing = [k for k in required if k not in f]
         if missing:
             raise ValueError(
-                f"CSV {csv_file} is missing required columns: {sorted(missing)}.\n"
-                f"Re-run --extract-centers; the schema is now (crystal_id, volume_name, "
-                f"center_x/y/z, dir_x/y/z)."
+                f"{h5_file} is missing required datasets: {missing}.\n"
+                f"Re-run --extract-centers with the current code."
             )
-        for row in reader:
+        ids = f['crystal_id'][:]
+        names = f['volume_name'][:]
+        cx, cy, cz = f['center_x'][:], f['center_y'][:], f['center_z'][:]
+        dx, dy, dz = f['dir_x'][:], f['dir_y'][:], f['dir_z'][:]
+        for i in range(len(ids)):
+            name = names[i]
+            if isinstance(name, bytes):
+                name = name.decode('utf-8')
             crystals.append({
-                'id': int(row['crystal_id']),
-                'name': row['volume_name'],
-                'x': float(row['center_x']),
-                'y': float(row['center_y']),
-                'z': float(row['center_z']),
-                'dx': float(row['dir_x']),
-                'dy': float(row['dir_y']),
-                'dz': float(row['dir_z']),
+                'id': int(ids[i]), 'name': name,
+                'x': float(cx[i]), 'y': float(cy[i]), 'z': float(cz[i]),
+                'dx': float(dx[i]), 'dy': float(dy[i]), 'dz': float(dz[i]),
             })
-    print(f"Loaded {len(crystals)} crystal records from {csv_file}")
-    return crystals
+        for key in ('scanner_axial_axis',
+                    'crystal_size_radial_mm',
+                    'crystal_size_axial_mm',
+                    'crystal_size_tangential_mm'):
+            if key in f.attrs:
+                value = f.attrs[key]
+                if isinstance(value, bytes):
+                    value = value.decode('utf-8')
+                metadata[key] = value
+    print(f"Loaded {len(crystals)} crystal records from {h5_file}")
+    if metadata:
+        bits = []
+        if 'scanner_axial_axis' in metadata:
+            bits.append(f"axial={str(metadata['scanner_axial_axis']).upper()}")
+        for k, label in (('crystal_size_radial_mm', 'radial'),
+                         ('crystal_size_axial_mm', 'axial-dim'),
+                         ('crystal_size_tangential_mm', 'tangential')):
+            if k in metadata:
+                bits.append(f"{label}={float(metadata[k]):.3f}mm")
+        if bits:
+            print(f"H5 metadata: {', '.join(bits)}")
+    return crystals, metadata
 
 
 def detect_axial_axis(crystals):
@@ -299,32 +327,40 @@ def main(argv=None):
         description="Plot scanner geometry from crystal centers + direction vectors.",
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
-    parser.add_argument('csv_file', nargs='?',
-                        help='CSV from --extract-centers (default: auto-detect).')
-    parser.add_argument('--depth', type=float, default=25.0,
-                        help='Crystal long-axis length used for stick rendering (mm).')
+    parser.add_argument('h5_file', nargs='?',
+                        help='H5 from --extract-centers (default: auto-detect).')
+    parser.add_argument('--depth', type=float, default=None,
+                        help='Crystal long-axis length used for stick rendering (mm). '
+                             'Defaults to crystal_size_radial_mm from the H5 attrs.')
     parser.add_argument('--save-dir', default='.',
                         help='Directory to save output plots.')
     parser.add_argument('--axial-axis', choices=['x', 'y', 'z'], default=None,
-                        help='Override the auto-detected scanner axial axis.')
+                        help='Override scanner axial axis from H5 attrs / auto-detect.')
     args = parser.parse_args(argv)
 
-    csv_file = args.csv_file
-    if not csv_file:
-        candidates = (sorted(glob.glob('lyso_crystal_centers*.csv'))
-                      or sorted(glob.glob('lyso_crystal_centers_3d_angles*.csv')))
-        csv_file = candidates[0] if candidates else 'lyso_crystal_centers.csv'
+    h5_file = args.h5_file
+    if not h5_file:
+        candidates = sorted(glob.glob('lyso_crystal_centers*.h5'))
+        h5_file = candidates[0] if candidates else 'lyso_crystal_centers.h5'
 
-    print(f"Plotting scanner from: {csv_file}")
-    print(f"Stick length (long axis): {args.depth:.2f} mm")
+    print(f"Plotting scanner from: {h5_file}")
 
-    crystals = read_crystal_data(csv_file)
+    crystals, metadata = read_crystal_data(h5_file)
     if not crystals:
         print("No crystal data loaded.")
         return 1
 
-    axial = args.axial_axis or detect_axial_axis(crystals)
-    plot_scanner_with_crystals(crystals, args.depth, axial, save_dir=args.save_dir)
+    depth = args.depth
+    if depth is None:
+        depth = float(metadata.get('crystal_size_radial_mm', 25.0))
+    print(f"Stick length (long axis): {depth:.2f} mm")
+
+    axial = args.axial_axis or metadata.get('scanner_axial_axis') or detect_axial_axis(crystals)
+    if isinstance(axial, bytes):
+        axial = axial.decode('utf-8')
+    print(f"Scanner axial axis: {axial.upper()}")
+
+    plot_scanner_with_crystals(crystals, depth, axial, save_dir=args.save_dir)
     plot_axial_vs_around(crystals, axial, save_dir=args.save_dir)
     print(f"\nPlots saved to: {args.save_dir}")
     return 0
