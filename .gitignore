@@ -23,6 +23,9 @@ __pycache__/
 venv/
 env/
 
+# Claude Code personal settings (per-user, not committed)
+.claude/settings.local.json
+
 # Coverage reports
 htmlcov/
 .coverage
