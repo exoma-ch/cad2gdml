@@ -21,15 +21,17 @@ import math
 import os
 import re
 
-# Output schema for crystal centers (CSV columns and H5 datasets).
-# Direction is a unit vector along the crystal's long axis, in the same
-# coordinate frame as the centers. No spherical-coordinate convention is baked
-# in: anything that needs azimuth/elevation can derive them from the direction.
+# Output schema: H5 datasets (per-crystal columns) and H5 attrs (file-level metadata).
+# CRYSTAL_FIELDS is the per-crystal payload; metadata is computed from those plus
+# the auto-detected scanner axial axis. The (radial, axial, tangential) crystal
+# sizes are written as H5 attrs since the geometry is identical for every crystal.
 CRYSTAL_FIELDS = (
     'crystal_id', 'volume_name',
     'center_x', 'center_y', 'center_z',
     'dir_x', 'dir_y', 'dir_z',
 )
+
+AXIS_INDEX = {'x': 0, 'y': 1, 'z': 2}
 
 
 def _canonical_sign(vec, eps=1e-9):
@@ -47,8 +49,8 @@ def _canonical_sign(vec, eps=1e-9):
     return tuple(vec)
 
 
-def _long_axis_from_vertices(vertices):
-    """Long-axis unit vector of a parallelepiped from its 8 tessellated vertices.
+def _crystal_edges_from_vertices(vertices):
+    """Three principal edges of a parallelepiped from its 8 tessellated vertices.
 
     From any reference vertex V0, the other 7 vertices are reached by:
       - 3 edge vectors           e1, e2, e3
@@ -57,15 +59,10 @@ def _long_axis_from_vertices(vertices):
     The body diagonal is the longest outbound vector. The 3 edges are the
     unique triple in the remaining 6 whose sum equals the body diagonal —
     no other triple sums to it (face-diagonal-containing triples produce
-    duplicated edge contributions). Once edges are identified, the longest
-    is the crystal's long axis.
+    duplicated edge contributions).
 
-    This characterisation works for elongated crystals (where length-based
-    selection like "3 shortest outbound vectors" picks face diagonals
-    instead of edges) and for rectangular as well as oblique parallelepipeds.
-
-    Returns None if the vertex count is not 8 or no triple sums to the body
-    diagonal within tolerance (degenerate / non-parallelepiped shape).
+    Returns a list of three (unit_vector, length_mm) pairs sorted by length
+    descending, or None if the input doesn't form a clean parallelepiped.
     """
     from itertools import combinations
 
@@ -85,8 +82,6 @@ def _long_axis_from_vertices(vertices):
         return None
     others = [v for i, v in enumerate(outbound) if i != diag_idx]
 
-    # Triple sum tolerance scales with the body-diagonal magnitude squared so
-    # tessellation noise on big crystals doesn't cause false rejections.
     tol_sq = max(diag_sq * 1e-12, 1e-12)
     edges = None
     for i, j, k in combinations(range(6), 3):
@@ -100,9 +95,13 @@ def _long_axis_from_vertices(vertices):
     if edges is None:
         return None
 
-    longest = max(edges, key=sq)
-    length = math.sqrt(sq(longest))
-    return (longest[0] / length, longest[1] / length, longest[2] / length)
+    # Sort longest → shortest, normalise.
+    sorted_edges = sorted(edges, key=sq, reverse=True)
+    out = []
+    for e in sorted_edges:
+        length = math.sqrt(sq(e))
+        out.append(((e[0] / length, e[1] / length, e[2] / length), length))
+    return out
 
 
 def extract_crystal_number(volume_label):
@@ -132,49 +131,56 @@ def extract_crystal_number(volume_label):
 
 def extract_crystal_centers(list_of_objects, verbose=False, output_file=None,
                             output_dir=None, vertex_counts=None, translation=None):
-    """Extract LYSO crystal centers and long-axis direction vectors.
+    """Extract LYSO crystal centers, long-axis directions, and crystal sizes.
 
-    For each LYSO crystal the function emits:
+    Per-crystal payload (one row per crystal):
       - center_{x,y,z}: bounding-box center in mm (in original CAD frame, or
         translated if ``translation`` is given).
-      - dir_{x,y,z}: unit vector along the crystal's long axis, in the same
-        frame, sign-canonicalized so opposite-pointing crystals share a direction.
+      - dir_{x,y,z}: unit vector along the crystal's long axis (the radial /
+        depth direction in a ring scanner), in the same frame, sign-canonicalized
+        so opposite-pointing crystals share a direction.
 
-    No axial-axis convention is applied here — downstream code (plotting,
-    Geant4 export) is expected to consume the raw vector and apply whatever
-    convention it needs. This makes the extractor agnostic to whether the CAD
-    has its scanner axial axis along X, Y, or Z.
+    File-level metadata (H5 attrs):
+      - scanner_axial_axis: 'x' | 'y' | 'z', auto-detected as the world axis
+        with the smallest mean(dir²) — long axes lie in the ring plane, so
+        this is the axis they avoid.
+      - crystal_size_radial_mm:    length of the long edge.
+      - crystal_size_axial_mm:     length of the transverse edge that aligns
+        with the scanner axial axis (per-crystal cross-product test).
+      - crystal_size_tangential_mm: length of the remaining transverse edge.
+
+    The output is a single ``.h5`` file. CSV output is no longer produced.
 
     Assumptions on the input geometry (no fallback if violated):
       - Each LYSO volume is a clean parallelepiped that tessellates to exactly
         8 vertices. Curved or chamfered shapes will fail.
-      - The three edge lengths are distinct enough that one is unambiguously the
-        long axis (typical PET crystal: depth ≫ width ≈ height).
-      - That long axis is the physically meaningful crystal axis (the depth
+      - The longest edge is unambiguous (typical PET crystal: depth ≫ width ≈ height).
+      - The longest edge is the physically meaningful crystal axis (the depth
         direction, ~radial in a ring scanner). The extractor does not check
         that — it just trusts the geometry.
 
-    Crystals that violate the parallelepiped assumption (vertex count != 8 or
-    no edge triple summing to the body diagonal) are skipped with a warning.
+    Crystals that violate the parallelepiped assumption are skipped with a warning.
 
     Args:
         list_of_objects: List of volume objects (FreeCAD-style with .VolumeCAD/.VolumeMaterial).
         verbose: Enable verbose output.
         output_file: Optional output path (or True to use the default name).
-                     CSV and H5 are written side-by-side.
+                     If a non-.h5 extension is given it is replaced.
         output_dir: Optional output directory for auto-generated filenames.
         vertex_counts: Optional list, populated with per-crystal tessellated vertex counts.
         translation: Optional (tx, ty, tz) in mm applied to crystal centers.
 
     Returns:
-        (crystal_records, success): list of dicts with the columns above,
-        and a bool indicating clean completion.
+        (crystal_records, success): list of dicts with the per-crystal columns
+        above, and a bool indicating clean completion.
     """
     if not list_of_objects:
         print("Error: No volumes loaded")
         return [], False
 
     crystal_centers = []
+    transverse_edges = []  # (e1_unit, e1_len, e2_unit, e2_len) per crystal
+    radial_lengths = []
     lyso_count = 0
     used_crystal_ids = set()
 
@@ -212,19 +218,16 @@ def extract_crystal_centers(list_of_objects, verbose=False, output_file=None,
             vertex_counts.append(len(vertices))
             if verbose:
                 print(f"  Crystal {volume_label}: {len(vertices)} vertices")
-            direction = _long_axis_from_vertices(vertices)
-            if direction is None:
-                # Hard assumption: LYSO volumes are clean parallelepipeds with a
-                # clearly identifiable long axis. If we get here, the input
-                # violates that — skip with a prominent warning rather than
-                # invent a wrong direction.
+            edges = _crystal_edges_from_vertices(vertices)
+            if edges is None:
                 print(f"  WARNING: {volume_label} is not a valid parallelepiped "
                       f"(vertex count={len(vertices)}, no edge triple summed to "
                       f"the body diagonal). Skipping this crystal.")
                 lyso_count -= 1
                 continue
 
-            dx, dy, dz = _canonical_sign(direction)
+            (long_unit, long_len), (mid_unit, mid_len), (short_unit, short_len) = edges
+            dx, dy, dz = _canonical_sign(long_unit)
 
             crystal_number = extract_crystal_number(volume_label)
             if crystal_number is None:
@@ -249,6 +252,8 @@ def extract_crystal_centers(list_of_objects, verbose=False, output_file=None,
                 'center_x': cx, 'center_y': cy, 'center_z': cz,
                 'dir_x': dx, 'dir_y': dy, 'dir_z': dz,
             })
+            transverse_edges.append((mid_unit, mid_len, short_unit, short_len))
+            radial_lengths.append(long_len)
 
             if verbose and lyso_count <= 10:
                 print(f"  {lyso_count:4d}: {volume_label:30s} | "
@@ -263,88 +268,100 @@ def extract_crystal_centers(list_of_objects, verbose=False, output_file=None,
     if verbose and lyso_count > 10:
         print(f"  ... and {lyso_count - 10} more LYSO crystals")
 
+    metadata = None
     if crystal_centers:
+        metadata = _aggregate_geometry_metadata(crystal_centers, transverse_edges, radial_lengths)
+
         xs = [c['center_x'] for c in crystal_centers]
         ys = [c['center_y'] for c in crystal_centers]
         zs = [c['center_z'] for c in crystal_centers]
         n = len(crystal_centers)
-        # Mean of squared direction component per axis: small means "long axis
-        # rarely points this way" → likely the scanner axial axis.
-        mx = sum(c['dir_x'] ** 2 for c in crystal_centers) / n
-        my = sum(c['dir_y'] ** 2 for c in crystal_centers) / n
-        mz = sum(c['dir_z'] ** 2 for c in crystal_centers) / n
-        likely_axial = min((('x', mx), ('y', my), ('z', mz)), key=lambda kv: kv[1])[0]
-
         print(f"\n=== LYSO Crystal Summary Statistics ===")
         print(f"Total LYSO crystals: {n}")
         print(f"X range: {min(xs):.2f} to {max(xs):.2f} mm (span: {max(xs)-min(xs):.2f} mm)")
         print(f"Y range: {min(ys):.2f} to {max(ys):.2f} mm (span: {max(ys)-min(ys):.2f} mm)")
         print(f"Z range: {min(zs):.2f} to {max(zs):.2f} mm (span: {max(zs)-min(zs):.2f} mm)")
-        print(f"Mean(dir²) per axis: x={mx:.3f}, y={my:.3f}, z={mz:.3f}  → likely axial: {likely_axial.upper()}")
+        print(f"Scanner axial axis (auto-detected): {metadata['scanner_axial_axis'].upper()}")
+        print(f"Crystal size: radial={metadata['crystal_size_radial_mm']:.3f} mm, "
+              f"axial={metadata['crystal_size_axial_mm']:.3f} mm, "
+              f"tangential={metadata['crystal_size_tangential_mm']:.3f} mm")
 
         if vertex_counts:
             print(f"Vertex counts: {min(vertex_counts)} to {max(vertex_counts)} per crystal "
                   f"(avg: {sum(vertex_counts)/len(vertex_counts):.1f})")
 
-    if output_file:
-        csv_file, h5_file = _resolve_output_paths(output_file, output_dir)
-        csv_dir = os.path.dirname(csv_file)
-        if csv_dir and not os.path.exists(csv_dir):
+    if output_file and crystal_centers:
+        h5_file = _resolve_output_path(output_file, output_dir)
+        h5_dir = os.path.dirname(h5_file)
+        if h5_dir and not os.path.exists(h5_dir):
             try:
-                os.makedirs(csv_dir, exist_ok=True)
+                os.makedirs(h5_dir, exist_ok=True)
                 if verbose:
-                    print(f"Created output directory: {csv_dir}")
+                    print(f"Created output directory: {h5_dir}")
             except Exception as e:
-                print(f"Error creating output directory '{csv_dir}': {e}")
+                print(f"Error creating output directory '{h5_dir}': {e}")
                 return crystal_centers, False
 
-        if not _write_csv(csv_file, crystal_centers):
+        if _write_h5(h5_file, crystal_centers, metadata):
+            print(f"\nCrystal centers saved to H5: {h5_file}")
+        else:
             return crystal_centers, False
-        print(f"\nCrystal centers saved to CSV: {csv_file}")
-
-        if _write_h5(h5_file, crystal_centers):
-            print(f"Crystal centers saved to H5: {h5_file}")
 
     return crystal_centers, True
 
 
-def _resolve_output_paths(output_file, output_dir):
-    """Compute the (csv_path, h5_path) pair for the requested output_file."""
+def _aggregate_geometry_metadata(crystal_centers, transverse_edges, radial_lengths):
+    """Compute file-level metadata: scanner axial axis and the three crystal sizes."""
+    n = len(crystal_centers)
+
+    # Auto-detect scanner axial axis: the world axis the long axes most avoid.
+    means = {axis: sum(c[f'dir_{axis}'] ** 2 for c in crystal_centers) / n
+             for axis in 'xyz'}
+    axial_axis = min(means, key=means.get)
+    axial_idx = AXIS_INDEX[axial_axis]
+
+    # For each crystal, decide which transverse edge aligns with the scanner axial
+    # axis (larger |dot|), aggregate their lengths.
+    axial_lengths = []
+    tangential_lengths = []
+    for mid_unit, mid_len, short_unit, short_len in transverse_edges:
+        if abs(mid_unit[axial_idx]) >= abs(short_unit[axial_idx]):
+            axial_lengths.append(mid_len)
+            tangential_lengths.append(short_len)
+        else:
+            axial_lengths.append(short_len)
+            tangential_lengths.append(mid_len)
+
+    return {
+        'scanner_axial_axis': axial_axis,
+        'crystal_size_radial_mm': sum(radial_lengths) / n,
+        'crystal_size_axial_mm': sum(axial_lengths) / n,
+        'crystal_size_tangential_mm': sum(tangential_lengths) / n,
+        'mean_dir_squared': means,
+    }
+
+
+def _resolve_output_path(output_file, output_dir):
+    """Resolve the absolute .h5 path, normalising any non-.h5 extension."""
     if output_file is True:
         base = os.path.join(output_dir, 'lyso_crystal_centers') if output_dir else 'lyso_crystal_centers'
-        return base + '.csv', base + '.h5'
+        return base + '.h5'
 
     if output_dir and not os.path.isabs(output_file) and not os.path.dirname(output_file):
         output_file = os.path.join(output_dir, output_file)
 
-    if output_file.endswith('.csv'):
-        return output_file, output_file[:-4] + '.h5'
-    if output_file.endswith('.h5'):
-        return output_file[:-3] + '.csv', output_file
-    return output_file + '.csv', output_file + '.h5'
+    root, ext = os.path.splitext(output_file)
+    if ext.lower() != '.h5':
+        return root + '.h5'
+    return output_file
 
 
-def _write_csv(csv_file, crystal_centers):
-    try:
-        import csv
-        with open(csv_file, 'w', newline='') as csvfile:
-            writer = csv.DictWriter(csvfile, fieldnames=list(CRYSTAL_FIELDS))
-            writer.writeheader()
-            for crystal in crystal_centers:
-                writer.writerow(crystal)
-        return True
-    except Exception as e:
-        print(f"Error saving crystal centers to CSV: {e}")
-        return False
-
-
-def _write_h5(h5_file, crystal_centers):
+def _write_h5(h5_file, crystal_centers, metadata):
     try:
         import h5py
         import numpy as np
     except ImportError:
-        print("Warning: h5py not available. Skipping H5 file creation.")
-        print("Install h5py with: pip install h5py")
+        print("Error: h5py is required (pip install h5py).")
         return False
 
     try:
@@ -359,11 +376,18 @@ def _write_h5(h5_file, crystal_centers):
             f.create_dataset('volume_name',
                              data=[c['volume_name'].encode('utf-8') for c in crystal_centers],
                              compression='gzip')
+
             f.attrs['description'] = 'LYSO crystal centers and long-axis direction vectors'
             f.attrs['n_crystals'] = len(crystal_centers)
-            f.attrs['units'] = 'mm for centers; dimensionless for direction (unit vector)'
+            f.attrs['units'] = 'mm for centers and sizes; dimensionless for direction (unit vector)'
             f.attrs['frame'] = 'CAD coordinate frame (post-translation if --center-geometry was used)'
             f.attrs['created_by'] = 'GUIMeshCLI'
+
+            if metadata is not None:
+                f.attrs['scanner_axial_axis'] = metadata['scanner_axial_axis']
+                f.attrs['crystal_size_radial_mm'] = metadata['crystal_size_radial_mm']
+                f.attrs['crystal_size_axial_mm'] = metadata['crystal_size_axial_mm']
+                f.attrs['crystal_size_tangential_mm'] = metadata['crystal_size_tangential_mm']
         return True
     except Exception as e:
         print(f"Error saving crystal centers to H5: {e}")
