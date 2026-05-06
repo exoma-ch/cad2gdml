@@ -17,16 +17,18 @@ Total volumes loaded: 1
 
 === Geometry Analysis ===
 Bounding box: 5.3mm x 25.0mm x 4.0mm
+Extents from origin: X [-2.6, 2.6] mm, Y [0.0, 25.0] mm, Z [-2.0, 2.0] mm
 Geometry center: (0.0, 12.5, 0.0) mm
-World size: 0.01m x 0.03m x 0.00m
-World position: (0.000, 0.013, 0.000) m
-World dimensions automatically set to: 0.01m x 0.03m x 0.00m
+World size: 0.01m x 0.05m x 0.00m
+World position: (0.000, 0.000, 0.000) m (CAD origin preserved)
+World dimensions automatically set to: 0.01m x 0.05m x 0.00m
 ==============================
 LYSO was imported successfully.
 Successfully loaded material 'LYSO'
-Loaded material mappings from src/material_mappings.json
+Loaded material mappings from tests/files/test_materials/material_mappings.json
   Material assignment rules for GUIMeshCLI
   Version: 1.0
 Material assignments summary:
   LYSO: 1 volumes
+Transformation info saved to tests/files/crystal/ref_output/geometry_transform.json
 GDML files written to tests/files/crystal/ref_output

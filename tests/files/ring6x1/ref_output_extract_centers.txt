@@ -17,14 +17,15 @@ Total volumes loaded: 1044
 
 === Geometry Analysis ===
 Bounding box: 231.4mm x 226.8mm x 380.0mm
+Extents from origin: X [-115.7, 115.7] mm, Y [-113.4, 113.4] mm, Z [-340.0, 40.0] mm
 Geometry center: (0.0, 0.0, -150.0) mm
-World size: 0.25m x 0.25m x 0.42m
-World position: (0.000, 0.000, -0.150) m
-World dimensions automatically set to: 0.25m x 0.25m x 0.42m
+World size: 0.24m x 0.24m x 0.71m
+World position: (0.000, 0.000, 0.000) m (CAD origin preserved)
+World dimensions automatically set to: 0.24m x 0.24m x 0.71m
 ==============================
 LYSO was imported successfully.
 Successfully loaded material 'LYSO'
-Loaded material mappings from src/material_mappings.json
+Loaded material mappings from tests/files/test_materials/material_mappings.json
   Material assignment rules for GUIMeshCLI
   Version: 1.0
 Material assignments summary:
@@ -34,7 +35,8 @@ Material assignments summary:
   G4_POLYETHYLENE: 6 volumes
 
 === LYSO Crystal Center Analysis ===
-Using Direct Edge Vector Analysis for crystal orientation
+Using original CAD coordinates (no translation)
+Direction vectors are unit vectors along the crystal long axis (sign-canonicalized).
 Scanning 1044 volumes for LYSO crystals...
 Found 864 LYSO crystals
 
@@ -43,10 +45,10 @@ Total LYSO crystals: 864
 X range: -79.32 to 79.32 mm (span: 158.64 mm)
 Y range: -73.62 to 73.62 mm (span: 147.24 mm)
 Z range: -47.00 to -3.00 mm (span: 44.00 mm)
-Azimuth angles: 30.0° to 150.0° (span: 120.0°)
-Elevation angles: 0.0° to 360.0° (span: 360.0°)
-Vertex counts: 8 to 8 vertices per crystal (avg: 8.0)
+Scanner axial axis (auto-detected): Z
+Crystal size: radial=25.000 mm, axial=5.300 mm, tangential=3.950 mm
+Vertex counts: 8 to 8 per crystal (avg: 8.0)
 
-Crystal centers saved to CSV: tests/files/ring6x1/ref_output/crystal_lookup.csv
 Crystal centers saved to H5: tests/files/ring6x1/ref_output/crystal_lookup.h5
+Transformation info saved to tests/files/ring6x1/ref_output/geometry_transform.json
 GDML files written to tests/files/ring6x1/ref_output

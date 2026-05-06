@@ -1,39 +1,26 @@
-Plotting scanner with crystal sizes from: tests/files/ring6x1/ref_output/crystal_lookup.csv
-Crystal dimensions: 3.95 × 5.30 × 25.00 mm
-Loaded 864 crystal centers from tests/files/ring6x1/ref_output/crystal_lookup.csv
-Detected yup coordinate convention - transforming to canonical (noyup) convention
+Plotting scanner from: /home/icortino/irene_playground/CADtoGeant4/tests/files/ring6x1/ref_output/crystal_lookup.h5
+Loaded 864 crystal records from /home/icortino/irene_playground/CADtoGeant4/tests/files/ring6x1/ref_output/crystal_lookup.h5
+H5 metadata: axial=Z, radial=25.000mm, axial-dim=5.300mm, tangential=3.950mm
+Stick length (long axis): 25.00 mm
+Scanner axial axis: Z
 Plotting 864 oriented crystal sticks in three planes...
 
-=== Scanner Geometry with Crystal Sizes ===
+=== Scanner geometry ===
 Total crystals: 864
 X range: -79.32 to 79.32 mm (span: 158.64 mm)
-Y range: 3.00 to 47.00 mm (span: 44.00 mm)
-Z range: -73.62 to 73.62 mm (span: 147.24 mm)
-Azimuth angles: 30.0° to 150.0° (span: 120.0°)
-Elevation angles: 0.0° to 0.0° (span: 0.0°)
+Y range: -73.62 to 73.62 mm (span: 147.24 mm)
+Z range: -47.00 to -3.00 mm (span: 44.00 mm)
+Crystal long-axis length used for sticks: 25.00 mm
+Radial distance from Z axis: 73.7 to 79.9 mm (avg: 76.0 mm)
+Saved: /home/icortino/irene_playground/CADtoGeant4/tests/files/ring6x1/ref_output/scanner_with_crystals.png
 
-=== Crystal Dimension Statistics ===
-Width:  3.95 mm
-Height: 5.30 mm
-Depth:  25.00 mm
-Volume: 523.4 mm³
-Radial distances: 73.7 to 79.9 mm (avg: 76.0 mm)
-Saved: tests/files/ring6x1/ref_output/scanner_with_crystals.png
+=== Orientation groups (blocks) ===
+Found 3 blocks (clusters with ≥5 crystals):
+  dir=(+0.87,+0.50,-0.00)  around-Z=  29.9°  count=288
+  dir=(+0.00,+1.00,+0.00)  around-Z=  90.0°  count=288
+  dir=(+0.87,-0.50,+0.00)  around-Z= 330.1°  count=288
+Saved: /home/icortino/irene_playground/CADtoGeant4/tests/files/ring6x1/ref_output/orientation_groups_superimposed.png
+Saved: /home/icortino/irene_playground/CADtoGeant4/tests/files/ring6x1/ref_output/orientation_groups_debug.png
+Saved: /home/icortino/irene_playground/CADtoGeant4/tests/files/ring6x1/ref_output/axial_vs_around_axis.png
 
-=== Orientation Group Analysis ===
-Found 3 orientation groups:
-   30°:  288 crystals
-   90°:  288 crystals
-  150°:  288 crystals
-Saved: tests/files/ring6x1/ref_output/all_orientation_groups_combined.png
-
-=== Creating Superimposed Orientation Groups Plot ===
-Overlaying 3 orientation groups on three planes...
-Saved: tests/files/ring6x1/ref_output/all_orientation_groups_superimposed.png
-
-=== Debug: Single Crystal per Orientation Group ===
-Showing one crystal from each of 3 orientation groups...
-Saved: tests/files/ring6x1/ref_output/debug_single_crystals_per_group.png
-Y vs Radial Angle plot saved to: tests/files/ring6x1/ref_output/y_vs_radial_angle.png
-
-Scanner with crystal sizes visualizations saved to: tests/files/ring6x1/ref_output
+Plots saved to: /home/icortino/irene_playground/CADtoGeant4/tests/files/ring6x1/ref_output

@@ -17,14 +17,15 @@ Total volumes loaded: 1044
 
 === Geometry Analysis ===
 Bounding box: 231.4mm x 226.8mm x 380.0mm
+Extents from origin: X [-115.7, 115.7] mm, Y [-113.4, 113.4] mm, Z [-340.0, 40.0] mm
 Geometry center: (0.0, 0.0, -150.0) mm
-World size: 0.25m x 0.25m x 0.42m
-World position: (0.000, 0.000, -0.150) m
-World dimensions automatically set to: 0.25m x 0.25m x 0.42m
+World size: 0.24m x 0.24m x 0.71m
+World position: (0.000, 0.000, 0.000) m (CAD origin preserved)
+World dimensions automatically set to: 0.24m x 0.24m x 0.71m
 ==============================
 LYSO was imported successfully.
 Successfully loaded material 'LYSO'
-Loaded material mappings from src/material_mappings.json
+Loaded material mappings from tests/files/test_materials/material_mappings.json
   Material assignment rules for GUIMeshCLI
   Version: 1.0
 Material assignments summary:
@@ -32,4 +33,5 @@ Material assignments summary:
   G4_Si: 168 volumes
   G4_Al: 6 volumes
   G4_POLYETHYLENE: 6 volumes
+Transformation info saved to tests/files/ring6x1/ref_output/geometry_transform.json
 GDML files written to tests/files/ring6x1/ref_output
