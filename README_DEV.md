@@ -46,13 +46,17 @@ Volume names are lowercased; the first matching pattern in `material_mappings.js
 
 ### Crystal Orientation Algorithm
 
-The extractor assumes each LYSO volume is a clean parallelepiped that tessellates to exactly 8 vertices, with three distinct edge lengths so that the longest edge is unambiguous. This is true for typical PET crystals (depth ≫ width ≈ height) and is intentionally a strong assumption — there is no fallback for curved, chamfered, or otherwise non-parallelepiped shapes.
+The extractor assumes each LYSO volume is a clean parallelepiped that tessellates to exactly 8 vertices, with one unambiguously longest edge. This is true for typical PET crystals (depth ≫ width ≈ height) and is intentionally a strong assumption — there is no fallback for curved, chamfered, or otherwise non-parallelepiped shapes.
 
-From any reference vertex, the 7 outbound vectors are 3 edges, 3 face diagonals, and 1 body diagonal. The body diagonal is the longest. The 3 edges are the unique triple of the remaining 6 vectors that sums to the body diagonal — no other triple does, because face-diagonal-containing triples produce duplicated edge contributions. The longest edge is the crystal's long axis.
+From any reference vertex, the 7 outbound vectors are 3 edges, 3 face diagonals, and 1 body diagonal. The body diagonal is the longest. The 3 edges are the unique triple of the remaining 6 vectors that sums to the body diagonal — no other triple does, because face-diagonal-containing triples produce duplicated edge contributions. Sorted by length, the three edges give the radial (long) and the two transverse dimensions. The long-axis unit vector is sign-canonicalized (first significant component non-negative) so opposite-pointing parallel crystals share a direction key.
 
-The result is sign-canonicalized (first significant component non-negative) so that opposite-pointing parallel crystals share a direction key — useful for downstream block clustering.
+### File-level metadata
 
-The output is a raw direction vector in the CAD frame. Downstream consumers (plotting, Geant4 export) apply their own axial-axis convention; the extractor itself is convention-free, which keeps the same code working whether the CAD has axial=X, Y, or Z.
+The extractor also emits H5 attrs (no per-row redundancy):
+
+- `scanner_axial_axis` — picked as the world axis with the smallest mean(`dir²`); long axes lie in the ring plane, so this is the axis they avoid.
+- `crystal_size_radial_mm` — the long edge length.
+- `crystal_size_axial_mm` / `crystal_size_tangential_mm` — the two transverse edge lengths, assigned by which one's edge vector is most parallel to `scanner_axial_axis` (per crystal, aggregated). Identical values for square cross-sections.
 
 If a volume violates the parallelepiped assumption (vertex count != 8 or no edge triple summing to the body diagonal), it is skipped with a prominent warning rather than getting a guessed direction.
 
