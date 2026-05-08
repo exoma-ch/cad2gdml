@@ -5,7 +5,7 @@
 python GUIMeshCLI.py --help
 
 # Single-pass (recommended): load STEP once, assign materials, write GDML
-python GUIMeshCLI.py --step STEPfiles/your.step --assign-materials --load-materials Materials/LYSO.json --output-dir gdml_output/ """
+python GUIMeshCLI.py --step STEPfiles/your.step --assign-materials src/material_mappings/pet_ring.json --output-dir gdml_output/ """
 
 #########################################################################################################
 #    GUIMeshCLI v1                                                                                      #
@@ -87,20 +87,22 @@ class GUIMeshCLI:
         self.world_material_name = None  # Name of world fill material (read from mappings JSON, looked up in Material_List at write time)
 
     def load_materials(self, material_path):
-        """Load material(s) from a file or directory
-        
+        """Load material(s) from a file or directory.
+
         Args:
             material_path: Path to a JSON material file or directory containing JSON material files
-        
+
         Returns:
-            bool: True if at least one material was loaded successfully, False otherwise
+            bool: True if the path was processed without errors (newly loaded
+                materials *or* already-loaded duplicates both count as success).
+                False on path/format/validation errors.
         """
         path = Path(material_path).resolve()
-        
+
         if not path.exists():
             print(f"Error: Path '{material_path}' not found.")
             return False
-        
+
         # If it's a directory, load all JSON files from it
         if path.is_dir():
             new_materials = Materials.Load_Materials_From_Dir(str(path))
@@ -113,7 +115,7 @@ class GUIMeshCLI:
             if path.suffix.lower() != '.json':
                 print(f"Error: Material file must be in JSON format (.json), got '{path.suffix}'")
                 return False
-            
+
             new_material = Materials.Load_Material_JSON(str(path))
             if new_material == 0:
                 return False
@@ -121,7 +123,7 @@ class GUIMeshCLI:
         else:
             print(f"Error: '{material_path}' is neither a file nor a directory.")
             return False
-        
+
         # Check for duplicates and add to Material_List
         loaded_count = 0
         skipped_count = 0
@@ -134,11 +136,11 @@ class GUIMeshCLI:
                     skipped_count += 1
                     is_duplicate = True
                     break
-            
+
             if not is_duplicate:
                 self.Material_List.append(new_material)
                 loaded_count += 1
-        
+
         if loaded_count > 0:
             if path.is_dir():
                 print(f"Loaded {loaded_count} materials from {material_path}")
@@ -146,8 +148,9 @@ class GUIMeshCLI:
                 print(f"Successfully loaded material '{new_materials[0].Name}'")
         if skipped_count > 0:
             print(f"Skipped {skipped_count} duplicate materials")
-        
-        return loaded_count > 0
+
+        # Treat duplicate-only loads as success: the material is already available.
+        return True
 
     def load_step_file(self, step_file):
         """Load a STEP file and process its contents"""
@@ -186,6 +189,45 @@ class GUIMeshCLI:
             print(f"Error reading file: {str(e)}")
             return False
 
+    def validate_mapping_material_paths(self, config_file):
+        """Verify every `path` in the mapping JSON points at an existing file.
+
+        Run before STEP loading so a typo'd material path fails fast instead
+        of after a multi-minute import.
+
+        Returns True if all paths resolve, False otherwise (with errors printed).
+        """
+        try:
+            config, config_path = self.load_material_mappings(config_file)
+        except (FileNotFoundError, ValueError, RuntimeError) as e:
+            print(f"ERROR: {str(e)}")
+            return False
+
+        config_dir = Path(config_path).parent
+        ok = True
+
+        def check(raw_path, source_label):
+            nonlocal ok
+            if not raw_path:
+                return
+            p = Path(raw_path)
+            if not p.is_absolute():
+                p = (config_dir / p)
+            p = p.resolve()
+            if not p.exists():
+                print(f"ERROR: Material path '{raw_path}' (from {source_label}) not found at '{p}'.")
+                ok = False
+
+        for pattern, mapping in config.get("material_mappings", {}).items():
+            if isinstance(mapping, dict):
+                check(mapping.get("path"), f"material_mappings['{pattern}']")
+
+        world = config.get("world_material")
+        if isinstance(world, dict):
+            check(world.get("path"), "world_material")
+
+        return ok
+
     def check_material_mappings_file(self, config_file="material_mappings.json"):
         """Check if material mappings file exists. Returns the full path if found, None otherwise."""
         config_path = Path(config_file)
@@ -201,27 +243,79 @@ class GUIMeshCLI:
         return None
 
     def load_material_mappings(self, config_file="material_mappings.json"):
-        """Load material assignment rules from JSON configuration file."""
+        """Load material assignment rules from JSON configuration file.
+
+        Returns (config_dict, resolved_config_path). The resolved path is needed
+        so callers can resolve relative material paths against the mapping file's
+        directory.
+        """
         config_path = self.check_material_mappings_file(config_file)
         if config_path is None:
             raise FileNotFoundError(f"Material mappings file '{config_file}' not found. Please create the file or specify a valid path.")
-        
+
         try:
             with open(config_path, 'r') as f:
                 config = json.load(f)
-            
+
             print(f"Loaded material mappings from {config_path}")
             if 'description' in config:
                 print(f"  {config['description']}")
             if 'version' in config:
                 print(f"  Version: {config['version']}")
-            
-            return config
-            
+
+            return config, config_path
+
         except json.JSONDecodeError as e:
             raise ValueError(f"Error parsing material mappings file '{config_path}': {str(e)}")
         except Exception as e:
             raise RuntimeError(f"Error loading material mappings from '{config_path}': {str(e)}")
+
+    def _load_materials_from_mapping(self, config, config_path):
+        """Load every custom material referenced in the mapping config.
+
+        Materials are referenced via an optional `path` field on each mapping
+        entry (and on `world_material`). Relative paths resolve against the
+        directory of the mapping file. Built-in NIST materials (those without
+        a `path`) are not loaded here.
+
+        Returns True on success, False if any material failed to load.
+        """
+        config_dir = Path(config_path).parent
+
+        seen_paths = set()
+        paths_to_load = []
+
+        def queue(raw_path, source_label):
+            if not raw_path:
+                return True
+            p = Path(raw_path)
+            if not p.is_absolute():
+                p = (config_dir / p)
+            p = p.resolve()
+            if p in seen_paths:
+                return True
+            seen_paths.add(p)
+            if not p.exists():
+                print(f"ERROR: Material path '{raw_path}' (from {source_label}) not found at '{p}'.")
+                return False
+            paths_to_load.append(p)
+            return True
+
+        for pattern, mapping in config.get("material_mappings", {}).items():
+            if not isinstance(mapping, dict):
+                continue
+            if not queue(mapping.get("path"), f"material_mappings['{pattern}']"):
+                return False
+
+        world = config.get("world_material")
+        if isinstance(world, dict):
+            if not queue(world.get("path"), "world_material"):
+                return False
+
+        for path in paths_to_load:
+            if not self.load_materials(str(path)):
+                return False
+        return True
 
     def assign_materials_from_names(self, config_file="material_mappings.json"):
         """Assign materials to volumes based on their label/name patterns using JSON configuration."""
@@ -231,26 +325,38 @@ class GUIMeshCLI:
 
         # Load material mappings from JSON
         try:
-            config = self.load_material_mappings(config_file)
+            config, config_path = self.load_material_mappings(config_file)
         except (FileNotFoundError, ValueError, RuntimeError) as e:
             print(f"ERROR: {str(e)}")
             return False
-        
+
         mappings = config.get("material_mappings", {})
 
         if not mappings:
             print("Error: No material mappings found in configuration file.")
             return False
 
-        # Optional world fill material name (must be loaded via --load-materials before write_gdml)
-        self.world_material_name = config.get("world_material")
+        # Auto-load every custom material referenced by the mapping (entries with
+        # a `path` field, plus world_material.path). NIST built-ins need no path.
+        if not self._load_materials_from_mapping(config, config_path):
+            return False
+
+        # Optional world fill material: object {"name": ..., "path": ...}.
+        world = config.get("world_material")
+        if isinstance(world, dict):
+            self.world_material_name = world.get("name")
+        elif world is None:
+            self.world_material_name = None
+        else:
+            print(f"Error: 'world_material' in {config_path} must be an object with a 'name' field (and optional 'path'), got {type(world).__name__}.")
+            return False
 
         def choose_material_name(label_lower: str) -> tuple:
-            """Return (material_name, description, requires_custom) for a given label."""
+            """Return (material_name, description, has_path) for a given label."""
             for pattern, mapping in mappings.items():
                 if pattern in label_lower:
-                    return (mapping["material"], mapping["description"], mapping.get("requires_custom", False))
-            
+                    return (mapping["material"], mapping["description"], "path" in mapping)
+
             # No match found
             return (None, None, False)
 
@@ -268,16 +374,16 @@ class GUIMeshCLI:
 
         for obj in self.list_of_objects:
             label_lower = str(obj.VolumeCAD.Label).lower()
-            mat_name, description, requires_custom = choose_material_name(label_lower)
-            
+            mat_name, description, has_path = choose_material_name(label_lower)
+
             # Check if no pattern matched
             if mat_name is None:
                 unmatched_volumes.append(obj.VolumeCAD.Label)
                 continue
-            
-            if requires_custom:
+
+            if has_path:
                 custom_materials_needed.add(mat_name)
-            
+
             mat_obj = name_to_material.get(mat_name)
             if mat_obj is None:
                 # Track missing materials
@@ -304,11 +410,10 @@ class GUIMeshCLI:
                     print(f"      • {vol}")
                 if len(volume_labels) > 5:
                     print(f"      ... and {len(volume_labels) - 5} more")
+            example_name = list(missing_materials.keys())[0]
             print(f"\nTo fix this:")
-            print(f"  1. Load the missing material(s) using --load-materials")
-            print(f"     Example: --load-materials data/Materials/{list(missing_materials.keys())[0]}.json")
-            if len(missing_materials) > 1:
-                print(f"     (You may need multiple --load-materials flags for multiple materials)")
+            print(f"  Add a 'path' field to the matching entry in {config_path} so the material file is loaded automatically.")
+            print(f'     "<pattern>": {{ "material": "{example_name}", "path": "../../data/Materials/{example_name}.json", ... }}')
             return False
         
         if unmatched_volumes:
@@ -529,7 +634,7 @@ class GUIMeshCLI:
                         world_material_obj = mat
                         break
                 if world_material_obj is None:
-                    print(f"Error: world_material '{self.world_material_name}' is declared in the mappings file but was not loaded. Pass --load-materials with a JSON that defines it (e.g. data/Materials/{self.world_material_name}.json).")
+                    print(f"Error: world_material '{self.world_material_name}' is declared in the mappings file but was not loaded. Add a 'path' field to the world_material entry pointing at its JSON definition (e.g. data/Materials/{self.world_material_name}.json).")
                     return False
 
             WriteGDML.CreateMother(str(output_path), self.list_of_objects, self.world_dimensions, world_pos, world_material=world_material_obj)
@@ -588,7 +693,6 @@ def main():
     parser.add_argument('--world-size', nargs=3, type=float, metavar=('X', 'Y', 'Z'),
                       help='World dimensions in meters (X Y Z)')
     parser.add_argument('--output-dir', help='Output directory for GDML files')
-    parser.add_argument('--load-materials', action='append', help='Load material(s) from a JSON file or directory containing JSON files. Can be used multiple times.')
     parser.add_argument('--verbose', action='store_true', help='Enable verbose logging and progress messages')
     parser.add_argument('--assign-materials', nargs='?', const='__no_arg__', default=None, help='Assign materials based on volume name patterns. Requires a config path, e.g. src/material_mappings/pet_ring.json or src/material_mappings/cavity.json.')
     parser.add_argument('--extract-centers', nargs='?', const=True, help='Extract crystal center coordinates and long-axis direction vectors. Optionally specify output filename.')
@@ -599,7 +703,7 @@ def main():
 
     if not any(vars(args).values()):
         parser.print_help()
-        return
+        return 0
 
     mesh = GUIMeshCLI()
     mesh.verbose = bool(args.verbose)
@@ -611,55 +715,57 @@ def main():
     # --dump-parts requires a STEP file
     if args.dump_parts and not args.step:
         print("Error: --dump-parts requires --step")
-        return
+        return 1
 
-    # Check material mappings file BEFORE loading STEP file (if --assign-materials is used)
+    # Validate the mapping file BEFORE loading STEP file (if --assign-materials is used)
     if args.assign_materials:
         if args.assign_materials == '__no_arg__':
             print("Error: --assign-materials requires a config path. Available bundled configs:")
             print("  src/material_mappings/pet_ring.json   (LYSO crystals, SiPMs, PCBs; world fill = Vacuum_ref for g4ring compatibility)")
             print("  src/material_mappings/cavity.json     (screws, washers, aluminum, carbon; world fill = Vacuum)")
-            return
+            return 1
         config_file = args.assign_materials
         if mesh.check_material_mappings_file(config_file) is None:
             print(f"   ERROR: Material mappings file '{config_file}' not found.")
             print(f"   Please create the file or specify a valid path.")
             print(f"   The file should be located in the current directory or in src/ directory.")
-            return
+            return 1
+        # Probe every `path` in the mapping JSON now so a typo fails fast
+        # instead of after a multi-minute STEP import.
+        if not mesh.validate_mapping_material_paths(config_file):
+            return 1
 
     if args.step:
         if not mesh.load_step_file(args.step):
-            return
+            return 1
 
     if args.dump_parts:
-        mesh.dump_part_list(args.dump_parts)
-        return
+        if not mesh.dump_part_list(args.dump_parts):
+            return 1
+        return 0
 
     if args.world_size:
         if not mesh.set_world_size(*args.world_size):
-            return
-
-    if args.load_materials:
-        for material_path in args.load_materials:
-            if not mesh.load_materials(material_path):
-                return
+            return 1
 
     # Material assignment based on volume name patterns
     if args.assign_materials:
         if not mesh.assign_materials_from_names(args.assign_materials):
-            return
+            return 1
 
     # Extract crystal centers if requested
     if args.extract_centers:
         if not mesh.extract_crystal_centers(args.extract_centers):
-            return
+            return 1
 
     if args.output_dir:
         if not mesh.write_gdml(args.output_dir):
-            return
+            return 1
+
+    return 0
 
 if __name__ == '__main__':
-    main() 
+    sys.exit(main())
 
 
 

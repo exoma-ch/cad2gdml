@@ -152,6 +152,15 @@ def material_mappings_nolyso_file(test_materials_dir):
     return str(mappings_path)
 
 
+@pytest.fixture
+def material_mappings_lyso_nopath_file(test_materials_dir):
+    """Path to mappings file that references LYSO but provides no 'path' (test-only)."""
+    mappings_path = test_materials_dir / "material_mappings_lyso_nopath.json"
+    if not mappings_path.exists():
+        pytest.skip(f"Material mappings file not found: {mappings_path}")
+    return str(mappings_path)
+
+
 # STEP file fixtures
 @pytest.fixture
 def crystal_step_file(step_files_dir):

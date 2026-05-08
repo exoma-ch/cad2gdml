@@ -15,7 +15,7 @@ Name parts in the CAD assembly so that the material is identifiable from the nam
 
 | Name contains | Material |
 |---|---|
-| `lyso` | LYSO (custom, load with `--load-materials`) |
+| `lyso` | LYSO (custom, auto-loaded from `path` in mapping JSON) |
 | `sipm` | `G4_Si` |
 | `alu` or `aluminum` | `G4_Al` |
 | `carbon` | `G4_C` |
@@ -37,8 +37,7 @@ podman run --rm -v /path/to/CADtoGeant4:/mnt/guimesh cadtogeant4:slim \
 podman run --rm -v /path/to/CADtoGeant4:/mnt/guimesh cadtogeant4:slim \
   python3 src/GUIMeshCLI.py \
     --step data/STEPfiles/ring_12x1.step \
-    --load-materials data/Materials/ \
-    --assign-materials \
+    --assign-materials src/material_mappings/pet_ring.json \
     --extract-centers output/analysis/crystals \
     --center-geometry \
     --output-dir output/gdml/ \
@@ -71,7 +70,7 @@ CAD_coord = centered_coord - translation_mm
 
 ## LYSO Material Definition
 
-LYSO is a custom material; it must be loaded explicitly. Definition in `data/Materials/LYSO.json`:
+LYSO is a custom material. It is referenced from `src/material_mappings/pet_ring.json` (`"path": "../../data/Materials/LYSO.json"`) and is auto-loaded when `--assign-materials` runs. Definition in `data/Materials/LYSO.json`:
 
 ```json
 {
@@ -85,12 +84,6 @@ LYSO is a custom material; it must be loaded explicitly. Definition in `data/Mat
     {"name": "G4_Ce", "fraction": 0.0003}
   ]
 }
-```
-
-Load the whole `data/Materials/` directory to get all custom materials in one flag:
-
-```bash
---load-materials data/Materials/
 ```
 
 ## Reference STEP Files

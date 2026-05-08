@@ -56,17 +56,16 @@ class TestMaterialLoading:
         assert result is False
     
     def test_load_duplicate_material(self, lyso_material_file, mesh_cli_unit):
-        """Test loading the same material twice (should skip duplicate)."""
+        """Test loading the same material twice (should skip duplicate, still report success)."""
         mesh = mesh_cli_unit
         # Load first time
         result1 = mesh.load_materials(lyso_material_file)
         assert result1 is True
         initial_count = len(mesh.Material_List)
-        
-        # Load second time (should skip duplicate)
+
+        # Load second time: duplicate is skipped but the material is available, so success.
         result2 = mesh.load_materials(lyso_material_file)
-        # When duplicate is skipped, loaded_count is 0, so returns False
-        assert result2 is False
+        assert result2 is True
         assert len(mesh.Material_List) == initial_count  # Count should be same
 
 
