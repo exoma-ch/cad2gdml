@@ -1,16 +1,12 @@
 {
   "material_mappings": {
+    "lyso": {
+      "material": "LYSO",
+      "description": "LYSO mapping with no 'path' field (test fixture for the missing-material error)"
+    },
     "sipm": {
       "material": "G4_Si",
       "description": "Pure silicon for Silicon Photomultiplier"
-    },
-    "pcb": {
-      "material": "G4_POLYETHYLENE",
-      "description": "PCB material (fiberglass/epoxy composite approximation)"
-    },
-    "plastic": {
-      "material": "G4_POLYETHYLENE",
-      "description": "Plastic material"
     },
     "aluminum": {
       "material": "G4_Al",
@@ -26,5 +22,5 @@
     "description": "Default fallback material"
   },
   "version": "2.0",
-  "description": "Material assignment rules without a 'lyso' pattern (test fixture for unmatched-volume errors)."
+  "description": "Mapping that references LYSO but provides no 'path', so LYSO cannot be auto-loaded (test fixture)."
 }

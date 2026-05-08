@@ -38,7 +38,6 @@ podman run --rm \
   docker.io/pipsin/cad2geant4:latest \
   python3 src/GUIMeshCLI.py \
     --step data/STEPfiles/your_geometry.step \
-    --load-materials data/Materials/MyMaterial.json \
     --assign-materials src/material_mappings/<config>.json \
     --output-dir output/gdml/ \
     --verbose
@@ -76,8 +75,7 @@ A common mistake: passing host paths (`--step /home/me/foo.step`) without mounti
 ### Flags
 
 - `--step <file>` — **Required.** Input STEP file to convert
-- `--load-materials <file_or_dir>` — Load material definitions from a JSON file or directory (all `.json` files). Repeatable
-- `--assign-materials <config.json>` — Assign materials to volumes by name pattern. Path is required; see `src/material_mappings/` for bundled configs
+- `--assign-materials <config.json>` — Assign materials to volumes by name pattern. Path is required; see `src/material_mappings/` for bundled configs. Custom material JSON files referenced by `path` fields in the mapping are auto-loaded
 - `--extract-centers [filename]` — Write the crystal map (H5) for every LYSO volume. Schema below. Volumes that aren't clean 8-vertex parallelepipeds are skipped with a warning. Filename is auto-generated if omitted
 - `--output-dir <dir>` — Output directory for GDML files
 - `--world-size X Y Z` — World volume dimensions in meters (default: auto from bounding box + 10% margin)
@@ -137,7 +135,7 @@ The tool assigns materials by matching substrings in volume names (case-insensit
 |---|---|---|
 | `cavity_copper_01` | `copper` | `G4_Cu` |
 | `shield_aluminum` | `aluminum` | `G4_Al` |
-| `window_quartz_03` | `quartz` | custom (requires `--load-materials`) |
+| `window_quartz_03` | `quartz` | custom (loaded from `path` in mapping JSON) |
 
 ### Material mapping file (`src/material_mappings/<domain>.json`)
 
@@ -146,22 +144,24 @@ The tool assigns materials by matching substrings in volume names (case-insensit
   "material_mappings": {
     "copper": {
       "material": "G4_Cu",
-      "description": "Copper",
-      "requires_custom": false
+      "description": "Copper"
     },
     "quartz": {
       "material": "SiO2",
-      "description": "Fused silica",
-      "requires_custom": true
+      "path": "../../data/Materials/SiO2.json",
+      "description": "Fused silica"
     }
   },
-  "world_material": "Vacuum"
+  "world_material": {
+    "name": "Vacuum",
+    "path": "../../data/Materials/Vacuum.json"
+  }
 }
 ```
 
 - `material`: Geant4 material name — `G4_*` for NIST materials, or a custom name
-- `requires_custom: true`: material must also be loaded with `--load-materials`
-- `world_material` (optional): the **name** of a material to fill the world volume. The named material must be loaded via `--load-materials` (`data/Materials/Vacuum.json` and `data/Materials/Vacuum_ref.json` ship with the repo). Omit to use the legacy hardcoded `Vacuum` block. Use `Vacuum_ref` whenever the GDML will be loaded into [g4ring](gPET-sim/g4ring/src/DetectorConstruction.cpp), which creates its own C++-side material called `Vacuum` and would otherwise duplicate-name-collide.
+- `path` (optional): path to a custom material JSON definition. Resolved **relative to this mapping file**. Entries without `path` are assumed to be NIST built-ins (no loading needed). The script auto-loads every referenced path; no separate flag is required.
+- `world_material` (optional): object with `name` (the material to fill the world volume) and an optional `path` to its JSON definition. Omit to use the legacy hardcoded `Vacuum` block. Use `Vacuum_ref` whenever the GDML will be loaded into [g4ring](gPET-sim/g4ring/src/DetectorConstruction.cpp), which creates its own C++-side material called `Vacuum` and would otherwise duplicate-name-collide.
 
 ### Custom material definition
 
@@ -179,12 +179,7 @@ The tool assigns materials by matching substrings in volume names (case-insensit
 - `density` in g/cm³; `fraction` values must sum to 1.0
 - Element names follow the Geant4 NIST convention (`G4_Si`, `G4_O`, `G4_Lu`, etc.)
 
-Save material files under `data/Materials/` and load at runtime:
-
-```bash
---load-materials data/Materials/SiO2.json   # single file
---load-materials data/Materials/            # all .json files in directory
-```
+Save material files under `data/Materials/` and reference them from your mapping JSON via the `path` field; the script loads them automatically when `--assign-materials` runs.
 
 ## License
 

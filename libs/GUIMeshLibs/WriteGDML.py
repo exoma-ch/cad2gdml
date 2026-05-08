@@ -25,7 +25,7 @@ from GUIMeshLibs import Volumes
 
 def _write_inline_default_vacuum(F):
     """Legacy hardcoded vacuum block kept for backward compatibility when no
-    world material is supplied via mappings + --load-materials."""
+    world material is supplied via the mapping JSON."""
     F.write('<element name="Vacuum_el"  formula="Hv" Z="1">\n')
     F.write('<atom value="1.008"/>\n')
     F.write('</element> \n')

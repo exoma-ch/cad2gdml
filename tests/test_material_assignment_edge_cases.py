@@ -55,10 +55,9 @@ class TestMaterialAssignmentEdgeCases:
             "material_mappings": mappings_dict,
             "fallback_material": {
                 "material": "G4_Si",
-                "description": "Default fallback material",
-                "requires_custom": False
+                "description": "Default fallback material"
             },
-            "version": "1.0",
+            "version": "2.0",
             "description": "Material assignment rules for GUIMeshCLI"
         }
         with open(mappings_file, 'w') as f:
@@ -75,9 +74,9 @@ class TestMaterialAssignmentEdgeCases:
         
         # Create mappings that require materials not loaded
         mappings = {
-            "lyso": {"material": "LYSO", "description": "LYSO", "requires_custom": True},
-            "sipm": {"material": "CustomSi", "description": "Custom Si", "requires_custom": True},
-            "aluminum": {"material": "CustomAl", "description": "Custom Al", "requires_custom": True}
+            "lyso": {"material": "LYSO", "description": "LYSO"},
+            "sipm": {"material": "CustomSi", "description": "Custom Si"},
+            "aluminum": {"material": "CustomAl", "description": "Custom Al"}
         }
         mappings_file = TestMaterialAssignmentEdgeCases.create_material_mappings_file(mappings, temp_dir)
         
@@ -95,7 +94,7 @@ class TestMaterialAssignmentEdgeCases:
         
         # Create mappings with no matching patterns
         mappings = {
-            "lyso": {"material": "LYSO", "description": "LYSO", "requires_custom": True}
+            "lyso": {"material": "LYSO", "description": "LYSO"}
         }
         mappings_file = TestMaterialAssignmentEdgeCases.create_material_mappings_file(mappings, temp_dir)
         
@@ -111,7 +110,7 @@ class TestMaterialAssignmentEdgeCases:
         mesh.list_of_objects = volumes
         
         mappings = {
-            "lyso": {"material": "LYSO", "description": "LYSO", "requires_custom": True}
+            "lyso": {"material": "LYSO", "description": "LYSO"}
         }
         mappings_file = TestMaterialAssignmentEdgeCases.create_material_mappings_file(mappings, temp_dir)
         
@@ -175,7 +174,7 @@ class TestMaterialAssignmentEdgeCases:
         """Test assignment when no volumes are loaded."""
         mesh = mesh_cli_unit
         mappings = {
-            "lyso": {"material": "LYSO", "description": "LYSO", "requires_custom": True}
+            "lyso": {"material": "LYSO", "description": "LYSO"}
         }
         mappings_file = TestMaterialAssignmentEdgeCases.create_material_mappings_file(mappings, temp_dir)
         
@@ -194,8 +193,8 @@ class TestMaterialAssignmentEdgeCases:
         mesh.list_of_objects = [vol1, vol2]
         
         mappings = {
-            "lyso": {"material": "LYSO", "description": "LYSO", "requires_custom": True},
-            "sipm": {"material": "G4_Si", "description": "Si", "requires_custom": False}
+            "lyso": {"material": "LYSO", "description": "LYSO"},
+            "sipm": {"material": "G4_Si", "description": "Si"}
         }
         mappings_file = TestMaterialAssignmentEdgeCases.create_material_mappings_file(mappings, temp_dir)
         

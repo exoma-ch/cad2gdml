@@ -42,7 +42,7 @@ STEP file
 
 ### Material Assignment
 
-Volume names are lowercased; the first matching pattern in `material_mappings.json` wins. Materials marked `requires_custom: true` must also be loaded via `--load-materials`.
+Volume names are lowercased; the first matching pattern in `material_mappings.json` wins. Each mapping entry may carry an optional `path` field pointing at a custom material JSON file (resolved relative to the mapping JSON); those files are auto-loaded by the script when `--assign-materials` runs. Entries without `path` are assumed to be NIST built-ins.
 
 ### Crystal Orientation Algorithm
 

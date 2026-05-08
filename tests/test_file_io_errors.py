@@ -95,11 +95,13 @@ class TestFileIOErrors:
             try:
                 result = mesh.load_material_mappings(temp_file.name)
                 # The function might succeed if it can read the file despite permissions
-                # or it might return None/False on error
-                # If it succeeds, that's acceptable - the test verifies error handling exists
-                # If it fails, that's also expected
-                # We just verify the function doesn't crash
-                assert result is None or result is False or isinstance(result, dict)
+                # or it might return None/False on error.
+                # We just verify the function doesn't crash; it returns a (config, path) tuple on success.
+                assert (
+                    result is None
+                    or result is False
+                    or (isinstance(result, tuple) and isinstance(result[0], dict))
+                )
             except (PermissionError, RuntimeError, ValueError):
                 # These exceptions are acceptable
                 pass

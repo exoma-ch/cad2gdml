@@ -315,21 +315,19 @@ class TestIntegrationWithStepFile:
 @pytest.mark.integration
 @pytest.mark.skipif(not FREECAD_AVAILABLE, reason="FreeCAD not available")
 def test_cli_with_real_files():
-    """Test CLI main function with real files."""
+    """Test CLI main function with real files; LYSO is auto-loaded from the mapping's 'path'."""
     step_path = Path(__file__).parent / "files" / "ring6x1" / "ring6x1.step"
-    mat_path = Path(__file__).parent / "files" / "Materials" / "LYSO.json"
     mappings_path = Path(__file__).parent / "files" / "test_materials" / "material_mappings.json"
-    
-    if not all(p.exists() for p in [step_path, mat_path, mappings_path]):
+
+    if not all(p.exists() for p in [step_path, mappings_path]):
         pytest.skip("Required test files not found")
-    
+
     # Create temporary output directory
     temp_output_dir = tempfile.mkdtemp(prefix="guimesh_test_")
     try:
         with patch('sys.argv', [
             'GUIMeshCLI.py',
             '--step', str(step_path),
-            '--load-materials', str(mat_path),
             '--assign-materials', str(mappings_path),
             '--output-dir', temp_output_dir,
             '--verbose'

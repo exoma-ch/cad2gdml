@@ -2,40 +2,34 @@
   "material_mappings": {
     "lyso": {
       "material": "LYSO",
-      "description": "Custom LYSO scintillator material",
-      "requires_custom": true
+      "path": "../Materials/LYSO.json",
+      "description": "Custom LYSO scintillator material"
     },
     "sipm": {
       "material": "G4_Si",
-      "description": "Pure silicon for Silicon Photomultiplier",
-      "requires_custom": false
+      "description": "Pure silicon for Silicon Photomultiplier"
     },
     "pcb": {
       "material": "G4_POLYETHYLENE",
-      "description": "PCB material (fiberglass/epoxy composite approximation)",
-      "requires_custom": false
+      "description": "PCB material (fiberglass/epoxy composite approximation)"
     },
     "plastic": {
       "material": "G4_POLYETHYLENE",
-      "description": "Plastic material",
-      "requires_custom": false
+      "description": "Plastic material"
     },
     "aluminum": {
       "material": "G4_Al",
-      "description": "Aluminum material",
-      "requires_custom": false
+      "description": "Aluminum material"
     },
     "al": {
       "material": "G4_Al",
-      "description": "Aluminum material (short form)",
-      "requires_custom": false
+      "description": "Aluminum material (short form)"
     }
   },
   "fallback_material": {
     "material": "G4_Si",
-    "description": "Default fallback material",
-    "requires_custom": false
+    "description": "Default fallback material"
   },
-  "version": "1.0",
-  "description": "Material assignment rules for GUIMeshCLI"
+  "version": "2.0",
+  "description": "Material assignment rules for GUIMeshCLI tests; LYSO auto-loaded from path."
 }

@@ -33,15 +33,12 @@ class TestMaterialAssignmentErrors:
     
     # Use fixtures from conftest.py - no need to redefine them
     
-    def test_material_assignment_success(self, crystal_step_file, lyso_material_file, material_mappings_file, temp_dir):
-        """Test successful material assignment when material is loaded."""
-        step_file = crystal_step_file
-        material_file = lyso_material_file
+    def test_material_assignment_success(self, crystal_step_file, material_mappings_file, temp_dir):
+        """Test successful material assignment; LYSO is auto-loaded from the mapping's 'path' field."""
         cmd = [
         sys.executable,
         "src/GUIMeshCLI.py",
         "--step", crystal_step_file,
-        "--load-materials", lyso_material_file,
         "--assign-materials", material_mappings_file,
         "--output-dir", temp_dir
         ]
@@ -71,34 +68,34 @@ class TestMaterialAssignmentErrors:
             
 
     
-    def test_material_assignment_missing_material(self, crystal_step_file, material_mappings_file, temp_dir):
-        """Test error handling when required material is not loaded."""
+    def test_material_assignment_missing_material(self, crystal_step_file, material_mappings_lyso_nopath_file, temp_dir):
+        """Custom material name with no 'path' in the mapping → cannot auto-load → assignment fails."""
         cmd = [
         sys.executable,
         "src/GUIMeshCLI.py",
         "--step", crystal_step_file,
-        "--assign-materials", material_mappings_file,
+        "--assign-materials", material_mappings_lyso_nopath_file,
         "--output-dir", temp_dir
         ]
-        
+
         result = subprocess.run(
         cmd,
         cwd=Path(__file__).parent.parent,
         capture_output=True,
         text=True
         )
-        
+
         # Check for improved error message
         assert "ERROR: Required materials not found" in result.stdout, \
         f"Expected error message not found. Output: {result.stdout}"
         assert "Material 'LYSO'" in result.stdout
         assert "required for" in result.stdout
         assert "_detector_lyso_" in result.stdout
-            
-            # Check that it suggests how to fix it
-        assert "--load-materials" in result.stdout
-        assert "tests/files/Materials/LYSO.json" in result.stdout or "LYSO.json" in result.stdout or "Materials/LYSO.json" in result.stdout
-            
+
+            # Check that it suggests how to fix it (point at the mapping JSON's `path` field)
+        assert "'path'" in result.stdout
+        assert "LYSO.json" in result.stdout
+
             # Check that GDML files were NOT created (because assignment failed)
         output_dir = Path(temp_dir)
         assert not (output_dir / "mother.gdml").exists(), \
@@ -108,13 +105,12 @@ class TestMaterialAssignmentErrors:
             
 
     
-    def test_material_assignment_no_pattern_match(self, crystal_step_file, lyso_material_file, material_mappings_nolyso_file, temp_dir):
+    def test_material_assignment_no_pattern_match(self, crystal_step_file, material_mappings_nolyso_file, temp_dir):
         """Test error handling when volume name doesn't match any pattern."""
         cmd = [
         sys.executable,
         "src/GUIMeshCLI.py",
         "--step", crystal_step_file,
-        "--load-materials", lyso_material_file,
         "--assign-materials", material_mappings_nolyso_file,
         "--output-dir", temp_dir
         ]
@@ -144,43 +140,43 @@ class TestMaterialAssignmentErrors:
             
 
     
-    def test_material_assignment_missing_material_verbose_output(self, crystal_step_file, material_mappings_file, temp_dir):
+    def test_material_assignment_missing_material_verbose_output(self, crystal_step_file, material_mappings_lyso_nopath_file, temp_dir):
         """Test that missing material error provides detailed information."""
         cmd = [
         sys.executable,
         "src/GUIMeshCLI.py",
         "--step", crystal_step_file,
-        "--assign-materials", material_mappings_file,
+        "--assign-materials", material_mappings_lyso_nopath_file,
         "--output-dir", temp_dir
         ]
-            
+
         result = subprocess.run(
         cmd,
         cwd=Path(__file__).parent.parent,
         capture_output=True,
         text=True
         )
-            
+
             # Verify the error message structure
         output = result.stdout
-            
+
             # Should mention the number of missing materials
         assert "1 material(s) need to be loaded" in output, \
         f"Expected error message not found. Output: {output}"
-            
+
             # Should list the material name
         assert "Material 'LYSO'" in output
-            
+
             # Should show which volumes need it
         assert "_detector_lyso_" in output
-            
-            # Should provide fix instructions
+
+            # Should provide fix instructions pointing at the 'path' field
         assert "To fix this:" in output
-        assert "Load the missing material(s) using --load-materials" in output
-            
+        assert "'path'" in output
+
             # Should provide an example
-        assert "Example:" in output or "Materials" in output
-            
+        assert "LYSO.json" in output
+
             # Verify GDML files were not created
         output_dir = Path(temp_dir)
         assert not (output_dir / "mother.gdml").exists(), \

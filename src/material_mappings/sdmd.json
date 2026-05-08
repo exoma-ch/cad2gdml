@@ -2,31 +2,30 @@
   "material_mappings": {
     "crystal": {
       "material": "LYSO",
-      "description": "Custom LYSO scintillator material",
-      "requires_custom": true
+      "path": "../../data/Materials/LYSO.json",
+      "description": "Custom LYSO scintillator material"
     },
     "wrapping": {
       "material": "G4_TEFLON",
-      "description": "Teflon (PTFE) crystal wrapping / reflector",
-      "requires_custom": false
+      "description": "Teflon (PTFE) crystal wrapping / reflector"
     },
     "source": {
       "material": "G4_PLEXIGLASS",
-      "description": "PMMA/acrylic source capsule",
-      "requires_custom": false
+      "description": "PMMA/acrylic source capsule"
     },
     "housing": {
       "material": "G4_POLYETHYLENE",
-      "description": "Plastic detector housing",
-      "requires_custom": false
+      "description": "Plastic detector housing"
     }
   },
   "fallback_material": {
     "material": "G4_Si",
-    "description": "Default fallback material",
-    "requires_custom": false
+    "description": "Default fallback material"
   },
-  "world_material": "Vacuum_ref",
-  "version": "1.0",
-  "description": "Material mappings for SDMD geometry (LYSO crystals, Teflon wrapping, PMMA source). World fill is Vacuum_ref to avoid name collision with the C++-side Vacuum material in g4ring."
+  "world_material": {
+    "name": "Vacuum_ref",
+    "path": "../../data/Materials/Vacuum_ref.json"
+  },
+  "version": "2.0",
+  "description": "Material mappings for SDMD geometry (LYSO crystals, Teflon wrapping, PMMA source). Entries with a 'path' field are auto-loaded by the script (paths are relative to this file). World fill is Vacuum_ref to avoid name collision with the C++-side Vacuum material in g4ring."
 }
