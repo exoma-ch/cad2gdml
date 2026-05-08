@@ -184,6 +184,52 @@ class TestMaterialAssignmentEdgeCases:
         result = mesh.assign_materials_from_names(mappings_file)
         assert result is False
     
+    def test_validate_mapping_paths_all_present(self, mesh_cli_unit, temp_dir, lyso_material_file):
+        """validate_mapping_material_paths returns True when every path resolves."""
+        mesh = mesh_cli_unit
+        mappings = {
+            "lyso": {"material": "LYSO", "path": lyso_material_file, "description": "absolute path"}
+        }
+        mappings_file = TestMaterialAssignmentEdgeCases.create_material_mappings_file(mappings, temp_dir)
+        assert mesh.validate_mapping_material_paths(mappings_file) is True
+
+    def test_validate_mapping_paths_relative_resolves_against_mapping_dir(self, mesh_cli_unit, temp_dir):
+        """Relative paths resolve against the mapping file's directory."""
+        mesh = mesh_cli_unit
+        # Drop a fake material JSON next to the mapping; reference it via a relative path.
+        fake_mat = Path(temp_dir) / "fake_mat.json"
+        fake_mat.write_text("{}")
+        mappings = {
+            "fake": {"material": "FAKE", "path": "fake_mat.json", "description": "relative"}
+        }
+        mappings_file = TestMaterialAssignmentEdgeCases.create_material_mappings_file(mappings, temp_dir)
+        assert mesh.validate_mapping_material_paths(mappings_file) is True
+
+    def test_validate_mapping_paths_missing_file_fails(self, mesh_cli_unit, temp_dir):
+        """A path that points at a non-existent file makes validation fail."""
+        mesh = mesh_cli_unit
+        mappings = {
+            "lyso": {"material": "LYSO", "path": "/does/not/exist/LYSO.json", "description": "broken"}
+        }
+        mappings_file = TestMaterialAssignmentEdgeCases.create_material_mappings_file(mappings, temp_dir)
+        assert mesh.validate_mapping_material_paths(mappings_file) is False
+
+    def test_validate_mapping_paths_world_material_path_checked(self, mesh_cli_unit, temp_dir):
+        """A broken world_material.path also fails validation."""
+        mesh = mesh_cli_unit
+        mappings = {
+            "al": {"material": "G4_Al", "description": "Al"}
+        }
+        mappings_file = Path(temp_dir) / "material_mappings.json"
+        config = {
+            "material_mappings": mappings,
+            "world_material": {"name": "Vacuum_ref", "path": "/does/not/exist/Vacuum_ref.json"},
+            "version": "2.0"
+        }
+        with open(mappings_file, 'w') as f:
+            json.dump(config, f)
+        assert mesh.validate_mapping_material_paths(str(mappings_file)) is False
+
     def test_assign_materials_mixed_missing_and_available(self, mesh_cli_unit, temp_dir):
         """Test assignment with some materials available and some missing."""
         mesh = mesh_cli_unit

@@ -189,6 +189,45 @@ class GUIMeshCLI:
             print(f"Error reading file: {str(e)}")
             return False
 
+    def validate_mapping_material_paths(self, config_file):
+        """Verify every `path` in the mapping JSON points at an existing file.
+
+        Run before STEP loading so a typo'd material path fails fast instead
+        of after a multi-minute import.
+
+        Returns True if all paths resolve, False otherwise (with errors printed).
+        """
+        try:
+            config, config_path = self.load_material_mappings(config_file)
+        except (FileNotFoundError, ValueError, RuntimeError) as e:
+            print(f"ERROR: {str(e)}")
+            return False
+
+        config_dir = Path(config_path).parent
+        ok = True
+
+        def check(raw_path, source_label):
+            nonlocal ok
+            if not raw_path:
+                return
+            p = Path(raw_path)
+            if not p.is_absolute():
+                p = (config_dir / p)
+            p = p.resolve()
+            if not p.exists():
+                print(f"ERROR: Material path '{raw_path}' (from {source_label}) not found at '{p}'.")
+                ok = False
+
+        for pattern, mapping in config.get("material_mappings", {}).items():
+            if isinstance(mapping, dict):
+                check(mapping.get("path"), f"material_mappings['{pattern}']")
+
+        world = config.get("world_material")
+        if isinstance(world, dict):
+            check(world.get("path"), "world_material")
+
+        return ok
+
     def check_material_mappings_file(self, config_file="material_mappings.json"):
         """Check if material mappings file exists. Returns the full path if found, None otherwise."""
         config_path = Path(config_file)
@@ -664,7 +703,7 @@ def main():
 
     if not any(vars(args).values()):
         parser.print_help()
-        return
+        return 0
 
     mesh = GUIMeshCLI()
     mesh.verbose = bool(args.verbose)
@@ -676,50 +715,57 @@ def main():
     # --dump-parts requires a STEP file
     if args.dump_parts and not args.step:
         print("Error: --dump-parts requires --step")
-        return
+        return 1
 
-    # Check material mappings file BEFORE loading STEP file (if --assign-materials is used)
+    # Validate the mapping file BEFORE loading STEP file (if --assign-materials is used)
     if args.assign_materials:
         if args.assign_materials == '__no_arg__':
             print("Error: --assign-materials requires a config path. Available bundled configs:")
             print("  src/material_mappings/pet_ring.json   (LYSO crystals, SiPMs, PCBs; world fill = Vacuum_ref for g4ring compatibility)")
             print("  src/material_mappings/cavity.json     (screws, washers, aluminum, carbon; world fill = Vacuum)")
-            return
+            return 1
         config_file = args.assign_materials
         if mesh.check_material_mappings_file(config_file) is None:
             print(f"   ERROR: Material mappings file '{config_file}' not found.")
             print(f"   Please create the file or specify a valid path.")
             print(f"   The file should be located in the current directory or in src/ directory.")
-            return
+            return 1
+        # Probe every `path` in the mapping JSON now so a typo fails fast
+        # instead of after a multi-minute STEP import.
+        if not mesh.validate_mapping_material_paths(config_file):
+            return 1
 
     if args.step:
         if not mesh.load_step_file(args.step):
-            return
+            return 1
 
     if args.dump_parts:
-        mesh.dump_part_list(args.dump_parts)
-        return
+        if not mesh.dump_part_list(args.dump_parts):
+            return 1
+        return 0
 
     if args.world_size:
         if not mesh.set_world_size(*args.world_size):
-            return
+            return 1
 
     # Material assignment based on volume name patterns
     if args.assign_materials:
         if not mesh.assign_materials_from_names(args.assign_materials):
-            return
+            return 1
 
     # Extract crystal centers if requested
     if args.extract_centers:
         if not mesh.extract_crystal_centers(args.extract_centers):
-            return
+            return 1
 
     if args.output_dir:
         if not mesh.write_gdml(args.output_dir):
-            return
+            return 1
+
+    return 0
 
 if __name__ == '__main__':
-    main() 
+    sys.exit(main())
 
 
 
