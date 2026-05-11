@@ -17,6 +17,14 @@
 <D value="0.0000000000000000000001" unit="mg/cm3"/>
 <fraction n="1.0" ref="Vacuum_el"/>
 </material>
+<material name="LYSO" state="solid">
+<D unit="g/cm3" value="7.1"/>
+<fraction n="0.7143" ref="G4_Lu"/>
+<fraction n="0.0403" ref="G4_Y"/>
+<fraction n="0.0637" ref="G4_Si"/>
+<fraction n="0.1814" ref="G4_O"/>
+<fraction n="0.0003" ref="G4_Ce"/>
+</material>
 </materials>
 <solids>
 <box name="WorldBox" x="0.0055650000000000005" y="0.0525" z="0.004147500000000001" lunit="m"/>

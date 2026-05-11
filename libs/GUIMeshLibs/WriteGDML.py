@@ -87,6 +87,19 @@ def CreateMother(dir_path,object_list,world,world_pos=[0.0,0.0,0.0],world_materi
         _write_inline_default_vacuum(F)
     else:
         _write_world_material_from_object(F, world_material)
+    # Aggregate unique volume materials so each is declared exactly once at
+    # mother scope. Children reference them via <materialref>; without this,
+    # every child re-declared its material and Geant4's GDML parser emitted a
+    # "duplicate name of material" warning per include.
+    seen = {world_material_name}
+    for obj in object_list:
+        if obj.VolumeGDMLoption != 1:
+            continue
+        mat = obj.VolumeMaterial
+        if mat.Nelements == 0 or mat.Name in seen:
+            continue
+        seen.add(mat.Name)
+        _write_world_material_from_object(F, mat)
     F.write('</materials>\n')
     #write solid information (world volume)
     F.write('<solids>\n')
@@ -136,17 +149,8 @@ def CreateGDML(obj,vol_numb,path_to_mesh):
         F.write(' <position name="'+gdml_name+'_v'+str(count)+'" unit="mm" x="'+str(tri[0])+'" y="'+str(tri[1])+'" z="'+str(tri[2])+'"/>\n')
         count=count+1	
     F.write(" </define>\n\n")
-    #write material
-    if obj.VolumeMaterial.Nelements!=0:    
-        mat_state="solid"   
-        F.write(' <materials>\n')
-        F.write('   <material name="'+str(obj.VolumeMaterial.Name)+'" state="'+mat_state+'">\n')
-        F.write('       <D unit="g/cm3" value="'+str(obj.VolumeMaterial.Density)+'"/>\n')        
-        for i in range (0,obj.VolumeMaterial.Nelements):
-            F.write('       <fraction n="'+str(obj.VolumeMaterial.ElementFractions[i])+'" ref="'+str(obj.VolumeMaterial.Elements[i])+'"/>\n')          
-        F.write('   </material>\n')         
-        F.write(' </materials>\n')
-        
+    # Material is declared once in mother.gdml; children reference it via
+    # <materialref> only. See CreateMother for the aggregated <materials> block.
     #write solids
     F.write(" <solids>\n")
     F.write(' <tessellated aunit="deg" lunit="mm" name="'+gdml_name+'_solid">\n')

@@ -11,16 +11,6 @@
  <position name="_detector_lyso_816_v7" unit="mm" x="80.75864779650293" y="-32.36547539571784" z="-33.1499999999989"/>
  </define>
 
- <materials>
-   <material name="LYSO" state="solid">
-       <D unit="g/cm3" value="7.1"/>
-       <fraction n="0.7143" ref="G4_Lu"/>
-       <fraction n="0.0403" ref="G4_Y"/>
-       <fraction n="0.0637" ref="G4_Si"/>
-       <fraction n="0.1814" ref="G4_O"/>
-       <fraction n="0.0003" ref="G4_Ce"/>
-   </material>
- </materials>
  <solids>
  <tessellated aunit="deg" lunit="mm" name="_detector_lyso_816_solid">
  <triangular vertex1="_detector_lyso_816_v0" vertex2="_detector_lyso_816_v1" vertex3="_detector_lyso_816_v2"/>

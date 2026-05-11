@@ -1,3 +1,6 @@
+Loaded material mappings from tests/files/test_materials/material_mappings.json
+  Material assignment rules for GUIMeshCLI tests; LYSO auto-loaded from path.
+  Version: 2.0
 Creating FreeCAD document...
 
 ============================================================
@@ -23,11 +26,11 @@ World size: 0.05m x 0.06m x 0.02m
 World position: (0.000, 0.000, 0.000) m (CAD origin preserved)
 World dimensions automatically set to: 0.05m x 0.06m x 0.02m
 ==============================
+Loaded material mappings from tests/files/test_materials/material_mappings.json
+  Material assignment rules for GUIMeshCLI tests; LYSO auto-loaded from path.
+  Version: 2.0
 LYSO was imported successfully.
 Successfully loaded material 'LYSO'
-Loaded material mappings from tests/files/test_materials/material_mappings.json
-  Material assignment rules for GUIMeshCLI
-  Version: 1.0
 Material assignments summary:
   LYSO: 36 volumes
   G4_Si: 7 volumes
