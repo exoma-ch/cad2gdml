@@ -84,6 +84,7 @@ class GUIMeshCLI:
         self.vertex_counts = []  # Track vertex counts for statistics
         self.center_geometry = False  # Flag to enable geometry centering
         self.geometry_translation = [0.0, 0.0, 0.0]  # Translation to center geometry (in mm, CAD coordinates)
+        self.copynumber_prefix = None  # If set, emit crystal physvol name/copynumber (prefix identifies crystal volumes)
         self.world_material_name = None  # Name of world fill material (read from mappings JSON, looked up in Material_List at write time)
 
     def load_materials(self, material_path):
@@ -642,7 +643,7 @@ class GUIMeshCLI:
             # decision and the same tessellation. Cuboids -> native <box>.
             WriteGDML.annotate_boxes(self.list_of_objects, verbose=self.verbose)
 
-            WriteGDML.CreateMother(str(output_path), self.list_of_objects, self.world_dimensions, world_pos, world_material=world_material_obj)
+            WriteGDML.CreateMother(str(output_path), self.list_of_objects, self.world_dimensions, world_pos, world_material=world_material_obj, copynumber_prefix=self.copynumber_prefix)
 
             for i, obj in enumerate(self.list_of_objects, 1):
                 if obj.VolumeGDMLoption == 1:
@@ -703,6 +704,7 @@ def main():
     parser.add_argument('--extract-centers', nargs='?', const=True, help='Extract crystal center coordinates and long-axis direction vectors. Optionally specify output filename.')
     parser.add_argument('--center-geometry', action='store_true', help='Translate and center geometry at origin (0,0,0) by centering the bounding box. This minimizes world size and transforms crystal coordinates.')
     parser.add_argument('--dump-parts', metavar='OUTPUT_FILE', help='Load STEP file and write all part labels to a plain-text file (one per line), then exit. Useful for discovering part names before writing material_mappings.json.')
+    parser.add_argument('--add-copynumbers', nargs='?', const=WriteGDML.DEFAULT_COPYNUMBER_PREFIX, default=None, metavar='PREFIX', help="Emit name/copynumber attributes on crystal <physvol> tags in mother.gdml (crystal number taken from the '<prefix><N>' volume label). Optional PREFIX identifies crystal volumes (default: '_detector_lyso_'). Equivalent to running gPET-sim's add_copynumbers.py afterwards; g4ring readout needs these copy numbers.")
     
     args = parser.parse_args()
 
@@ -713,6 +715,7 @@ def main():
     mesh = GUIMeshCLI()
     mesh.verbose = bool(args.verbose)
     mesh.center_geometry = bool(args.center_geometry)
+    mesh.copynumber_prefix = args.add_copynumbers
 
     # Set output directory for files
     mesh.output_dir = args.output_dir

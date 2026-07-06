@@ -20,8 +20,39 @@
 
 #Libraries
 import os
+import re
 from GUIMeshLibs import Materials
 from GUIMeshLibs import Volumes
+
+# Default filename prefix that identifies crystal volumes when emitting copy
+# numbers. Matches g4ring's add_copynumbers.py so the two produce identical GDML.
+DEFAULT_COPYNUMBER_PREFIX = "_detector_lyso_"
+
+
+def _crystal_physvol_open(gdml_filename, prefix):
+    """Return the ``<physvol ...>`` opening tag for a child include.
+
+    With ``prefix`` set, crystal volumes (whose file is ``<prefix><N>.gdml``,
+    or the bare ``<prefix>.gdml`` for the un-numbered first instance) get a
+    ``name`` and ``copynumber`` attribute; everything else, and the ``prefix is
+    None`` case, stay a bare ``<physvol>``. The number extraction and ``_PV``
+    naming reproduce g4ring's add_copynumbers.py exactly, so exporting with
+    ``--add-copynumbers`` is equivalent to running that script afterwards.
+
+    gPET-sim's readout keys on this copy number (``GetCopyNo()``); without it
+    every hit lands with volume id 0.
+    """
+    if prefix is None:
+        return '<physvol>'
+    m = re.search(re.escape(prefix) + r'(\d+)\.gdml', gdml_filename)
+    if m:
+        crystal_num = int(m.group(1))
+    elif (prefix + '.gdml') in gdml_filename:
+        crystal_num = 0
+    else:
+        return '<physvol>'
+    base_name = gdml_filename.replace('.gdml', '_PV')
+    return '<physvol name="{}" copynumber="{}">'.format(base_name, crystal_num)
 
 # --- native-box export ------------------------------------------------------
 # A part whose tessellation is a plain cuboid is exported as a native GDML
@@ -202,7 +233,8 @@ def _write_world_material_from_object(F, mat):
 
 
 #Write Mother.gdml file
-def CreateMother(dir_path,object_list,world,world_pos=[0.0,0.0,0.0],world_material=None):
+def CreateMother(dir_path,object_list,world,world_pos=[0.0,0.0,0.0],world_material=None,
+                 copynumber_prefix=None):
     """Write mother.gdml.
 
     world_material:
@@ -212,6 +244,12 @@ def CreateMother(dir_path,object_list,world,world_pos=[0.0,0.0,0.0],world_materi
       - A loaded ``Materials.Material`` object: render that material using the same
         per-volume style (state, g/cm3 density, NIST-element fraction refs).
         The world's ``<materialref>`` is the material's name.
+
+    copynumber_prefix:
+      - None (default): child ``<physvol>`` tags are bare (byte-stable output).
+      - A string (e.g. ``"_detector_lyso_"``): crystal physvols get ``name`` and
+        ``copynumber`` attributes, matching g4ring's add_copynumbers.py so no
+        separate post-processing step is needed. See :func:`_crystal_physvol_open`.
     """
     world_material_name = world_material.Name if world_material is not None else "Vacuum"
     #write headers and globals
@@ -273,9 +311,9 @@ def CreateMother(dir_path,object_list,world,world_pos=[0.0,0.0,0.0],world_materi
     offset_mm = [-world_pos[0]*1000.0, -world_pos[1]*1000.0, -world_pos[2]*1000.0]
     for i in range(0,len(object_list)):
         if (object_list[i].VolumeGDMLoption==1):
-            F.write('<physvol>\n')
             # Use volume label directly - normalization happens at the end
             gdml_filename = str(object_list[i].VolumeCAD.Label) + ".gdml"
+            F.write(_crystal_physvol_open(gdml_filename, copynumber_prefix)+'\n')
             F.write('<file name="Volumes/'+gdml_filename+'"/>\n')
             box = getattr(object_list[i], '_box', None)
             if box is not None:
