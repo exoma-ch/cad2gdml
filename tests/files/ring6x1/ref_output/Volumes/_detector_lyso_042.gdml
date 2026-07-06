@@ -1,31 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no" ?>
 <gdml xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://service-spi.web.cern.ch/service-spi/app/releases/GDML/schema/gdml.xsd">
  <define>
- <position name="_detector_lyso_042_v0" unit="mm" x="-61.283012701891764" y="16.098264889255685" z="-33.34999999999869"/>
- <position name="_detector_lyso_042_v1" unit="mm" x="-82.93364779650268" y="28.598264889255763" z="-38.649999999998705"/>
- <position name="_detector_lyso_042_v2" unit="mm" x="-82.93364779650268" y="28.598264889255766" z="-33.349999999998694"/>
- <position name="_detector_lyso_042_v3" unit="mm" x="-61.283012701891764" y="16.09826488925568" z="-38.64999999999869"/>
- <position name="_detector_lyso_042_v4" unit="mm" x="-63.25801270189178" y="12.677464544307156" z="-33.34999999999869"/>
- <position name="_detector_lyso_042_v5" unit="mm" x="-84.90864779650272" y="25.177464544307238" z="-33.3499999999987"/>
- <position name="_detector_lyso_042_v6" unit="mm" x="-63.25801270189178" y="12.677464544307156" z="-38.64999999999869"/>
- <position name="_detector_lyso_042_v7" unit="mm" x="-84.90864779650272" y="25.177464544307238" z="-38.6499999999987"/>
  </define>
 
  <solids>
- <tessellated aunit="deg" lunit="mm" name="_detector_lyso_042_solid">
- <triangular vertex1="_detector_lyso_042_v0" vertex2="_detector_lyso_042_v1" vertex3="_detector_lyso_042_v2"/>
- <triangular vertex1="_detector_lyso_042_v0" vertex2="_detector_lyso_042_v3" vertex3="_detector_lyso_042_v1"/>
- <triangular vertex1="_detector_lyso_042_v4" vertex2="_detector_lyso_042_v0" vertex3="_detector_lyso_042_v5"/>
- <triangular vertex1="_detector_lyso_042_v5" vertex2="_detector_lyso_042_v0" vertex3="_detector_lyso_042_v2"/>
- <triangular vertex1="_detector_lyso_042_v6" vertex2="_detector_lyso_042_v4" vertex3="_detector_lyso_042_v7"/>
- <triangular vertex1="_detector_lyso_042_v7" vertex2="_detector_lyso_042_v4" vertex3="_detector_lyso_042_v5"/>
- <triangular vertex1="_detector_lyso_042_v3" vertex2="_detector_lyso_042_v7" vertex3="_detector_lyso_042_v1"/>
- <triangular vertex1="_detector_lyso_042_v3" vertex2="_detector_lyso_042_v6" vertex3="_detector_lyso_042_v7"/>
- <triangular vertex1="_detector_lyso_042_v4" vertex2="_detector_lyso_042_v3" vertex3="_detector_lyso_042_v0"/>
- <triangular vertex1="_detector_lyso_042_v4" vertex2="_detector_lyso_042_v6" vertex3="_detector_lyso_042_v3"/>
- <triangular vertex1="_detector_lyso_042_v7" vertex2="_detector_lyso_042_v5" vertex3="_detector_lyso_042_v1"/>
- <triangular vertex1="_detector_lyso_042_v1" vertex2="_detector_lyso_042_v5" vertex3="_detector_lyso_042_v2"/>
- </tessellated>
+ <box lunit="mm" name="_detector_lyso_042_solid" x="25.0000000000" y="5.3000000000" z="3.9500000000"/>
  <box lunit="mm" name="worldsolid" x="1000" y="1000" z="1000"/>
  </solids>
  <structure>

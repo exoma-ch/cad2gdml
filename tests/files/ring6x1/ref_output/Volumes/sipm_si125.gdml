@@ -1,31 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no" ?>
 <gdml xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://service-spi.web.cern.ch/service-spi/app/releases/GDML/schema/gdml.xsd">
  <define>
- <position name="sipm_si125_v0" unit="mm" x="58.899673200287864" y="-72.2263299977196" z="-0.34999999999956977"/>
- <position name="sipm_si125_v1" unit="mm" x="58.03364779650343" y="-71.7263299977196" z="-0.34999999999956977"/>
- <position name="sipm_si125_v2" unit="mm" x="58.03364779650343" y="-71.7263299977196" z="-16.649999999999565"/>
- <position name="sipm_si125_v3" unit="mm" x="58.899673200287864" y="-72.2263299977196" z="-16.649999999999565"/>
- <position name="sipm_si125_v4" unit="mm" x="62.083647796503435" y="-64.71152422706564" z="-0.34999999999956977"/>
- <position name="sipm_si125_v5" unit="mm" x="62.94967320028787" y="-65.21152422706565" z="-0.34999999999956977"/>
- <position name="sipm_si125_v6" unit="mm" x="62.083647796503435" y="-64.71152422706564" z="-16.649999999999565"/>
- <position name="sipm_si125_v7" unit="mm" x="62.94967320028787" y="-65.21152422706565" z="-16.649999999999565"/>
  </define>
 
  <solids>
- <tessellated aunit="deg" lunit="mm" name="sipm_si125_solid">
- <triangular vertex1="sipm_si125_v0" vertex2="sipm_si125_v1" vertex3="sipm_si125_v2"/>
- <triangular vertex1="sipm_si125_v0" vertex2="sipm_si125_v2" vertex3="sipm_si125_v3"/>
- <triangular vertex1="sipm_si125_v4" vertex2="sipm_si125_v1" vertex3="sipm_si125_v5"/>
- <triangular vertex1="sipm_si125_v1" vertex2="sipm_si125_v0" vertex3="sipm_si125_v5"/>
- <triangular vertex1="sipm_si125_v6" vertex2="sipm_si125_v4" vertex3="sipm_si125_v7"/>
- <triangular vertex1="sipm_si125_v7" vertex2="sipm_si125_v4" vertex3="sipm_si125_v5"/>
- <triangular vertex1="sipm_si125_v3" vertex2="sipm_si125_v2" vertex3="sipm_si125_v6"/>
- <triangular vertex1="sipm_si125_v3" vertex2="sipm_si125_v6" vertex3="sipm_si125_v7"/>
- <triangular vertex1="sipm_si125_v4" vertex2="sipm_si125_v6" vertex3="sipm_si125_v2"/>
- <triangular vertex1="sipm_si125_v1" vertex2="sipm_si125_v4" vertex3="sipm_si125_v2"/>
- <triangular vertex1="sipm_si125_v7" vertex2="sipm_si125_v5" vertex3="sipm_si125_v3"/>
- <triangular vertex1="sipm_si125_v5" vertex2="sipm_si125_v0" vertex3="sipm_si125_v3"/>
- </tessellated>
+ <box lunit="mm" name="sipm_si125_solid" x="1.0000000000" y="16.3000000000" z="8.1000000000"/>
  <box lunit="mm" name="worldsolid" x="1000" y="1000" z="1000"/>
  </solids>
  <structure>

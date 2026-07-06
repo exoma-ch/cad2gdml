@@ -1,31 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no" ?>
 <gdml xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://service-spi.web.cern.ch/service-spi/app/releases/GDML/schema/gdml.xsd">
  <define>
- <position name="dmod-base_al003_v0" unit="mm" x="35.00000000000399" y="-88.37677826490999" z="-339.99999999999"/>
- <position name="dmod-base_al003_v1" unit="mm" x="35.000000000003986" y="-113.37677826490999" z="40.000000000010004"/>
- <position name="dmod-base_al003_v2" unit="mm" x="35.000000000003986" y="-113.37677826490999" z="-339.99999999999"/>
- <position name="dmod-base_al003_v3" unit="mm" x="35.00000000000399" y="-88.37677826490999" z="40.000000000010004"/>
- <position name="dmod-base_al003_v4" unit="mm" x="-34.999999999995985" y="-88.37677826490999" z="-339.99999999999"/>
- <position name="dmod-base_al003_v5" unit="mm" x="-34.99999999999599" y="-113.37677826491002" z="-339.99999999999"/>
- <position name="dmod-base_al003_v6" unit="mm" x="-34.999999999995985" y="-88.37677826490999" z="40.000000000010004"/>
- <position name="dmod-base_al003_v7" unit="mm" x="-34.99999999999599" y="-113.37677826491002" z="40.000000000010004"/>
  </define>
 
  <solids>
- <tessellated aunit="deg" lunit="mm" name="dmod-base_al003_solid">
- <triangular vertex1="dmod-base_al003_v0" vertex2="dmod-base_al003_v1" vertex3="dmod-base_al003_v2"/>
- <triangular vertex1="dmod-base_al003_v0" vertex2="dmod-base_al003_v3" vertex3="dmod-base_al003_v1"/>
- <triangular vertex1="dmod-base_al003_v0" vertex2="dmod-base_al003_v2" vertex3="dmod-base_al003_v4"/>
- <triangular vertex1="dmod-base_al003_v4" vertex2="dmod-base_al003_v2" vertex3="dmod-base_al003_v5"/>
- <triangular vertex1="dmod-base_al003_v6" vertex2="dmod-base_al003_v4" vertex3="dmod-base_al003_v7"/>
- <triangular vertex1="dmod-base_al003_v7" vertex2="dmod-base_al003_v4" vertex3="dmod-base_al003_v5"/>
- <triangular vertex1="dmod-base_al003_v1" vertex2="dmod-base_al003_v3" vertex3="dmod-base_al003_v6"/>
- <triangular vertex1="dmod-base_al003_v1" vertex2="dmod-base_al003_v6" vertex3="dmod-base_al003_v7"/>
- <triangular vertex1="dmod-base_al003_v0" vertex2="dmod-base_al003_v4" vertex3="dmod-base_al003_v6"/>
- <triangular vertex1="dmod-base_al003_v0" vertex2="dmod-base_al003_v6" vertex3="dmod-base_al003_v3"/>
- <triangular vertex1="dmod-base_al003_v5" vertex2="dmod-base_al003_v2" vertex3="dmod-base_al003_v7"/>
- <triangular vertex1="dmod-base_al003_v7" vertex2="dmod-base_al003_v2" vertex3="dmod-base_al003_v1"/>
- </tessellated>
+ <box lunit="mm" name="dmod-base_al003_solid" x="25.0000000000" y="380.0000000000" z="70.0000000000"/>
  <box lunit="mm" name="worldsolid" x="1000" y="1000" z="1000"/>
  </solids>
  <structure>

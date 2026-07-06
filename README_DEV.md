@@ -44,6 +44,15 @@ STEP file
 
 Volume names are lowercased; the first matching pattern in `material_mappings.json` wins. Each mapping entry may carry an optional `path` field pointing at a custom material JSON file (resolved relative to the mapping JSON); those files are auto-loaded by the script when `--assign-materials` runs. Entries without `path` are assumed to be NIST built-ins.
 
+### Solid export: native box vs tessellated mesh
+
+`WriteGDML.annotate_boxes()` runs once before the mother/volume files are written and classifies every exported part:
+
+- **Cuboids → native GDML `<box>`.** A part whose tessellation is a clean, orthogonal 8-corner box is exported as an origin-centred `G4Box` plus a per-part `<position>`/`<rotation>` in `mother.gdml`. Geant4 navigates the analytic box instead of triangle-by-triangle, a large Stage-2 speedup for scanners built from thousands of crystals (gPET-sim issue #110).
+- **Everything else → `<tessellated>`,** byte-for-byte as before.
+
+The box axes/half-extents come from the part's three principal edges (extent-independent, so cubes and square cross-sections work too), falling back to a covariance OBB fit. The rotation follows Geant4's placement convention `p_world = Rᵀ·p_local + pos` with `R = Rz(az)·Ry(ay)·Rx(ax)`. Every candidate box is only accepted after reconstructing its 8 corners with that exact math and checking they match the original vertices to < 1e-3 mm; anything above tolerance falls back to tessellated, so a bad fit can never place a solid wrong. The classification is shared by `CreateMother` (placement) and `CreateGDML` (solid) via `obj._box`.
+
 ### Crystal Orientation Algorithm
 
 The extractor assumes each LYSO volume is a clean parallelepiped that tessellates to exactly 8 vertices, with one unambiguously longest edge. This is true for typical PET crystals (depth ≫ width ≈ height) and is intentionally a strong assumption — there is no fallback for curved, chamfered, or otherwise non-parallelepiped shapes.

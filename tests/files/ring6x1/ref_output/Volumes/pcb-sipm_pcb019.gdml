@@ -1,31 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no" ?>
 <gdml xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://service-spi.web.cern.ch/service-spi/app/releases/GDML/schema/gdml.xsd">
  <define>
- <position name="pcb-sipm_pcb019_v0" unit="mm" x="68.0156986040725" y="58.436910835276265" z="-49.7499999999991"/>
- <position name="pcb-sipm_pcb019_v1" unit="mm" x="67.14967320028806" y="57.936910835276265" z="-49.7499999999991"/>
- <position name="pcb-sipm_pcb019_v2" unit="mm" x="58.84967320028806" y="72.31293253809795" z="-49.7499999999991"/>
- <position name="pcb-sipm_pcb019_v3" unit="mm" x="59.7156986040725" y="72.81293253809795" z="-49.7499999999991"/>
- <position name="pcb-sipm_pcb019_v4" unit="mm" x="67.14967320028805" y="57.93691083527625" z="-0.2499999999990976"/>
- <position name="pcb-sipm_pcb019_v5" unit="mm" x="68.0156986040725" y="58.436910835276265" z="-0.2499999999990976"/>
- <position name="pcb-sipm_pcb019_v6" unit="mm" x="58.84967320028806" y="72.31293253809795" z="-0.2499999999990976"/>
- <position name="pcb-sipm_pcb019_v7" unit="mm" x="59.7156986040725" y="72.81293253809795" z="-0.2499999999990976"/>
  </define>
 
  <solids>
- <tessellated aunit="deg" lunit="mm" name="pcb-sipm_pcb019_solid">
- <triangular vertex1="pcb-sipm_pcb019_v0" vertex2="pcb-sipm_pcb019_v1" vertex3="pcb-sipm_pcb019_v2"/>
- <triangular vertex1="pcb-sipm_pcb019_v0" vertex2="pcb-sipm_pcb019_v2" vertex3="pcb-sipm_pcb019_v3"/>
- <triangular vertex1="pcb-sipm_pcb019_v4" vertex2="pcb-sipm_pcb019_v1" vertex3="pcb-sipm_pcb019_v5"/>
- <triangular vertex1="pcb-sipm_pcb019_v5" vertex2="pcb-sipm_pcb019_v1" vertex3="pcb-sipm_pcb019_v0"/>
- <triangular vertex1="pcb-sipm_pcb019_v4" vertex2="pcb-sipm_pcb019_v5" vertex3="pcb-sipm_pcb019_v6"/>
- <triangular vertex1="pcb-sipm_pcb019_v6" vertex2="pcb-sipm_pcb019_v5" vertex3="pcb-sipm_pcb019_v7"/>
- <triangular vertex1="pcb-sipm_pcb019_v3" vertex2="pcb-sipm_pcb019_v6" vertex3="pcb-sipm_pcb019_v7"/>
- <triangular vertex1="pcb-sipm_pcb019_v2" vertex2="pcb-sipm_pcb019_v6" vertex3="pcb-sipm_pcb019_v3"/>
- <triangular vertex1="pcb-sipm_pcb019_v4" vertex2="pcb-sipm_pcb019_v2" vertex3="pcb-sipm_pcb019_v1"/>
- <triangular vertex1="pcb-sipm_pcb019_v4" vertex2="pcb-sipm_pcb019_v6" vertex3="pcb-sipm_pcb019_v2"/>
- <triangular vertex1="pcb-sipm_pcb019_v7" vertex2="pcb-sipm_pcb019_v5" vertex3="pcb-sipm_pcb019_v3"/>
- <triangular vertex1="pcb-sipm_pcb019_v3" vertex2="pcb-sipm_pcb019_v5" vertex3="pcb-sipm_pcb019_v0"/>
- </tessellated>
+ <box lunit="mm" name="pcb-sipm_pcb019_solid" x="1.0000000000" y="16.6000000000" z="49.5000000000"/>
  <box lunit="mm" name="worldsolid" x="1000" y="1000" z="1000"/>
  </solids>
  <structure>

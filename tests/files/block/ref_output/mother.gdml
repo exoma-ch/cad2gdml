@@ -35,218 +35,218 @@
 <solidref ref="WorldBox"/>
 <physvol>
 <file name="Volumes/_detector_lyso_.gdml"/>
-<positionref ref="geometry_offset"/>
-<rotationref ref="identity"/>
+<position x="-16.5000000000" y="14.5000000000" z="2.0750000000" unit="mm"/>
+<rotation x="3.141592653590" y="-0.000000000000" z="-1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/_detector_lyso_001.gdml"/>
-<positionref ref="geometry_offset"/>
-<rotationref ref="identity"/>
+<position x="16.5000000000" y="14.5000000000" z="2.0750000000" unit="mm"/>
+<rotation x="3.141592653590" y="-0.000000000000" z="-1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/_detector_lyso_002.gdml"/>
-<positionref ref="geometry_offset"/>
-<rotationref ref="identity"/>
+<position x="-16.5000000000" y="14.5000000000" z="-6.2250000000" unit="mm"/>
+<rotation x="3.141592653590" y="-0.000000000000" z="-1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/_detector_lyso_003.gdml"/>
-<positionref ref="geometry_offset"/>
-<rotationref ref="identity"/>
+<position x="5.5000000000" y="14.5000000000" z="-2.0750000000" unit="mm"/>
+<rotation x="3.141592653590" y="-0.000000000000" z="-1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/_detector_lyso_004.gdml"/>
-<positionref ref="geometry_offset"/>
-<rotationref ref="identity"/>
+<position x="5.5000000000" y="14.5000000000" z="6.2250000000" unit="mm"/>
+<rotation x="3.141592653590" y="-0.000000000000" z="-1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/_detector_lyso_005.gdml"/>
-<positionref ref="geometry_offset"/>
-<rotationref ref="identity"/>
+<position x="-11.0000000000" y="14.5000000000" z="-2.0750000000" unit="mm"/>
+<rotation x="3.141592653590" y="-0.000000000000" z="-1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/_detector_lyso_006.gdml"/>
-<positionref ref="geometry_offset"/>
-<rotationref ref="identity"/>
+<position x="-0.0000000000" y="14.5000000000" z="2.0750000000" unit="mm"/>
+<rotation x="3.141592653590" y="-0.000000000000" z="-1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/_detector_lyso_007.gdml"/>
-<positionref ref="geometry_offset"/>
-<rotationref ref="identity"/>
+<position x="-5.5000000000" y="14.5000000000" z="-2.0750000000" unit="mm"/>
+<rotation x="3.141592653590" y="-0.000000000000" z="-1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/_detector_lyso_008.gdml"/>
-<positionref ref="geometry_offset"/>
-<rotationref ref="identity"/>
+<position x="-22.0000000000" y="14.5000000000" z="6.2250000000" unit="mm"/>
+<rotation x="3.141592653590" y="-0.000000000000" z="-1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/_detector_lyso_009.gdml"/>
-<positionref ref="geometry_offset"/>
-<rotationref ref="identity"/>
+<position x="11.0000000000" y="14.5000000000" z="-6.2250000000" unit="mm"/>
+<rotation x="3.141592653590" y="-0.000000000000" z="-1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/_detector_lyso_010.gdml"/>
-<positionref ref="geometry_offset"/>
-<rotationref ref="identity"/>
+<position x="-0.0000000000" y="14.5000000000" z="-2.0750000000" unit="mm"/>
+<rotation x="3.141592653590" y="-0.000000000000" z="-1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/_detector_lyso_011.gdml"/>
-<positionref ref="geometry_offset"/>
-<rotationref ref="identity"/>
+<position x="-11.0000000000" y="14.5000000000" z="6.2250000000" unit="mm"/>
+<rotation x="3.141592653590" y="-0.000000000000" z="-1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/_detector_lyso_012.gdml"/>
-<positionref ref="geometry_offset"/>
-<rotationref ref="identity"/>
+<position x="5.5000000000" y="14.5000000000" z="-6.2250000000" unit="mm"/>
+<rotation x="3.141592653590" y="-0.000000000000" z="-1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/_detector_lyso_013.gdml"/>
-<positionref ref="geometry_offset"/>
-<rotationref ref="identity"/>
+<position x="11.0000000000" y="14.5000000000" z="6.2250000000" unit="mm"/>
+<rotation x="3.141592653590" y="-0.000000000000" z="-1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/_detector_lyso_014.gdml"/>
-<positionref ref="geometry_offset"/>
-<rotationref ref="identity"/>
+<position x="-0.0000000000" y="14.5000000000" z="-6.2250000000" unit="mm"/>
+<rotation x="3.141592653590" y="-0.000000000000" z="-1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/_detector_lyso_015.gdml"/>
-<positionref ref="geometry_offset"/>
-<rotationref ref="identity"/>
+<position x="16.5000000000" y="14.5000000000" z="6.2250000000" unit="mm"/>
+<rotation x="3.141592653590" y="-0.000000000000" z="-1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/_detector_lyso_016.gdml"/>
-<positionref ref="geometry_offset"/>
-<rotationref ref="identity"/>
+<position x="22.0000000000" y="14.5000000000" z="6.2250000000" unit="mm"/>
+<rotation x="3.141592653590" y="-0.000000000000" z="-1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/_detector_lyso_017.gdml"/>
-<positionref ref="geometry_offset"/>
-<rotationref ref="identity"/>
+<position x="-22.0000000000" y="14.5000000000" z="-6.2250000000" unit="mm"/>
+<rotation x="3.141592653590" y="-0.000000000000" z="-1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/_detector_lyso_018.gdml"/>
-<positionref ref="geometry_offset"/>
-<rotationref ref="identity"/>
+<position x="11.0000000000" y="14.5000000000" z="-2.0750000000" unit="mm"/>
+<rotation x="3.141592653590" y="-0.000000000000" z="-1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/_detector_lyso_019.gdml"/>
-<positionref ref="geometry_offset"/>
-<rotationref ref="identity"/>
+<position x="-5.5000000000" y="14.5000000000" z="2.0750000000" unit="mm"/>
+<rotation x="3.141592653590" y="-0.000000000000" z="-1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/_detector_lyso_020.gdml"/>
-<positionref ref="geometry_offset"/>
-<rotationref ref="identity"/>
+<position x="-5.5000000000" y="14.5000000000" z="-6.2250000000" unit="mm"/>
+<rotation x="3.141592653590" y="-0.000000000000" z="-1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/_detector_lyso_021.gdml"/>
-<positionref ref="geometry_offset"/>
-<rotationref ref="identity"/>
+<position x="-11.0000000000" y="14.5000000000" z="2.0750000000" unit="mm"/>
+<rotation x="3.141592653590" y="-0.000000000000" z="-1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/_detector_lyso_022.gdml"/>
-<positionref ref="geometry_offset"/>
-<rotationref ref="identity"/>
+<position x="11.0000000000" y="14.5000000000" z="2.0750000000" unit="mm"/>
+<rotation x="3.141592653590" y="-0.000000000000" z="-1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/_detector_lyso_023.gdml"/>
-<positionref ref="geometry_offset"/>
-<rotationref ref="identity"/>
+<position x="16.5000000000" y="14.5000000000" z="-6.2250000000" unit="mm"/>
+<rotation x="3.141592653590" y="-0.000000000000" z="-1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/_detector_lyso_024.gdml"/>
-<positionref ref="geometry_offset"/>
-<rotationref ref="identity"/>
+<position x="-16.5000000000" y="14.5000000000" z="6.2250000000" unit="mm"/>
+<rotation x="3.141592653590" y="-0.000000000000" z="-1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/_detector_lyso_025.gdml"/>
-<positionref ref="geometry_offset"/>
-<rotationref ref="identity"/>
+<position x="-22.0000000000" y="14.5000000000" z="-2.0750000000" unit="mm"/>
+<rotation x="3.141592653590" y="-0.000000000000" z="-1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/_detector_lyso_026.gdml"/>
-<positionref ref="geometry_offset"/>
-<rotationref ref="identity"/>
+<position x="16.5000000000" y="14.5000000000" z="-2.0750000000" unit="mm"/>
+<rotation x="3.141592653590" y="-0.000000000000" z="-1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/_detector_lyso_027.gdml"/>
-<positionref ref="geometry_offset"/>
-<rotationref ref="identity"/>
+<position x="-16.5000000000" y="14.5000000000" z="-2.0750000000" unit="mm"/>
+<rotation x="3.141592653590" y="-0.000000000000" z="-1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/_detector_lyso_028.gdml"/>
-<positionref ref="geometry_offset"/>
-<rotationref ref="identity"/>
+<position x="22.0000000000" y="14.5000000000" z="-6.2250000000" unit="mm"/>
+<rotation x="3.141592653590" y="-0.000000000000" z="-1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/_detector_lyso_029.gdml"/>
-<positionref ref="geometry_offset"/>
-<rotationref ref="identity"/>
+<position x="22.0000000000" y="14.5000000000" z="2.0750000000" unit="mm"/>
+<rotation x="3.141592653590" y="-0.000000000000" z="-1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/_detector_lyso_030.gdml"/>
-<positionref ref="geometry_offset"/>
-<rotationref ref="identity"/>
+<position x="-0.0000000000" y="14.5000000000" z="6.2250000000" unit="mm"/>
+<rotation x="3.141592653590" y="-0.000000000000" z="-1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/_detector_lyso_031.gdml"/>
-<positionref ref="geometry_offset"/>
-<rotationref ref="identity"/>
+<position x="-5.5000000000" y="14.5000000000" z="6.2250000000" unit="mm"/>
+<rotation x="3.141592653590" y="-0.000000000000" z="-1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/sipm_si.gdml"/>
-<positionref ref="geometry_offset"/>
-<rotationref ref="identity"/>
+<position x="16.5000000000" y="1.5000000000" z="4.1500000000" unit="mm"/>
+<rotation x="3.141592653590" y="-0.000000000000" z="-1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/sipm_si001.gdml"/>
-<positionref ref="geometry_offset"/>
-<rotationref ref="identity"/>
+<position x="-16.5000000000" y="1.5000000000" z="4.1500000000" unit="mm"/>
+<rotation x="3.141592653590" y="-0.000000000000" z="-1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/sipm_si002.gdml"/>
-<positionref ref="geometry_offset"/>
-<rotationref ref="identity"/>
+<position x="0.0000000000" y="1.5000000000" z="4.1500000000" unit="mm"/>
+<rotation x="3.141592653590" y="-0.000000000000" z="-1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/sipm_si003.gdml"/>
-<positionref ref="geometry_offset"/>
-<rotationref ref="identity"/>
+<position x="0.0000000000" y="1.5000000000" z="-4.1500000000" unit="mm"/>
+<rotation x="3.141592653590" y="-0.000000000000" z="-1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/pcb-sipm_pcb.gdml"/>
-<positionref ref="geometry_offset"/>
-<rotationref ref="identity"/>
+<position x="0.0000000000" y="0.5000000000" z="0.0000000000" unit="mm"/>
+<rotation x="1.570796326795" y="-1.570796326795" z="0.000000000000" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/sipm_si004.gdml"/>
-<positionref ref="geometry_offset"/>
-<rotationref ref="identity"/>
+<position x="-16.5000000000" y="1.5000000000" z="-4.1500000000" unit="mm"/>
+<rotation x="3.141592653590" y="-0.000000000000" z="-1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/sipm_si005.gdml"/>
-<positionref ref="geometry_offset"/>
-<rotationref ref="identity"/>
+<position x="16.5000000000" y="1.5000000000" z="-4.1500000000" unit="mm"/>
+<rotation x="3.141592653590" y="-0.000000000000" z="-1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/_detector_lyso_032.gdml"/>
-<positionref ref="geometry_offset"/>
-<rotationref ref="identity"/>
+<position x="22.0000000000" y="14.5000000000" z="-2.0750000000" unit="mm"/>
+<rotation x="3.141592653590" y="-0.000000000000" z="-1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/_detector_lyso_033.gdml"/>
-<positionref ref="geometry_offset"/>
-<rotationref ref="identity"/>
+<position x="-11.0000000000" y="14.5000000000" z="-6.2250000000" unit="mm"/>
+<rotation x="3.141592653590" y="-0.000000000000" z="-1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/_detector_lyso_034.gdml"/>
-<positionref ref="geometry_offset"/>
-<rotationref ref="identity"/>
+<position x="-22.0000000000" y="14.5000000000" z="2.0750000000" unit="mm"/>
+<rotation x="3.141592653590" y="-0.000000000000" z="-1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/_detector_lyso_035.gdml"/>
-<positionref ref="geometry_offset"/>
-<rotationref ref="identity"/>
+<position x="5.5000000000" y="14.5000000000" z="2.0750000000" unit="mm"/>
+<rotation x="3.141592653590" y="-0.000000000000" z="-1.570796326795" unit="rad"/>
 </physvol>
 </volume>
 </structure>

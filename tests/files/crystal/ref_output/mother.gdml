@@ -35,8 +35,8 @@
 <solidref ref="WorldBox"/>
 <physvol>
 <file name="Volumes/_detector_lyso_.gdml"/>
-<positionref ref="geometry_offset"/>
-<rotationref ref="identity"/>
+<position x="0.0000000000" y="12.5000000000" z="0.0000000000" unit="mm"/>
+<rotation x="3.141592653590" y="-0.000000000000" z="-1.570796326795" unit="rad"/>
 </physvol>
 </volume>
 </structure>
