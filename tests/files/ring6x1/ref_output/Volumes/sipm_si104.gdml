@@ -1,31 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no" ?>
 <gdml xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://service-spi.web.cern.ch/service-spi/app/releases/GDML/schema/gdml.xsd">
  <define>
- <position name="sipm_si104_v0" unit="mm" x="71.24967320028786" y="50.8355025242441" z="-16.8499999999991"/>
- <position name="sipm_si104_v1" unit="mm" x="70.38364779650342" y="50.3355025242441" z="-16.8499999999991"/>
- <position name="sipm_si104_v2" unit="mm" x="70.38364779650342" y="50.3355025242441" z="-33.14999999999909"/>
- <position name="sipm_si104_v3" unit="mm" x="71.24967320028786" y="50.8355025242441" z="-33.14999999999909"/>
- <position name="sipm_si104_v4" unit="mm" x="66.33364779650341" y="57.35030829489806" z="-16.8499999999991"/>
- <position name="sipm_si104_v5" unit="mm" x="67.19967320028786" y="57.850308294898056" z="-16.8499999999991"/>
- <position name="sipm_si104_v6" unit="mm" x="66.33364779650341" y="57.35030829489806" z="-33.14999999999909"/>
- <position name="sipm_si104_v7" unit="mm" x="67.19967320028786" y="57.850308294898056" z="-33.14999999999909"/>
  </define>
 
  <solids>
- <tessellated aunit="deg" lunit="mm" name="sipm_si104_solid">
- <triangular vertex1="sipm_si104_v0" vertex2="sipm_si104_v1" vertex3="sipm_si104_v2"/>
- <triangular vertex1="sipm_si104_v0" vertex2="sipm_si104_v2" vertex3="sipm_si104_v3"/>
- <triangular vertex1="sipm_si104_v4" vertex2="sipm_si104_v1" vertex3="sipm_si104_v5"/>
- <triangular vertex1="sipm_si104_v1" vertex2="sipm_si104_v0" vertex3="sipm_si104_v5"/>
- <triangular vertex1="sipm_si104_v6" vertex2="sipm_si104_v4" vertex3="sipm_si104_v7"/>
- <triangular vertex1="sipm_si104_v7" vertex2="sipm_si104_v4" vertex3="sipm_si104_v5"/>
- <triangular vertex1="sipm_si104_v3" vertex2="sipm_si104_v2" vertex3="sipm_si104_v6"/>
- <triangular vertex1="sipm_si104_v3" vertex2="sipm_si104_v6" vertex3="sipm_si104_v7"/>
- <triangular vertex1="sipm_si104_v4" vertex2="sipm_si104_v6" vertex3="sipm_si104_v2"/>
- <triangular vertex1="sipm_si104_v1" vertex2="sipm_si104_v4" vertex3="sipm_si104_v2"/>
- <triangular vertex1="sipm_si104_v7" vertex2="sipm_si104_v5" vertex3="sipm_si104_v3"/>
- <triangular vertex1="sipm_si104_v5" vertex2="sipm_si104_v0" vertex3="sipm_si104_v3"/>
- </tessellated>
+ <box lunit="mm" name="sipm_si104_solid" x="16.3000000000" y="8.1000000000" z="1.0000000000"/>
  <box lunit="mm" name="worldsolid" x="1000" y="1000" z="1000"/>
  </solids>
  <structure>

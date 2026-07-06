@@ -637,8 +637,13 @@ class GUIMeshCLI:
                     print(f"Error: world_material '{self.world_material_name}' is declared in the mappings file but was not loaded. Add a 'path' field to the world_material entry pointing at its JSON definition (e.g. data/Materials/{self.world_material_name}.json).")
                     return False
 
+            # Decide box vs mesh for every exported part once, before writing
+            # either the mother or the per-part files, so both share the same
+            # decision and the same tessellation. Cuboids -> native <box>.
+            WriteGDML.annotate_boxes(self.list_of_objects, verbose=self.verbose)
+
             WriteGDML.CreateMother(str(output_path), self.list_of_objects, self.world_dimensions, world_pos, world_material=world_material_obj)
-            
+
             for i, obj in enumerate(self.list_of_objects, 1):
                 if obj.VolumeGDMLoption == 1:
                     WriteGDML.CreateGDML(obj, i, str(output_path))
