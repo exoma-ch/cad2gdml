@@ -30,99 +30,17 @@ from GUIMeshLibs import Volumes
 # is a large Stage-2 speedup for scanners built from thousands of crystals.
 # Non-cuboid parts stay tessellated, byte-for-byte as before.
 #
-# The vertex->box+rotation math and the GDML rotation convention are ported
-# verbatim from the vetted downstream prototype
-# (gPET-sim scripts/issue110/gen_box_gdml.py). See BOX_EXPORT_HANDOFF.md.
+# Orientation/dimensions come from the part's three principal edges (shared with
+# the crystal-map extractor, CrystalCenters.principal_edges). The GDML rotation
+# convention and the corner-reconstruction check are ported verbatim from the
+# vetted downstream prototype (gPET-sim scripts/issue110/gen_box_gdml.py).
+# See BOX_EXPORT_HANDOFF.md.
 
 # Max allowed disagreement (mm) between a reconstructed box corner and the
 # original tessellated vertex. The prototype measured < 3e-13 mm over a full
 # scanner; anything above this tolerance means the shape is not a clean cuboid
 # (or a convention bug), so we fall back to tessellated.
 _BOX_CORNER_TOL_MM = 1e-3
-
-
-def _fit_obb(pts):
-    """Oriented bounding box of a point cloud (eigendecomposition of the
-    covariance). Returns (center, V, half) with the box local axes as columns
-    of ``V`` (ascending extent) and half-extents ``half``. Ported from
-    ``box_from_vertices``.
-
-    NOTE: only reliable when the three extents are *distinct*. With two equal
-    extents (a cube or a square cross-section) the covariance has a degenerate
-    eigenspace and the in-plane axes come out arbitrarily rotated, so the box
-    faces are not recovered. :func:`_axes_from_edges` handles that case; this is
-    the fallback for point clouds that are not a clean 8-corner parallelepiped.
-    """
-    import numpy as np
-    c = pts.mean(0)
-    q = pts - c
-    _, V = np.linalg.eigh(q.T @ q)          # columns = eigenvectors, ascending
-    if np.linalg.det(V) < 0:
-        V[:, 0] = -V[:, 0]                  # make a proper rotation (det +1)
-    half = np.abs(q @ V).max(0)            # half-extents along local x,y,z
-    return c, V, half
-
-
-def _unique_points(pts, tol=1e-6):
-    """Deduplicate near-coincident vertices (distinct corners are mm apart)."""
-    import numpy as np
-    if pts.shape[0] == 0:
-        return pts
-    keyed = np.round(pts / tol).astype(np.int64)
-    _, idx = np.unique(keyed, axis=0, return_index=True)
-    return pts[np.sort(idx)]
-
-
-def _axes_from_edges(pts8):
-    """Box axes/centre/half-extents from the 8 corners of a parallelepiped.
-
-    Extent-independent (works for cubes and square cross-sections, unlike the
-    covariance fit). From a reference corner the 7 outbound vectors are 3 edges,
-    3 face diagonals and 1 body diagonal (the longest); the 3 edges are the
-    unique triple summing to the body diagonal — the same construction used by
-    CrystalCenters. The part is only a *box* (not a sheared parallelepiped) if
-    those edges are mutually orthogonal, which we check.
-
-    Returns (center, V, half) with ``V`` columns = orthonormal edge directions
-    (proper rotation), or ``None`` if the corners are not an orthogonal box.
-    """
-    import numpy as np
-    from itertools import combinations
-    if pts8.shape[0] != 8:
-        return None
-    ref = pts8[0]
-    outbound = pts8[1:] - ref
-    sq = (outbound ** 2).sum(1)
-    di = int(np.argmax(sq))
-    diag = outbound[di]
-    diag_sq = sq[di]
-    if diag_sq <= 0:
-        return None
-    others = np.delete(outbound, di, axis=0)          # 6 vectors
-    tol_sq = max(diag_sq * 1e-10, 1e-12)
-    edges = None
-    for i, j, k in combinations(range(6), 3):
-        if ((others[i] + others[j] + others[k] - diag) ** 2).sum() < tol_sq:
-            edges = np.array([others[i], others[j], others[k]])
-            break
-    if edges is None:
-        return None
-    lengths = np.linalg.norm(edges, axis=1)
-    if (lengths <= 0).any():
-        return None
-    dirs = edges / lengths[:, None]
-    # Must be an orthogonal box: pairwise edge dots ~ 0.
-    G = dirs @ dirs.T
-    if np.abs(G - np.eye(3)).max() > 1e-6:
-        return None
-    V = dirs.T                                         # columns = edge directions
-    if np.linalg.det(V) < 0:
-        V[:, 0] = -V[:, 0]                             # proper rotation
-    center = ref + 0.5 * edges.sum(0)
-    half = 0.5 * lengths
-    # reorder half to match V's (possibly sign-flipped) columns
-    half = np.abs((pts8 - center) @ V).max(0)
-    return center, V, half
 
 
 def _angles_from_R(R):
@@ -156,43 +74,44 @@ def _box_from_vertices(vertices, label=""):
 
     On success returns a dict with:
       - ``center``  : box centre in the CAD frame (mm), numpy (3,)
-      - ``full``    : full box dimensions (mm) along local x,y,z, numpy (3,)
+      - ``full``    : full box dimensions (mm) along local x,y,z (long→short)
       - ``angles``  : (ax, ay, az) in radians for the physvol <rotation>
 
-    Returns ``None`` if the shape is not a clean cuboid, so the caller keeps
-    the tessellated path. Orientation comes from the part's principal edges
-    (extent-independent) with a covariance-OBB fallback; either way every
-    candidate is verified by reconstructing all 8 corners with the exact
-    placement math Geant4 will use (``p_world = Rᵀ·p_local + c``) and requiring
-    agreement < ``_BOX_CORNER_TOL_MM``.
+    Returns ``None`` if the shape is not a clean cuboid, so the caller keeps the
+    tessellated path. Orientation and dimensions come from the part's three
+    principal edges (:func:`CrystalCenters.principal_edges`, the same
+    decomposition used to build the crystal map) — extent-independent, so cubes
+    and square cross-sections work. The part is a box only if those edges are
+    mutually orthogonal. Every candidate is then verified by reconstructing all
+    8 corners with the exact placement math Geant4 will use
+    (``p_world = Rᵀ·p_local + centre``) and requiring agreement <
+    ``_BOX_CORNER_TOL_MM``, else it falls back to tessellated.
     """
     import numpy as np
+    from GUIMeshLibs.CrystalCenters import principal_edges
+
     pts = np.asarray(vertices, dtype=float)
-    if pts.ndim != 2 or pts.shape[1] != 3 or pts.shape[0] < 8:
+    if pts.ndim != 2 or pts.shape[1] != 3 or pts.shape[0] != 8:
         return None
 
-    # Prefer the extent-independent edge fit on the 8 unique corners (handles
-    # cubes / square cross-sections); fall back to the covariance OBB for other
-    # point clouds. Either way the reconstruction check below is the real guard.
-    fit = None
-    uniq = _unique_points(pts)
-    if uniq.shape[0] == 8:
-        fit = _axes_from_edges(uniq)
-    if fit is None:
-        c, V, half = _fit_obb(pts)
-        if (half <= 0).any():
-            return None
-        # Every vertex must lie on an OBB corner: along each local axis its
-        # projection magnitude equals the half-extent. A rounded/chamfered part
-        # fails this and stays mesh.
-        if np.abs(np.abs((pts - c) @ V) - half).max() > _BOX_CORNER_TOL_MM:
-            return None
-        fit = (c, V, half)
-
-    c, V, half = fit
-    if (half <= 0).any():
+    edges = principal_edges(pts)                       # 3 (unit, length), long→short
+    if edges is None:
+        return None
+    units = np.array([u for u, _ in edges])            # rows = edge unit vectors
+    lengths = np.array([L for _, L in edges])
+    if (lengths <= 0).any():
         return None
 
+    # A cuboid's edges are mutually orthogonal; a sheared parallelepiped is not
+    # a box (a G4Box would misplace material), so keep it tessellated.
+    if np.abs(units @ units.T - np.eye(3)).max() > 1e-6:
+        return None
+
+    V = units.T                                        # columns = local axes in world
+    if np.linalg.det(V) < 0:
+        V[:, 0] = -V[:, 0]                             # proper rotation (det +1)
+    center = pts.mean(0)                               # cuboid centroid == centre
+    half = lengths / 2.0
     # We want Rᵀ = V (columns = local axes in world), so R = Vᵀ.
     ax, ay, az = _angles_from_R(V.T)
 
@@ -202,7 +121,7 @@ def _box_from_vertices(vertices, label=""):
     corners = np.array([[sx, sy, sz]
                         for sx in (-1, 1) for sy in (-1, 1) for sz in (-1, 1)],
                        dtype=float)
-    recon = (Rchk.T @ (corners * half).T).T + c
+    recon = (Rchk.T @ (corners * half).T).T + center
     d = np.linalg.norm(recon[:, None, :] - pts[None, :, :], axis=2)
     err = max(d.min(1).max(), d.min(0).max())
     if err > _BOX_CORNER_TOL_MM:
@@ -214,7 +133,7 @@ def _box_from_vertices(vertices, label=""):
                   label, err, _BOX_CORNER_TOL_MM))
         return None
 
-    return {'center': c, 'full': 2.0 * half, 'angles': (ax, ay, az), 'err': err}
+    return {'center': center, 'full': lengths, 'angles': (ax, ay, az), 'err': err}
 
 
 def annotate_boxes(object_list, verbose=False):

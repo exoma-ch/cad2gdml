@@ -196,37 +196,37 @@
 <physvol>
 <file name="Volumes/sipm_si.gdml"/>
 <position x="16.5000000000" y="1.5000000000" z="4.1500000000" unit="mm"/>
-<rotation x="3.141592653590" y="-0.000000000000" z="-1.570796326795" unit="rad"/>
+<rotation x="1.570796326795" y="-0.000000000000" z="0.000000000000" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/sipm_si001.gdml"/>
 <position x="-16.5000000000" y="1.5000000000" z="4.1500000000" unit="mm"/>
-<rotation x="3.141592653590" y="-0.000000000000" z="-1.570796326795" unit="rad"/>
+<rotation x="1.570796326795" y="-0.000000000000" z="0.000000000000" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/sipm_si002.gdml"/>
 <position x="0.0000000000" y="1.5000000000" z="4.1500000000" unit="mm"/>
-<rotation x="3.141592653590" y="-0.000000000000" z="-1.570796326795" unit="rad"/>
+<rotation x="1.570796326795" y="-0.000000000000" z="0.000000000000" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/sipm_si003.gdml"/>
 <position x="0.0000000000" y="1.5000000000" z="-4.1500000000" unit="mm"/>
-<rotation x="3.141592653590" y="-0.000000000000" z="-1.570796326795" unit="rad"/>
+<rotation x="1.570796326795" y="-0.000000000000" z="0.000000000000" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/pcb-sipm_pcb.gdml"/>
 <position x="0.0000000000" y="0.5000000000" z="0.0000000000" unit="mm"/>
-<rotation x="1.570796326795" y="-1.570796326795" z="0.000000000000" unit="rad"/>
+<rotation x="1.570796326795" y="-0.000000000000" z="0.000000000000" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/sipm_si004.gdml"/>
 <position x="-16.5000000000" y="1.5000000000" z="-4.1500000000" unit="mm"/>
-<rotation x="3.141592653590" y="-0.000000000000" z="-1.570796326795" unit="rad"/>
+<rotation x="1.570796326795" y="-0.000000000000" z="0.000000000000" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/sipm_si005.gdml"/>
 <position x="16.5000000000" y="1.5000000000" z="-4.1500000000" unit="mm"/>
-<rotation x="3.141592653590" y="-0.000000000000" z="-1.570796326795" unit="rad"/>
+<rotation x="1.570796326795" y="-0.000000000000" z="0.000000000000" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/_detector_lyso_032.gdml"/>

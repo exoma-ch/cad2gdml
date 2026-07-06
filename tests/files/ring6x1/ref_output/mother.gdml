@@ -36,7 +36,7 @@
 <physvol>
 <file name="Volumes/dmod-base_al.gdml"/>
 <position x="-87.3618526293" y="50.4383891325" z="-150.0000000000" unit="mm"/>
-<rotation x="1.570796326795" y="-0.523598775598" z="3.141592653590" unit="rad"/>
+<rotation x="1.570796326795" y="1.047197551197" z="1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/unit-cover_plastic.gdml"/>
@@ -206,37 +206,37 @@
 <physvol>
 <file name="Volumes/sipm_si.gdml"/>
 <position x="-72.9416604984" y="46.9048945582" z="-41.5000000000" unit="mm"/>
-<rotation x="-1.570796326795" y="0.523598775598" z="3.141592653590" unit="rad"/>
+<rotation x="-1.570796326795" y="-1.047197551197" z="-1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/pcb-sipm_pcb.gdml"/>
 <position x="-71.7326859022" y="50.9988999839" z="-25.0000000000" unit="mm"/>
-<rotation x="0.000000000000" y="-0.000000000000" z="-2.617993877991" unit="rad"/>
+<rotation x="-1.570796326795" y="-1.047197551197" z="-1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/sipm_si001.gdml"/>
 <position x="-72.9416604984" y="46.9048945582" z="-8.5000000000" unit="mm"/>
-<rotation x="-1.570796326795" y="0.523598775598" z="3.141592653590" unit="rad"/>
+<rotation x="-1.570796326795" y="-1.047197551197" z="-1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/sipm_si002.gdml"/>
 <position x="-68.7916604984" y="54.0929054096" z="-25.0000000000" unit="mm"/>
-<rotation x="-1.570796326795" y="0.523598775598" z="3.141592653590" unit="rad"/>
+<rotation x="-1.570796326795" y="-1.047197551197" z="-1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/sipm_si003.gdml"/>
 <position x="-68.7916604984" y="54.0929054096" z="-41.5000000000" unit="mm"/>
-<rotation x="-1.570796326795" y="0.523598775598" z="3.141592653590" unit="rad"/>
+<rotation x="-1.570796326795" y="-1.047197551197" z="-1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/sipm_si004.gdml"/>
 <position x="-72.9416604984" y="46.9048945582" z="-25.0000000000" unit="mm"/>
-<rotation x="-1.570796326795" y="0.523598775598" z="3.141592653590" unit="rad"/>
+<rotation x="-1.570796326795" y="-1.047197551197" z="-1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/sipm_si005.gdml"/>
 <position x="-68.7916604984" y="54.0929054096" z="-8.5000000000" unit="mm"/>
-<rotation x="-1.570796326795" y="0.523598775598" z="3.141592653590" unit="rad"/>
+<rotation x="-1.570796326795" y="-1.047197551197" z="-1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/_detector_lyso_032.gdml"/>
@@ -431,37 +431,37 @@
 <physvol>
 <file name="Volumes/pcb-sipm_pcb001.gdml"/>
 <position x="-88.3326859022" y="22.2468565782" z="-25.0000000000" unit="mm"/>
-<rotation x="0.000000000000" y="-0.000000000000" z="-2.617993877991" unit="rad"/>
+<rotation x="-1.570796326795" y="-1.047197551197" z="-1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/sipm_si006.gdml"/>
 <position x="-85.3916604984" y="25.3408620039" z="-41.5000000000" unit="mm"/>
-<rotation x="-1.570796326795" y="0.523598775598" z="3.141592653590" unit="rad"/>
+<rotation x="-1.570796326795" y="-1.047197551197" z="-1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/sipm_si007.gdml"/>
 <position x="-89.5416604984" y="18.1528511525" z="-25.0000000000" unit="mm"/>
-<rotation x="-1.570796326795" y="0.523598775598" z="3.141592653590" unit="rad"/>
+<rotation x="-1.570796326795" y="-1.047197551197" z="-1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/sipm_si008.gdml"/>
 <position x="-89.5416604984" y="18.1528511525" z="-41.5000000000" unit="mm"/>
-<rotation x="-1.570796326795" y="0.523598775598" z="3.141592653590" unit="rad"/>
+<rotation x="-1.570796326795" y="-1.047197551197" z="-1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/sipm_si009.gdml"/>
 <position x="-85.3916604984" y="25.3408620039" z="-25.0000000000" unit="mm"/>
-<rotation x="-1.570796326795" y="0.523598775598" z="3.141592653590" unit="rad"/>
+<rotation x="-1.570796326795" y="-1.047197551197" z="-1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/sipm_si010.gdml"/>
 <position x="-85.3916604984" y="25.3408620039" z="-8.5000000000" unit="mm"/>
-<rotation x="-1.570796326795" y="0.523598775598" z="3.141592653590" unit="rad"/>
+<rotation x="-1.570796326795" y="-1.047197551197" z="-1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/sipm_si011.gdml"/>
 <position x="-89.5416604984" y="18.1528511525" z="-8.5000000000" unit="mm"/>
-<rotation x="-1.570796326795" y="0.523598775598" z="3.141592653590" unit="rad"/>
+<rotation x="-1.570796326795" y="-1.047197551197" z="-1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/_detector_lyso_070.gdml"/>
@@ -641,37 +641,37 @@
 <physvol>
 <file name="Volumes/pcb-sipm_pcb002.gdml"/>
 <position x="-63.4326859022" y="65.3749216867" z="-25.0000000000" unit="mm"/>
-<rotation x="0.000000000000" y="-0.000000000000" z="-2.617993877991" unit="rad"/>
+<rotation x="-1.570796326795" y="-1.047197551197" z="-1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/sipm_si012.gdml"/>
 <position x="-60.4916604984" y="68.4689271124" z="-41.5000000000" unit="mm"/>
-<rotation x="-1.570796326795" y="0.523598775598" z="3.141592653590" unit="rad"/>
+<rotation x="-1.570796326795" y="-1.047197551197" z="-1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/sipm_si013.gdml"/>
 <position x="-64.6416604984" y="61.2809162610" z="-25.0000000000" unit="mm"/>
-<rotation x="-1.570796326795" y="0.523598775598" z="3.141592653590" unit="rad"/>
+<rotation x="-1.570796326795" y="-1.047197551197" z="-1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/sipm_si014.gdml"/>
 <position x="-60.4916604984" y="68.4689271124" z="-8.5000000000" unit="mm"/>
-<rotation x="-1.570796326795" y="0.523598775598" z="3.141592653590" unit="rad"/>
+<rotation x="-1.570796326795" y="-1.047197551197" z="-1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/sipm_si015.gdml"/>
 <position x="-64.6416604984" y="61.2809162610" z="-8.5000000000" unit="mm"/>
-<rotation x="-1.570796326795" y="0.523598775598" z="3.141592653590" unit="rad"/>
+<rotation x="-1.570796326795" y="-1.047197551197" z="-1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/sipm_si016.gdml"/>
 <position x="-64.6416604984" y="61.2809162610" z="-41.5000000000" unit="mm"/>
-<rotation x="-1.570796326795" y="0.523598775598" z="3.141592653590" unit="rad"/>
+<rotation x="-1.570796326795" y="-1.047197551197" z="-1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/sipm_si017.gdml"/>
 <position x="-60.4916604984" y="68.4689271124" z="-25.0000000000" unit="mm"/>
-<rotation x="-1.570796326795" y="0.523598775598" z="3.141592653590" unit="rad"/>
+<rotation x="-1.570796326795" y="-1.047197551197" z="-1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/_detector_lyso_105.gdml"/>
@@ -846,37 +846,37 @@
 <physvol>
 <file name="Volumes/pcb-sipm_pcb003.gdml"/>
 <position x="-80.0326859022" y="36.6228782810" z="-25.0000000000" unit="mm"/>
-<rotation x="0.000000000000" y="-0.000000000000" z="-2.617993877991" unit="rad"/>
+<rotation x="-1.570796326795" y="-1.047197551197" z="-1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/sipm_si018.gdml"/>
 <position x="-77.0916604984" y="39.7168837068" z="-41.5000000000" unit="mm"/>
-<rotation x="-1.570796326795" y="0.523598775598" z="3.141592653590" unit="rad"/>
+<rotation x="-1.570796326795" y="-1.047197551197" z="-1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/sipm_si019.gdml"/>
 <position x="-81.2416604984" y="32.5288728553" z="-41.5000000000" unit="mm"/>
-<rotation x="-1.570796326795" y="0.523598775598" z="3.141592653590" unit="rad"/>
+<rotation x="-1.570796326795" y="-1.047197551197" z="-1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/sipm_si020.gdml"/>
 <position x="-77.0916604984" y="39.7168837068" z="-25.0000000000" unit="mm"/>
-<rotation x="-1.570796326795" y="0.523598775598" z="3.141592653590" unit="rad"/>
+<rotation x="-1.570796326795" y="-1.047197551197" z="-1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/sipm_si021.gdml"/>
 <position x="-81.2416604984" y="32.5288728553" z="-8.5000000000" unit="mm"/>
-<rotation x="-1.570796326795" y="0.523598775598" z="3.141592653590" unit="rad"/>
+<rotation x="-1.570796326795" y="-1.047197551197" z="-1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/sipm_si022.gdml"/>
 <position x="-77.0916604984" y="39.7168837068" z="-8.5000000000" unit="mm"/>
-<rotation x="-1.570796326795" y="0.523598775598" z="3.141592653590" unit="rad"/>
+<rotation x="-1.570796326795" y="-1.047197551197" z="-1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/sipm_si023.gdml"/>
 <position x="-81.2416604984" y="32.5288728553" z="-25.0000000000" unit="mm"/>
-<rotation x="-1.570796326795" y="0.523598775598" z="3.141592653590" unit="rad"/>
+<rotation x="-1.570796326795" y="-1.047197551197" z="-1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/_detector_lyso_139.gdml"/>
@@ -906,7 +906,7 @@
 <physvol>
 <file name="Volumes/dmod-base_al001.gdml"/>
 <position x="-0.0000000000" y="100.8767782649" z="-150.0000000000" unit="mm"/>
-<rotation x="-1.570796326795" y="-1.570796326795" z="0.000000000000" unit="rad"/>
+<rotation x="1.570796326795" y="-0.000000000000" z="1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/unit-cover_plastic001.gdml"/>
@@ -1076,37 +1076,37 @@
 <physvol>
 <file name="Volumes/sipm_si024.gdml"/>
 <position x="29.0500000000" y="86.6217782649" z="-8.5000000000" unit="mm"/>
-<rotation x="1.570796326795" y="1.570796326795" z="0.000000000000" unit="rad"/>
+<rotation x="-1.570796326795" y="-0.000000000000" z="-1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/sipm_si025.gdml"/>
 <position x="20.7500000000" y="86.6217782649" z="-8.5000000000" unit="mm"/>
-<rotation x="1.570796326795" y="1.570796326795" z="0.000000000000" unit="rad"/>
+<rotation x="-1.570796326795" y="-0.000000000000" z="-1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/sipm_si026.gdml"/>
 <position x="20.7500000000" y="86.6217782649" z="-41.5000000000" unit="mm"/>
-<rotation x="1.570796326795" y="1.570796326795" z="0.000000000000" unit="rad"/>
+<rotation x="-1.570796326795" y="-0.000000000000" z="-1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/pcb-sipm_pcb004.gdml"/>
 <position x="24.9000000000" y="87.6217782649" z="-25.0000000000" unit="mm"/>
-<rotation x="0.000000000000" y="0.000000000000" z="-1.570796326795" unit="rad"/>
+<rotation x="-1.570796326795" y="-0.000000000000" z="-1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/sipm_si027.gdml"/>
 <position x="29.0500000000" y="86.6217782649" z="-41.5000000000" unit="mm"/>
-<rotation x="1.570796326795" y="1.570796326795" z="0.000000000000" unit="rad"/>
+<rotation x="-1.570796326795" y="-0.000000000000" z="-1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/sipm_si028.gdml"/>
 <position x="20.7500000000" y="86.6217782649" z="-25.0000000000" unit="mm"/>
-<rotation x="1.570796326795" y="1.570796326795" z="0.000000000000" unit="rad"/>
+<rotation x="-1.570796326795" y="-0.000000000000" z="-1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/sipm_si029.gdml"/>
 <position x="29.0500000000" y="86.6217782649" z="-25.0000000000" unit="mm"/>
-<rotation x="1.570796326795" y="1.570796326795" z="0.000000000000" unit="rad"/>
+<rotation x="-1.570796326795" y="-0.000000000000" z="-1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/_detector_lyso_176.gdml"/>
@@ -1296,37 +1296,37 @@
 <physvol>
 <file name="Volumes/sipm_si030.gdml"/>
 <position x="-29.0500000000" y="86.6217782649" z="-41.5000000000" unit="mm"/>
-<rotation x="1.570796326795" y="1.570796326795" z="0.000000000000" unit="rad"/>
+<rotation x="-1.570796326795" y="-0.000000000000" z="-1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/sipm_si031.gdml"/>
 <position x="-20.7500000000" y="86.6217782649" z="-25.0000000000" unit="mm"/>
-<rotation x="1.570796326795" y="1.570796326795" z="0.000000000000" unit="rad"/>
+<rotation x="-1.570796326795" y="-0.000000000000" z="-1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/sipm_si032.gdml"/>
 <position x="-29.0500000000" y="86.6217782649" z="-8.5000000000" unit="mm"/>
-<rotation x="1.570796326795" y="1.570796326795" z="0.000000000000" unit="rad"/>
+<rotation x="-1.570796326795" y="-0.000000000000" z="-1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/pcb-sipm_pcb005.gdml"/>
 <position x="-24.9000000000" y="87.6217782649" z="-25.0000000000" unit="mm"/>
-<rotation x="0.000000000000" y="0.000000000000" z="-1.570796326795" unit="rad"/>
+<rotation x="-1.570796326795" y="-0.000000000000" z="-1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/sipm_si033.gdml"/>
 <position x="-29.0500000000" y="86.6217782649" z="-25.0000000000" unit="mm"/>
-<rotation x="1.570796326795" y="1.570796326795" z="0.000000000000" unit="rad"/>
+<rotation x="-1.570796326795" y="-0.000000000000" z="-1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/sipm_si034.gdml"/>
 <position x="-20.7500000000" y="86.6217782649" z="-41.5000000000" unit="mm"/>
-<rotation x="1.570796326795" y="1.570796326795" z="0.000000000000" unit="rad"/>
+<rotation x="-1.570796326795" y="-0.000000000000" z="-1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/sipm_si035.gdml"/>
 <position x="-20.7500000000" y="86.6217782649" z="-8.5000000000" unit="mm"/>
-<rotation x="1.570796326795" y="1.570796326795" z="0.000000000000" unit="rad"/>
+<rotation x="-1.570796326795" y="-0.000000000000" z="-1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/_detector_lyso_213.gdml"/>
@@ -1506,37 +1506,37 @@
 <physvol>
 <file name="Volumes/sipm_si036.gdml"/>
 <position x="12.4500000000" y="86.6217782649" z="-8.5000000000" unit="mm"/>
-<rotation x="1.570796326795" y="1.570796326795" z="0.000000000000" unit="rad"/>
+<rotation x="-1.570796326795" y="-0.000000000000" z="-1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/sipm_si037.gdml"/>
 <position x="12.4500000000" y="86.6217782649" z="-41.5000000000" unit="mm"/>
-<rotation x="1.570796326795" y="1.570796326795" z="0.000000000000" unit="rad"/>
+<rotation x="-1.570796326795" y="-0.000000000000" z="-1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/sipm_si038.gdml"/>
 <position x="4.1500000000" y="86.6217782649" z="-25.0000000000" unit="mm"/>
-<rotation x="1.570796326795" y="1.570796326795" z="0.000000000000" unit="rad"/>
+<rotation x="-1.570796326795" y="-0.000000000000" z="-1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/sipm_si039.gdml"/>
 <position x="12.4500000000" y="86.6217782649" z="-25.0000000000" unit="mm"/>
-<rotation x="1.570796326795" y="1.570796326795" z="0.000000000000" unit="rad"/>
+<rotation x="-1.570796326795" y="-0.000000000000" z="-1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/pcb-sipm_pcb006.gdml"/>
 <position x="8.3000000000" y="87.6217782649" z="-25.0000000000" unit="mm"/>
-<rotation x="0.000000000000" y="0.000000000000" z="-1.570796326795" unit="rad"/>
+<rotation x="-1.570796326795" y="-0.000000000000" z="-1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/sipm_si040.gdml"/>
 <position x="4.1500000000" y="86.6217782649" z="-41.5000000000" unit="mm"/>
-<rotation x="1.570796326795" y="1.570796326795" z="0.000000000000" unit="rad"/>
+<rotation x="-1.570796326795" y="-0.000000000000" z="-1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/sipm_si041.gdml"/>
 <position x="4.1500000000" y="86.6217782649" z="-8.5000000000" unit="mm"/>
-<rotation x="1.570796326795" y="1.570796326795" z="0.000000000000" unit="rad"/>
+<rotation x="-1.570796326795" y="-0.000000000000" z="-1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/_detector_lyso_248.gdml"/>
@@ -1721,37 +1721,37 @@
 <physvol>
 <file name="Volumes/sipm_si042.gdml"/>
 <position x="-12.4500000000" y="86.6217782649" z="-8.5000000000" unit="mm"/>
-<rotation x="1.570796326795" y="1.570796326795" z="0.000000000000" unit="rad"/>
+<rotation x="-1.570796326795" y="-0.000000000000" z="-1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/sipm_si043.gdml"/>
 <position x="-4.1500000000" y="86.6217782649" z="-8.5000000000" unit="mm"/>
-<rotation x="1.570796326795" y="1.570796326795" z="0.000000000000" unit="rad"/>
+<rotation x="-1.570796326795" y="-0.000000000000" z="-1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/sipm_si044.gdml"/>
 <position x="-12.4500000000" y="86.6217782649" z="-25.0000000000" unit="mm"/>
-<rotation x="1.570796326795" y="1.570796326795" z="0.000000000000" unit="rad"/>
+<rotation x="-1.570796326795" y="-0.000000000000" z="-1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/sipm_si045.gdml"/>
 <position x="-4.1500000000" y="86.6217782649" z="-25.0000000000" unit="mm"/>
-<rotation x="1.570796326795" y="1.570796326795" z="0.000000000000" unit="rad"/>
+<rotation x="-1.570796326795" y="-0.000000000000" z="-1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/sipm_si046.gdml"/>
 <position x="-4.1500000000" y="86.6217782649" z="-41.5000000000" unit="mm"/>
-<rotation x="1.570796326795" y="1.570796326795" z="0.000000000000" unit="rad"/>
+<rotation x="-1.570796326795" y="-0.000000000000" z="-1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/sipm_si047.gdml"/>
 <position x="-12.4500000000" y="86.6217782649" z="-41.5000000000" unit="mm"/>
-<rotation x="1.570796326795" y="1.570796326795" z="0.000000000000" unit="rad"/>
+<rotation x="-1.570796326795" y="-0.000000000000" z="-1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/pcb-sipm_pcb007.gdml"/>
 <position x="-8.3000000000" y="87.6217782649" z="-25.0000000000" unit="mm"/>
-<rotation x="0.000000000000" y="0.000000000000" z="-1.570796326795" unit="rad"/>
+<rotation x="-1.570796326795" y="-0.000000000000" z="-1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/_detector_lyso_284.gdml"/>
@@ -1776,7 +1776,7 @@
 <physvol>
 <file name="Volumes/dmod-base_al002.gdml"/>
 <position x="-87.3618526293" y="-50.4383891325" z="-150.0000000000" unit="mm"/>
-<rotation x="1.570796326795" y="0.523598775598" z="3.141592653590" unit="rad"/>
+<rotation x="-1.570796326795" y="1.047197551197" z="-1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/unit-cover_plastic002.gdml"/>
@@ -1961,37 +1961,37 @@
 <physvol>
 <file name="Volumes/sipm_si048.gdml"/>
 <position x="-85.3916604984" y="-25.3408620039" z="-8.5000000000" unit="mm"/>
-<rotation x="-1.570796326795" y="-0.523598775598" z="3.141592653590" unit="rad"/>
+<rotation x="1.570796326795" y="-1.047197551197" z="1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/sipm_si049.gdml"/>
 <position x="-89.5416604984" y="-18.1528511525" z="-8.5000000000" unit="mm"/>
-<rotation x="-1.570796326795" y="-0.523598775598" z="3.141592653590" unit="rad"/>
+<rotation x="1.570796326795" y="-1.047197551197" z="1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/sipm_si050.gdml"/>
 <position x="-89.5416604984" y="-18.1528511525" z="-41.5000000000" unit="mm"/>
-<rotation x="-1.570796326795" y="-0.523598775598" z="3.141592653590" unit="rad"/>
+<rotation x="1.570796326795" y="-1.047197551197" z="1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/sipm_si051.gdml"/>
 <position x="-85.3916604984" y="-25.3408620039" z="-25.0000000000" unit="mm"/>
-<rotation x="-1.570796326795" y="-0.523598775598" z="3.141592653590" unit="rad"/>
+<rotation x="1.570796326795" y="-1.047197551197" z="1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/sipm_si052.gdml"/>
 <position x="-89.5416604984" y="-18.1528511525" z="-25.0000000000" unit="mm"/>
-<rotation x="-1.570796326795" y="-0.523598775598" z="3.141592653590" unit="rad"/>
+<rotation x="1.570796326795" y="-1.047197551197" z="1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/sipm_si053.gdml"/>
 <position x="-85.3916604984" y="-25.3408620039" z="-41.5000000000" unit="mm"/>
-<rotation x="-1.570796326795" y="-0.523598775598" z="3.141592653590" unit="rad"/>
+<rotation x="1.570796326795" y="-1.047197551197" z="1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/pcb-sipm_pcb008.gdml"/>
 <position x="-88.3326859022" y="-22.2468565782" z="-25.0000000000" unit="mm"/>
-<rotation x="-0.000000000000" y="-0.000000000000" z="2.617993877991" unit="rad"/>
+<rotation x="1.570796326795" y="-1.047197551197" z="1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/_detector_lyso_323.gdml"/>
@@ -2181,37 +2181,37 @@
 <physvol>
 <file name="Volumes/sipm_si054.gdml"/>
 <position x="-64.6416604984" y="-61.2809162610" z="-41.5000000000" unit="mm"/>
-<rotation x="-1.570796326795" y="-0.523598775598" z="3.141592653590" unit="rad"/>
+<rotation x="1.570796326795" y="-1.047197551197" z="1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/sipm_si055.gdml"/>
 <position x="-60.4916604984" y="-68.4689271124" z="-25.0000000000" unit="mm"/>
-<rotation x="-1.570796326795" y="-0.523598775598" z="3.141592653590" unit="rad"/>
+<rotation x="1.570796326795" y="-1.047197551197" z="1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/sipm_si056.gdml"/>
 <position x="-64.6416604984" y="-61.2809162610" z="-8.5000000000" unit="mm"/>
-<rotation x="-1.570796326795" y="-0.523598775598" z="3.141592653590" unit="rad"/>
+<rotation x="1.570796326795" y="-1.047197551197" z="1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/pcb-sipm_pcb009.gdml"/>
 <position x="-63.4326859022" y="-65.3749216867" z="-25.0000000000" unit="mm"/>
-<rotation x="0.000000000000" y="-0.000000000000" z="2.617993877991" unit="rad"/>
+<rotation x="1.570796326795" y="-1.047197551197" z="1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/sipm_si057.gdml"/>
 <position x="-60.4916604984" y="-68.4689271124" z="-8.5000000000" unit="mm"/>
-<rotation x="-1.570796326795" y="-0.523598775598" z="3.141592653590" unit="rad"/>
+<rotation x="1.570796326795" y="-1.047197551197" z="1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/sipm_si058.gdml"/>
 <position x="-64.6416604984" y="-61.2809162610" z="-25.0000000000" unit="mm"/>
-<rotation x="-1.570796326795" y="-0.523598775598" z="3.141592653590" unit="rad"/>
+<rotation x="1.570796326795" y="-1.047197551197" z="1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/sipm_si059.gdml"/>
 <position x="-60.4916604984" y="-68.4689271124" z="-41.5000000000" unit="mm"/>
-<rotation x="-1.570796326795" y="-0.523598775598" z="3.141592653590" unit="rad"/>
+<rotation x="1.570796326795" y="-1.047197551197" z="1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/_detector_lyso_360.gdml"/>
@@ -2396,37 +2396,37 @@
 <physvol>
 <file name="Volumes/sipm_si060.gdml"/>
 <position x="-77.0916604984" y="-39.7168837067" z="-8.5000000000" unit="mm"/>
-<rotation x="-1.570796326795" y="-0.523598775598" z="3.141592653590" unit="rad"/>
+<rotation x="1.570796326795" y="-1.047197551197" z="1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/sipm_si061.gdml"/>
 <position x="-77.0916604984" y="-39.7168837067" z="-25.0000000000" unit="mm"/>
-<rotation x="-1.570796326795" y="-0.523598775598" z="3.141592653590" unit="rad"/>
+<rotation x="1.570796326795" y="-1.047197551197" z="1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/sipm_si062.gdml"/>
 <position x="-81.2416604984" y="-32.5288728553" z="-25.0000000000" unit="mm"/>
-<rotation x="-1.570796326795" y="-0.523598775598" z="3.141592653590" unit="rad"/>
+<rotation x="1.570796326795" y="-1.047197551197" z="1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/sipm_si063.gdml"/>
 <position x="-81.2416604984" y="-32.5288728553" z="-41.5000000000" unit="mm"/>
-<rotation x="-1.570796326795" y="-0.523598775598" z="3.141592653590" unit="rad"/>
+<rotation x="1.570796326795" y="-1.047197551197" z="1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/sipm_si064.gdml"/>
 <position x="-77.0916604984" y="-39.7168837067" z="-41.5000000000" unit="mm"/>
-<rotation x="-1.570796326795" y="-0.523598775598" z="3.141592653590" unit="rad"/>
+<rotation x="1.570796326795" y="-1.047197551197" z="1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/pcb-sipm_pcb010.gdml"/>
 <position x="-80.0326859022" y="-36.6228782810" z="-25.0000000000" unit="mm"/>
-<rotation x="0.000000000000" y="-0.000000000000" z="2.617993877991" unit="rad"/>
+<rotation x="1.570796326795" y="-1.047197551197" z="1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/sipm_si065.gdml"/>
 <position x="-81.2416604984" y="-32.5288728553" z="-8.5000000000" unit="mm"/>
-<rotation x="-1.570796326795" y="-0.523598775598" z="3.141592653590" unit="rad"/>
+<rotation x="1.570796326795" y="-1.047197551197" z="1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/_detector_lyso_396.gdml"/>
@@ -2566,37 +2566,37 @@
 <physvol>
 <file name="Volumes/sipm_si066.gdml"/>
 <position x="-72.9416604984" y="-46.9048945582" z="-8.5000000000" unit="mm"/>
-<rotation x="-1.570796326795" y="-0.523598775598" z="3.141592653590" unit="rad"/>
+<rotation x="1.570796326795" y="-1.047197551197" z="1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/sipm_si067.gdml"/>
 <position x="-68.7916604984" y="-54.0929054096" z="-8.5000000000" unit="mm"/>
-<rotation x="-1.570796326795" y="-0.523598775598" z="3.141592653590" unit="rad"/>
+<rotation x="1.570796326795" y="-1.047197551197" z="1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/pcb-sipm_pcb011.gdml"/>
 <position x="-71.7326859022" y="-50.9988999839" z="-25.0000000000" unit="mm"/>
-<rotation x="0.000000000000" y="-0.000000000000" z="2.617993877991" unit="rad"/>
+<rotation x="1.570796326795" y="-1.047197551197" z="1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/sipm_si068.gdml"/>
 <position x="-68.7916604984" y="-54.0929054096" z="-41.5000000000" unit="mm"/>
-<rotation x="-1.570796326795" y="-0.523598775598" z="3.141592653590" unit="rad"/>
+<rotation x="1.570796326795" y="-1.047197551197" z="1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/sipm_si069.gdml"/>
 <position x="-68.7916604984" y="-54.0929054096" z="-25.0000000000" unit="mm"/>
-<rotation x="-1.570796326795" y="-0.523598775598" z="3.141592653590" unit="rad"/>
+<rotation x="1.570796326795" y="-1.047197551197" z="1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/sipm_si070.gdml"/>
 <position x="-72.9416604984" y="-46.9048945582" z="-25.0000000000" unit="mm"/>
-<rotation x="-1.570796326795" y="-0.523598775598" z="3.141592653590" unit="rad"/>
+<rotation x="1.570796326795" y="-1.047197551197" z="1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/sipm_si071.gdml"/>
 <position x="-72.9416604984" y="-46.9048945582" z="-41.5000000000" unit="mm"/>
-<rotation x="-1.570796326795" y="-0.523598775598" z="3.141592653590" unit="rad"/>
+<rotation x="1.570796326795" y="-1.047197551197" z="1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/_detector_lyso_423.gdml"/>
@@ -2646,7 +2646,7 @@
 <physvol>
 <file name="Volumes/dmod-base_al003.gdml"/>
 <position x="0.0000000000" y="-100.8767782649" z="-150.0000000000" unit="mm"/>
-<rotation x="-1.570796326795" y="1.570796326795" z="0.000000000000" unit="rad"/>
+<rotation x="-1.570796326795" y="0.000000000000" z="-1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/unit-cover_plastic003.gdml"/>
@@ -2831,37 +2831,37 @@
 <physvol>
 <file name="Volumes/sipm_si072.gdml"/>
 <position x="20.7500000000" y="-86.6217782649" z="-25.0000000000" unit="mm"/>
-<rotation x="1.570796326795" y="-1.570796326795" z="0.000000000000" unit="rad"/>
+<rotation x="1.570796326795" y="-0.000000000000" z="1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/sipm_si073.gdml"/>
 <position x="20.7500000000" y="-86.6217782649" z="-8.5000000000" unit="mm"/>
-<rotation x="1.570796326795" y="-1.570796326795" z="0.000000000000" unit="rad"/>
+<rotation x="1.570796326795" y="-0.000000000000" z="1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/sipm_si074.gdml"/>
 <position x="29.0500000000" y="-86.6217782649" z="-8.5000000000" unit="mm"/>
-<rotation x="1.570796326795" y="-1.570796326795" z="0.000000000000" unit="rad"/>
+<rotation x="1.570796326795" y="-0.000000000000" z="1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/sipm_si075.gdml"/>
 <position x="20.7500000000" y="-86.6217782649" z="-41.5000000000" unit="mm"/>
-<rotation x="1.570796326795" y="-1.570796326795" z="0.000000000000" unit="rad"/>
+<rotation x="1.570796326795" y="-0.000000000000" z="1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/sipm_si076.gdml"/>
 <position x="29.0500000000" y="-86.6217782649" z="-25.0000000000" unit="mm"/>
-<rotation x="1.570796326795" y="-1.570796326795" z="0.000000000000" unit="rad"/>
+<rotation x="1.570796326795" y="-0.000000000000" z="1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/sipm_si077.gdml"/>
 <position x="29.0500000000" y="-86.6217782649" z="-41.5000000000" unit="mm"/>
-<rotation x="1.570796326795" y="-1.570796326795" z="0.000000000000" unit="rad"/>
+<rotation x="1.570796326795" y="-0.000000000000" z="1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/pcb-sipm_pcb012.gdml"/>
 <position x="24.9000000000" y="-87.6217782649" z="-25.0000000000" unit="mm"/>
-<rotation x="0.000000000000" y="-0.000000000000" z="1.570796326795" unit="rad"/>
+<rotation x="1.570796326795" y="-0.000000000000" z="1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/_detector_lyso_467.gdml"/>
@@ -2996,37 +2996,37 @@
 <physvol>
 <file name="Volumes/pcb-sipm_pcb013.gdml"/>
 <position x="8.3000000000" y="-87.6217782649" z="-25.0000000000" unit="mm"/>
-<rotation x="0.000000000000" y="-0.000000000000" z="1.570796326795" unit="rad"/>
+<rotation x="1.570796326795" y="-0.000000000000" z="1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/sipm_si078.gdml"/>
 <position x="4.1500000000" y="-86.6217782649" z="-25.0000000000" unit="mm"/>
-<rotation x="1.570796326795" y="-1.570796326795" z="0.000000000000" unit="rad"/>
+<rotation x="1.570796326795" y="-0.000000000000" z="1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/sipm_si079.gdml"/>
 <position x="12.4500000000" y="-86.6217782649" z="-41.5000000000" unit="mm"/>
-<rotation x="1.570796326795" y="-1.570796326795" z="0.000000000000" unit="rad"/>
+<rotation x="1.570796326795" y="-0.000000000000" z="1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/sipm_si080.gdml"/>
 <position x="12.4500000000" y="-86.6217782649" z="-8.5000000000" unit="mm"/>
-<rotation x="1.570796326795" y="-1.570796326795" z="0.000000000000" unit="rad"/>
+<rotation x="1.570796326795" y="-0.000000000000" z="1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/sipm_si081.gdml"/>
 <position x="12.4500000000" y="-86.6217782649" z="-25.0000000000" unit="mm"/>
-<rotation x="1.570796326795" y="-1.570796326795" z="0.000000000000" unit="rad"/>
+<rotation x="1.570796326795" y="-0.000000000000" z="1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/sipm_si082.gdml"/>
 <position x="4.1500000000" y="-86.6217782649" z="-41.5000000000" unit="mm"/>
-<rotation x="1.570796326795" y="-1.570796326795" z="0.000000000000" unit="rad"/>
+<rotation x="1.570796326795" y="-0.000000000000" z="1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/sipm_si083.gdml"/>
 <position x="4.1500000000" y="-86.6217782649" z="-8.5000000000" unit="mm"/>
-<rotation x="1.570796326795" y="-1.570796326795" z="0.000000000000" unit="rad"/>
+<rotation x="1.570796326795" y="-0.000000000000" z="1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/_detector_lyso_493.gdml"/>
@@ -3266,37 +3266,37 @@
 <physvol>
 <file name="Volumes/sipm_si084.gdml"/>
 <position x="-29.0500000000" y="-86.6217782649" z="-25.0000000000" unit="mm"/>
-<rotation x="1.570796326795" y="-1.570796326795" z="0.000000000000" unit="rad"/>
+<rotation x="1.570796326795" y="-0.000000000000" z="1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/pcb-sipm_pcb014.gdml"/>
 <position x="-24.9000000000" y="-87.6217782649" z="-25.0000000000" unit="mm"/>
-<rotation x="0.000000000000" y="-0.000000000000" z="1.570796326795" unit="rad"/>
+<rotation x="1.570796326795" y="-0.000000000000" z="1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/sipm_si085.gdml"/>
 <position x="-29.0500000000" y="-86.6217782649" z="-8.5000000000" unit="mm"/>
-<rotation x="1.570796326795" y="-1.570796326795" z="0.000000000000" unit="rad"/>
+<rotation x="1.570796326795" y="-0.000000000000" z="1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/sipm_si086.gdml"/>
 <position x="-20.7500000000" y="-86.6217782649" z="-25.0000000000" unit="mm"/>
-<rotation x="1.570796326795" y="-1.570796326795" z="0.000000000000" unit="rad"/>
+<rotation x="1.570796326795" y="-0.000000000000" z="1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/sipm_si087.gdml"/>
 <position x="-29.0500000000" y="-86.6217782649" z="-41.5000000000" unit="mm"/>
-<rotation x="1.570796326795" y="-1.570796326795" z="0.000000000000" unit="rad"/>
+<rotation x="1.570796326795" y="-0.000000000000" z="1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/sipm_si088.gdml"/>
 <position x="-20.7500000000" y="-86.6217782649" z="-8.5000000000" unit="mm"/>
-<rotation x="1.570796326795" y="-1.570796326795" z="0.000000000000" unit="rad"/>
+<rotation x="1.570796326795" y="-0.000000000000" z="1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/sipm_si089.gdml"/>
 <position x="-20.7500000000" y="-86.6217782649" z="-41.5000000000" unit="mm"/>
-<rotation x="1.570796326795" y="-1.570796326795" z="0.000000000000" unit="rad"/>
+<rotation x="1.570796326795" y="-0.000000000000" z="1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/_detector_lyso_540.gdml"/>
@@ -3481,42 +3481,42 @@
 <physvol>
 <file name="Volumes/sipm_si090.gdml"/>
 <position x="-12.4500000000" y="-86.6217782649" z="-25.0000000000" unit="mm"/>
-<rotation x="1.570796326795" y="-1.570796326795" z="0.000000000000" unit="rad"/>
+<rotation x="1.570796326795" y="-0.000000000000" z="1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/sipm_si091.gdml"/>
 <position x="-4.1500000000" y="-86.6217782649" z="-41.5000000000" unit="mm"/>
-<rotation x="1.570796326795" y="-1.570796326795" z="0.000000000000" unit="rad"/>
+<rotation x="1.570796326795" y="-0.000000000000" z="1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/sipm_si092.gdml"/>
 <position x="-4.1500000000" y="-86.6217782649" z="-25.0000000000" unit="mm"/>
-<rotation x="1.570796326795" y="-1.570796326795" z="0.000000000000" unit="rad"/>
+<rotation x="1.570796326795" y="-0.000000000000" z="1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/sipm_si093.gdml"/>
 <position x="-12.4500000000" y="-86.6217782649" z="-41.5000000000" unit="mm"/>
-<rotation x="1.570796326795" y="-1.570796326795" z="0.000000000000" unit="rad"/>
+<rotation x="1.570796326795" y="-0.000000000000" z="1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/sipm_si094.gdml"/>
 <position x="-12.4500000000" y="-86.6217782649" z="-8.5000000000" unit="mm"/>
-<rotation x="1.570796326795" y="-1.570796326795" z="0.000000000000" unit="rad"/>
+<rotation x="1.570796326795" y="-0.000000000000" z="1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/sipm_si095.gdml"/>
 <position x="-4.1500000000" y="-86.6217782649" z="-8.5000000000" unit="mm"/>
-<rotation x="1.570796326795" y="-1.570796326795" z="0.000000000000" unit="rad"/>
+<rotation x="1.570796326795" y="-0.000000000000" z="1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/pcb-sipm_pcb015.gdml"/>
 <position x="-8.3000000000" y="-87.6217782649" z="-25.0000000000" unit="mm"/>
-<rotation x="0.000000000000" y="-0.000000000000" z="1.570796326795" unit="rad"/>
+<rotation x="1.570796326795" y="-0.000000000000" z="1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/dmod-base_al004.gdml"/>
 <position x="87.3618526293" y="50.4383891325" z="-150.0000000000" unit="mm"/>
-<rotation x="-1.570796326795" y="-0.523598775598" z="0.000000000000" unit="rad"/>
+<rotation x="1.570796326795" y="-1.047197551197" z="1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/unit-cover_plastic004.gdml"/>
@@ -3706,37 +3706,37 @@
 <physvol>
 <file name="Volumes/pcb-sipm_pcb016.gdml"/>
 <position x="88.3326859022" y="22.2468565782" z="-25.0000000000" unit="mm"/>
-<rotation x="0.000000000000" y="-0.000000000000" z="-0.523598775598" unit="rad"/>
+<rotation x="-1.570796326795" y="1.047197551197" z="-1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/sipm_si096.gdml"/>
 <position x="85.3916604984" y="25.3408620039" z="-41.5000000000" unit="mm"/>
-<rotation x="1.570796326795" y="0.523598775598" z="0.000000000000" unit="rad"/>
+<rotation x="-1.570796326795" y="1.047197551197" z="-1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/sipm_si097.gdml"/>
 <position x="89.5416604984" y="18.1528511525" z="-8.5000000000" unit="mm"/>
-<rotation x="1.570796326795" y="0.523598775598" z="0.000000000000" unit="rad"/>
+<rotation x="-1.570796326795" y="1.047197551197" z="-1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/sipm_si098.gdml"/>
 <position x="85.3916604984" y="25.3408620039" z="-8.5000000000" unit="mm"/>
-<rotation x="1.570796326795" y="0.523598775598" z="0.000000000000" unit="rad"/>
+<rotation x="-1.570796326795" y="1.047197551197" z="-1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/sipm_si099.gdml"/>
 <position x="89.5416604984" y="18.1528511525" z="-41.5000000000" unit="mm"/>
-<rotation x="1.570796326795" y="0.523598775598" z="0.000000000000" unit="rad"/>
+<rotation x="-1.570796326795" y="1.047197551197" z="-1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/sipm_si100.gdml"/>
 <position x="85.3916604984" y="25.3408620039" z="-25.0000000000" unit="mm"/>
-<rotation x="1.570796326795" y="0.523598775598" z="0.000000000000" unit="rad"/>
+<rotation x="-1.570796326795" y="1.047197551197" z="-1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/sipm_si101.gdml"/>
 <position x="89.5416604984" y="18.1528511525" z="-25.0000000000" unit="mm"/>
-<rotation x="1.570796326795" y="0.523598775598" z="0.000000000000" unit="rad"/>
+<rotation x="-1.570796326795" y="1.047197551197" z="-1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/_detector_lyso_612.gdml"/>
@@ -3906,37 +3906,37 @@
 <physvol>
 <file name="Volumes/sipm_si102.gdml"/>
 <position x="68.7916604984" y="54.0929054096" z="-41.5000000000" unit="mm"/>
-<rotation x="1.570796326795" y="0.523598775598" z="0.000000000000" unit="rad"/>
+<rotation x="-1.570796326795" y="1.047197551197" z="-1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/sipm_si103.gdml"/>
 <position x="72.9416604984" y="46.9048945582" z="-41.5000000000" unit="mm"/>
-<rotation x="1.570796326795" y="0.523598775598" z="0.000000000000" unit="rad"/>
+<rotation x="-1.570796326795" y="1.047197551197" z="-1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/sipm_si104.gdml"/>
 <position x="68.7916604984" y="54.0929054096" z="-25.0000000000" unit="mm"/>
-<rotation x="1.570796326795" y="0.523598775598" z="0.000000000000" unit="rad"/>
+<rotation x="-1.570796326795" y="1.047197551197" z="-1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/sipm_si105.gdml"/>
 <position x="72.9416604984" y="46.9048945582" z="-25.0000000000" unit="mm"/>
-<rotation x="1.570796326795" y="0.523598775598" z="0.000000000000" unit="rad"/>
+<rotation x="-1.570796326795" y="1.047197551197" z="-1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/sipm_si106.gdml"/>
 <position x="72.9416604984" y="46.9048945582" z="-8.5000000000" unit="mm"/>
-<rotation x="1.570796326795" y="0.523598775598" z="0.000000000000" unit="rad"/>
+<rotation x="-1.570796326795" y="1.047197551197" z="-1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/sipm_si107.gdml"/>
 <position x="68.7916604984" y="54.0929054096" z="-8.5000000000" unit="mm"/>
-<rotation x="1.570796326795" y="0.523598775598" z="0.000000000000" unit="rad"/>
+<rotation x="-1.570796326795" y="1.047197551197" z="-1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/pcb-sipm_pcb017.gdml"/>
 <position x="71.7326859022" y="50.9988999839" z="-25.0000000000" unit="mm"/>
-<rotation x="0.000000000000" y="0.000000000000" z="-0.523598775598" unit="rad"/>
+<rotation x="-1.570796326795" y="1.047197551197" z="-1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/_detector_lyso_645.gdml"/>
@@ -4111,37 +4111,37 @@
 <physvol>
 <file name="Volumes/pcb-sipm_pcb018.gdml"/>
 <position x="80.0326859022" y="36.6228782810" z="-25.0000000000" unit="mm"/>
-<rotation x="0.000000000000" y="-0.000000000000" z="-0.523598775598" unit="rad"/>
+<rotation x="-1.570796326795" y="1.047197551197" z="-1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/sipm_si108.gdml"/>
 <position x="81.2416604984" y="32.5288728553" z="-41.5000000000" unit="mm"/>
-<rotation x="1.570796326795" y="0.523598775598" z="0.000000000000" unit="rad"/>
+<rotation x="-1.570796326795" y="1.047197551197" z="-1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/sipm_si109.gdml"/>
 <position x="77.0916604984" y="39.7168837067" z="-25.0000000000" unit="mm"/>
-<rotation x="1.570796326795" y="0.523598775598" z="0.000000000000" unit="rad"/>
+<rotation x="-1.570796326795" y="1.047197551197" z="-1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/sipm_si110.gdml"/>
 <position x="81.2416604984" y="32.5288728553" z="-8.5000000000" unit="mm"/>
-<rotation x="1.570796326795" y="0.523598775598" z="0.000000000000" unit="rad"/>
+<rotation x="-1.570796326795" y="1.047197551197" z="-1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/sipm_si111.gdml"/>
 <position x="77.0916604984" y="39.7168837067" z="-8.5000000000" unit="mm"/>
-<rotation x="1.570796326795" y="0.523598775598" z="0.000000000000" unit="rad"/>
+<rotation x="-1.570796326795" y="1.047197551197" z="-1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/sipm_si112.gdml"/>
 <position x="77.0916604984" y="39.7168837067" z="-41.5000000000" unit="mm"/>
-<rotation x="1.570796326795" y="0.523598775598" z="0.000000000000" unit="rad"/>
+<rotation x="-1.570796326795" y="1.047197551197" z="-1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/sipm_si113.gdml"/>
 <position x="81.2416604984" y="32.5288728553" z="-25.0000000000" unit="mm"/>
-<rotation x="1.570796326795" y="0.523598775598" z="0.000000000000" unit="rad"/>
+<rotation x="-1.570796326795" y="1.047197551197" z="-1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/_detector_lyso_679.gdml"/>
@@ -4341,37 +4341,37 @@
 <physvol>
 <file name="Volumes/sipm_si114.gdml"/>
 <position x="64.6416604984" y="61.2809162610" z="-41.5000000000" unit="mm"/>
-<rotation x="1.570796326795" y="0.523598775598" z="0.000000000000" unit="rad"/>
+<rotation x="-1.570796326795" y="1.047197551197" z="-1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/sipm_si115.gdml"/>
 <position x="60.4916604984" y="68.4689271124" z="-25.0000000000" unit="mm"/>
-<rotation x="1.570796326795" y="0.523598775598" z="0.000000000000" unit="rad"/>
+<rotation x="-1.570796326795" y="1.047197551197" z="-1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/pcb-sipm_pcb019.gdml"/>
 <position x="63.4326859022" y="65.3749216867" z="-25.0000000000" unit="mm"/>
-<rotation x="0.000000000000" y="-0.000000000000" z="-0.523598775598" unit="rad"/>
+<rotation x="-1.570796326795" y="1.047197551197" z="-1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/sipm_si116.gdml"/>
 <position x="60.4916604984" y="68.4689271124" z="-41.5000000000" unit="mm"/>
-<rotation x="1.570796326795" y="0.523598775598" z="0.000000000000" unit="rad"/>
+<rotation x="-1.570796326795" y="1.047197551197" z="-1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/sipm_si117.gdml"/>
 <position x="64.6416604984" y="61.2809162610" z="-25.0000000000" unit="mm"/>
-<rotation x="1.570796326795" y="0.523598775598" z="0.000000000000" unit="rad"/>
+<rotation x="-1.570796326795" y="1.047197551197" z="-1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/sipm_si118.gdml"/>
 <position x="60.4916604984" y="68.4689271124" z="-8.5000000000" unit="mm"/>
-<rotation x="1.570796326795" y="0.523598775598" z="0.000000000000" unit="rad"/>
+<rotation x="-1.570796326795" y="1.047197551197" z="-1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/sipm_si119.gdml"/>
 <position x="64.6416604984" y="61.2809162610" z="-8.5000000000" unit="mm"/>
-<rotation x="1.570796326795" y="0.523598775598" z="0.000000000000" unit="rad"/>
+<rotation x="-1.570796326795" y="1.047197551197" z="-1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/_detector_lyso_718.gdml"/>
@@ -4386,7 +4386,7 @@
 <physvol>
 <file name="Volumes/dmod-base_al005.gdml"/>
 <position x="87.3618526293" y="-50.4383891325" z="-150.0000000000" unit="mm"/>
-<rotation x="-1.570796326795" y="0.523598775598" z="0.000000000000" unit="rad"/>
+<rotation x="-1.570796326795" y="-1.047197551197" z="-1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/unit-cover_plastic005.gdml"/>
@@ -4516,37 +4516,37 @@
 <physvol>
 <file name="Volumes/sipm_si120.gdml"/>
 <position x="60.4916604984" y="-68.4689271124" z="-41.5000000000" unit="mm"/>
-<rotation x="1.570796326795" y="-0.523598775598" z="0.000000000000" unit="rad"/>
+<rotation x="1.570796326795" y="1.047197551197" z="1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/sipm_si121.gdml"/>
 <position x="64.6416604984" y="-61.2809162610" z="-25.0000000000" unit="mm"/>
-<rotation x="1.570796326795" y="-0.523598775598" z="0.000000000000" unit="rad"/>
+<rotation x="1.570796326795" y="1.047197551197" z="1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/sipm_si122.gdml"/>
 <position x="64.6416604984" y="-61.2809162610" z="-41.5000000000" unit="mm"/>
-<rotation x="1.570796326795" y="-0.523598775598" z="0.000000000000" unit="rad"/>
+<rotation x="1.570796326795" y="1.047197551197" z="1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/sipm_si123.gdml"/>
 <position x="64.6416604984" y="-61.2809162610" z="-8.5000000000" unit="mm"/>
-<rotation x="1.570796326795" y="-0.523598775598" z="0.000000000000" unit="rad"/>
+<rotation x="1.570796326795" y="1.047197551197" z="1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/pcb-sipm_pcb020.gdml"/>
 <position x="63.4326859022" y="-65.3749216867" z="-25.0000000000" unit="mm"/>
-<rotation x="0.000000000000" y="-0.000000000000" z="0.523598775598" unit="rad"/>
+<rotation x="1.570796326795" y="1.047197551197" z="1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/sipm_si124.gdml"/>
 <position x="60.4916604984" y="-68.4689271124" z="-25.0000000000" unit="mm"/>
-<rotation x="1.570796326795" y="-0.523598775598" z="0.000000000000" unit="rad"/>
+<rotation x="1.570796326795" y="1.047197551197" z="1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/sipm_si125.gdml"/>
 <position x="60.4916604984" y="-68.4689271124" z="-8.5000000000" unit="mm"/>
-<rotation x="1.570796326795" y="-0.523598775598" z="0.000000000000" unit="rad"/>
+<rotation x="1.570796326795" y="1.047197551197" z="1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/_detector_lyso_744.gdml"/>
@@ -4776,37 +4776,37 @@
 <physvol>
 <file name="Volumes/sipm_si126.gdml"/>
 <position x="89.5416604984" y="-18.1528511525" z="-41.5000000000" unit="mm"/>
-<rotation x="1.570796326795" y="-0.523598775598" z="0.000000000000" unit="rad"/>
+<rotation x="1.570796326795" y="1.047197551197" z="1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/sipm_si127.gdml"/>
 <position x="89.5416604984" y="-18.1528511525" z="-8.5000000000" unit="mm"/>
-<rotation x="1.570796326795" y="-0.523598775598" z="0.000000000000" unit="rad"/>
+<rotation x="1.570796326795" y="1.047197551197" z="1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/pcb-sipm_pcb021.gdml"/>
 <position x="88.3326859022" y="-22.2468565782" z="-25.0000000000" unit="mm"/>
-<rotation x="0.000000000000" y="-0.000000000000" z="0.523598775598" unit="rad"/>
+<rotation x="1.570796326795" y="1.047197551197" z="1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/sipm_si128.gdml"/>
 <position x="85.3916604984" y="-25.3408620039" z="-8.5000000000" unit="mm"/>
-<rotation x="1.570796326795" y="-0.523598775598" z="0.000000000000" unit="rad"/>
+<rotation x="1.570796326795" y="1.047197551197" z="1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/sipm_si129.gdml"/>
 <position x="89.5416604984" y="-18.1528511525" z="-25.0000000000" unit="mm"/>
-<rotation x="1.570796326795" y="-0.523598775598" z="0.000000000000" unit="rad"/>
+<rotation x="1.570796326795" y="1.047197551197" z="1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/sipm_si130.gdml"/>
 <position x="85.3916604984" y="-25.3408620039" z="-41.5000000000" unit="mm"/>
-<rotation x="1.570796326795" y="-0.523598775598" z="0.000000000000" unit="rad"/>
+<rotation x="1.570796326795" y="1.047197551197" z="1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/sipm_si131.gdml"/>
 <position x="85.3916604984" y="-25.3408620039" z="-25.0000000000" unit="mm"/>
-<rotation x="1.570796326795" y="-0.523598775598" z="0.000000000000" unit="rad"/>
+<rotation x="1.570796326795" y="1.047197551197" z="1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/_detector_lyso_789.gdml"/>
@@ -4986,37 +4986,37 @@
 <physvol>
 <file name="Volumes/sipm_si132.gdml"/>
 <position x="77.0916604984" y="-39.7168837068" z="-41.5000000000" unit="mm"/>
-<rotation x="1.570796326795" y="-0.523598775598" z="0.000000000000" unit="rad"/>
+<rotation x="1.570796326795" y="1.047197551197" z="1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/sipm_si133.gdml"/>
 <position x="81.2416604984" y="-32.5288728553" z="-25.0000000000" unit="mm"/>
-<rotation x="1.570796326795" y="-0.523598775598" z="0.000000000000" unit="rad"/>
+<rotation x="1.570796326795" y="1.047197551197" z="1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/pcb-sipm_pcb022.gdml"/>
 <position x="80.0326859022" y="-36.6228782810" z="-25.0000000000" unit="mm"/>
-<rotation x="0.000000000000" y="-0.000000000000" z="0.523598775598" unit="rad"/>
+<rotation x="1.570796326795" y="1.047197551197" z="1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/sipm_si134.gdml"/>
 <position x="77.0916604984" y="-39.7168837068" z="-25.0000000000" unit="mm"/>
-<rotation x="1.570796326795" y="-0.523598775598" z="0.000000000000" unit="rad"/>
+<rotation x="1.570796326795" y="1.047197551197" z="1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/sipm_si135.gdml"/>
 <position x="77.0916604984" y="-39.7168837068" z="-8.5000000000" unit="mm"/>
-<rotation x="1.570796326795" y="-0.523598775598" z="0.000000000000" unit="rad"/>
+<rotation x="1.570796326795" y="1.047197551197" z="1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/sipm_si136.gdml"/>
 <position x="81.2416604984" y="-32.5288728553" z="-8.5000000000" unit="mm"/>
-<rotation x="1.570796326795" y="-0.523598775598" z="0.000000000000" unit="rad"/>
+<rotation x="1.570796326795" y="1.047197551197" z="1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/sipm_si137.gdml"/>
 <position x="81.2416604984" y="-32.5288728553" z="-41.5000000000" unit="mm"/>
-<rotation x="1.570796326795" y="-0.523598775598" z="0.000000000000" unit="rad"/>
+<rotation x="1.570796326795" y="1.047197551197" z="1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/_detector_lyso_824.gdml"/>
@@ -5201,37 +5201,37 @@
 <physvol>
 <file name="Volumes/sipm_si138.gdml"/>
 <position x="72.9416604984" y="-46.9048945582" z="-41.5000000000" unit="mm"/>
-<rotation x="1.570796326795" y="-0.523598775598" z="0.000000000000" unit="rad"/>
+<rotation x="1.570796326795" y="1.047197551197" z="1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/pcb-sipm_pcb023.gdml"/>
 <position x="71.7326859022" y="-50.9988999839" z="-25.0000000000" unit="mm"/>
-<rotation x="0.000000000000" y="-0.000000000000" z="0.523598775598" unit="rad"/>
+<rotation x="1.570796326795" y="1.047197551197" z="1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/sipm_si139.gdml"/>
 <position x="68.7916604984" y="-54.0929054096" z="-41.5000000000" unit="mm"/>
-<rotation x="1.570796326795" y="-0.523598775598" z="0.000000000000" unit="rad"/>
+<rotation x="1.570796326795" y="1.047197551197" z="1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/sipm_si140.gdml"/>
 <position x="72.9416604984" y="-46.9048945582" z="-25.0000000000" unit="mm"/>
-<rotation x="1.570796326795" y="-0.523598775598" z="0.000000000000" unit="rad"/>
+<rotation x="1.570796326795" y="1.047197551197" z="1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/sipm_si141.gdml"/>
 <position x="72.9416604984" y="-46.9048945582" z="-8.5000000000" unit="mm"/>
-<rotation x="1.570796326795" y="-0.523598775598" z="0.000000000000" unit="rad"/>
+<rotation x="1.570796326795" y="1.047197551197" z="1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/sipm_si142.gdml"/>
 <position x="68.7916604984" y="-54.0929054096" z="-8.5000000000" unit="mm"/>
-<rotation x="1.570796326795" y="-0.523598775598" z="0.000000000000" unit="rad"/>
+<rotation x="1.570796326795" y="1.047197551197" z="1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/sipm_si143.gdml"/>
 <position x="68.7916604984" y="-54.0929054096" z="-25.0000000000" unit="mm"/>
-<rotation x="1.570796326795" y="-0.523598775598" z="0.000000000000" unit="rad"/>
+<rotation x="1.570796326795" y="1.047197551197" z="1.570796326795" unit="rad"/>
 </physvol>
 <physvol>
 <file name="Volumes/_detector_lyso_860.gdml"/>

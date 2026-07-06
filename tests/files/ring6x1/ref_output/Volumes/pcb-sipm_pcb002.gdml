@@ -4,7 +4,7 @@
  </define>
 
  <solids>
- <box lunit="mm" name="pcb-sipm_pcb002_solid" x="1.0000000000" y="16.6000000000" z="49.5000000000"/>
+ <box lunit="mm" name="pcb-sipm_pcb002_solid" x="49.5000000000" y="16.6000000000" z="1.0000000000"/>
  <box lunit="mm" name="worldsolid" x="1000" y="1000" z="1000"/>
  </solids>
  <structure>

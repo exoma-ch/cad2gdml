@@ -4,7 +4,7 @@
  </define>
 
  <solids>
- <box lunit="mm" name="dmod-base_al003_solid" x="25.0000000000" y="380.0000000000" z="70.0000000000"/>
+ <box lunit="mm" name="dmod-base_al003_solid" x="380.0000000000" y="70.0000000000" z="25.0000000000"/>
  <box lunit="mm" name="worldsolid" x="1000" y="1000" z="1000"/>
  </solids>
  <structure>

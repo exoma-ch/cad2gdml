@@ -49,8 +49,12 @@ def _canonical_sign(vec, eps=1e-9):
     return tuple(vec)
 
 
-def _crystal_edges_from_vertices(vertices):
+def principal_edges(vertices):
     """Three principal edges of a parallelepiped from its 8 tessellated vertices.
+
+    Shared by the crystal-map extractor (here) and the native-box exporter
+    (``WriteGDML._box_from_vertices``): both need the same edge decomposition of
+    a cuboid, so it lives in one place.
 
     From any reference vertex V0, the other 7 vertices are reached by:
       - 3 edge vectors           e1, e2, e3
@@ -95,11 +99,14 @@ def _crystal_edges_from_vertices(vertices):
     if edges is None:
         return None
 
-    # Sort longest → shortest, normalise.
+    # Sort longest → shortest, normalise. A zero-length edge means the shape is
+    # degenerate (not a real parallelepiped), so reject it.
     sorted_edges = sorted(edges, key=sq, reverse=True)
     out = []
     for e in sorted_edges:
         length = math.sqrt(sq(e))
+        if length <= 0:
+            return None
         out.append(((e[0] / length, e[1] / length, e[2] / length), length))
     return out
 
@@ -218,7 +225,7 @@ def extract_crystal_centers(list_of_objects, verbose=False, output_file=None,
             vertex_counts.append(len(vertices))
             if verbose:
                 print(f"  Crystal {volume_label}: {len(vertices)} vertices")
-            edges = _crystal_edges_from_vertices(vertices)
+            edges = principal_edges(vertices)
             if edges is None:
                 print(f"  WARNING: {volume_label} is not a valid parallelepiped "
                       f"(vertex count={len(vertices)}, no edge triple summed to "
