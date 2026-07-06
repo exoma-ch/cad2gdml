@@ -80,6 +80,7 @@ A common mistake: passing host paths (`--step /home/me/foo.step`) without mounti
 - `--output-dir <dir>` — Output directory for GDML files
 - `--world-size X Y Z` — World volume dimensions in meters (default: auto from bounding box + 10% margin)
 - `--center-geometry` — Translate geometry so its bounding box center is at the origin; saves the applied translation to `geometry_transform.json`
+- `--add-copynumbers [prefix]` — Emit `name`/`copynumber` attributes on crystal `<physvol>` tags in `mother.gdml`, taking the number from the `<prefix><N>` volume label (default prefix `_detector_lyso_`). Downstream tools (e.g. gPET-sim's g4ring readout) key on this copy number; using this flag makes the exported GDML directly usable with no separate post-processing step
 - `--dump-parts <output_file>` — Write all part labels from the STEP file to a text file (one per line) and exit
 - `--verbose` — Detailed progress output
 
