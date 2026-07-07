@@ -81,12 +81,15 @@ A common mistake: passing host paths (`--step /home/me/foo.step`) without mounti
 - `--world-size X Y Z` — World volume dimensions in meters (default: auto from bounding box + 10% margin)
 - `--center-geometry` — Translate geometry so its bounding box center is at the origin; saves the applied translation to `geometry_transform.json`
 - `--add-copynumbers [prefix]` — Emit `name`/`copynumber` attributes on crystal `<physvol>` tags in `mother.gdml`, taking the number from the `<prefix><N>` volume label (default prefix `_detector_lyso_`). Downstream tools (e.g. gPET-sim's g4ring readout) key on this copy number; using this flag makes the exported GDML directly usable with no separate post-processing step
+- `--hier` — Also emit `mother_hier.gdml`: an all-native two-level geometry with one vacuum G4Trd wedge envelope per flat panel, containing the panel's cuboid parts as native boxes (shared solid/LV per part type, crystal copy numbers always emitted) and cover trays decomposed into 5 box slabs clipped to the crystal faces. Multi-panel parts stay in the world. Requires a uniform ring of ≥3 equally spaced panels; the export aborts if any correctness gate fails (nested corner reconstruction < 1e-3 mm, wedge containment, world-side clearance). Measured ~1.6–2.1× faster to simulate in gPET-sim than the flat mother
+- `--check-overlaps` — Check all exported parts for mutual interpenetration (separating-axis test between native boxes; CAD boolean intersection for pairs involving tessellated parts). Touching faces are fine; interpenetrating pairs are reported with their penetration depth / common volume and the export exits non-zero
 - `--dump-parts <output_file>` — Write all part labels from the STEP file to a text file (one per line) and exit
 - `--verbose` — Detailed progress output
 
 ### Outputs
 
 - `mother.gdml` — Top-level GDML file (world + includes)
+- `mother_hier.gdml` — Hierarchical native geometry (when using `--hier`); the flat `mother.gdml` stays the visual/debug reference
 - `Volumes/*.gdml` — Per-volume GDML files
 - `<name>.h5` — Crystal map (when using `--extract-centers`)
 - `geometry_transform.json` — Applied translation (when using `--center-geometry`)

@@ -232,6 +232,32 @@ def _write_world_material_from_object(F, mat):
     F.write('</material>\n')
 
 
+def _write_materials_block(F, object_list, world_material):
+    """Write the aggregated <materials> block shared by mother.gdml and
+    mother_hier.gdml: the world fill material plus every unique custom volume
+    material, each declared exactly once (children reference by name).
+
+    Returns the world material's name (used for the World <materialref>).
+    """
+    world_material_name = world_material.Name if world_material is not None else "Vacuum"
+    F.write('<materials>\n')
+    if world_material is None:
+        _write_inline_default_vacuum(F)
+    else:
+        _write_world_material_from_object(F, world_material)
+    seen = {world_material_name}
+    for obj in object_list:
+        if obj.VolumeGDMLoption != 1:
+            continue
+        mat = obj.VolumeMaterial
+        if mat.Nelements == 0 or mat.Name in seen:
+            continue
+        seen.add(mat.Name)
+        _write_world_material_from_object(F, mat)
+    F.write('</materials>\n')
+    return world_material_name
+
+
 #Write Mother.gdml file
 def CreateMother(dir_path,object_list,world,world_pos=[0.0,0.0,0.0],world_material=None,
                  copynumber_prefix=None):
@@ -276,26 +302,11 @@ def CreateMother(dir_path,object_list,world,world_pos=[0.0,0.0,0.0],world_materi
     F.write('<position name="geometry_offset" x="'+str(-world_pos[0])+'" y="'+str(-world_pos[1])+'" z="'+str(-world_pos[2])+'" unit="m"/>\n')
     F.write('<rotation name="identity" x="0" y="0" z="0"/>\n')
     F.write('</define>\n')
-    #write material information
-    F.write('<materials>\n')
-    if world_material is None:
-        _write_inline_default_vacuum(F)
-    else:
-        _write_world_material_from_object(F, world_material)
     # Aggregate unique volume materials so each is declared exactly once at
     # mother scope. Children reference them via <materialref>; without this,
     # every child re-declared its material and Geant4's GDML parser emitted a
     # "duplicate name of material" warning per include.
-    seen = {world_material_name}
-    for obj in object_list:
-        if obj.VolumeGDMLoption != 1:
-            continue
-        mat = obj.VolumeMaterial
-        if mat.Nelements == 0 or mat.Name in seen:
-            continue
-        seen.add(mat.Name)
-        _write_world_material_from_object(F, mat)
-    F.write('</materials>\n')
+    _write_materials_block(F, object_list, world_material)
     #write solid information (world volume)
     F.write('<solids>\n')
     F.write('<box name="WorldBox" x="'+str(world[0])+'" y="'+str(world[1])+'" z="'+str(world[2])+'" lunit="m"/>\n')
