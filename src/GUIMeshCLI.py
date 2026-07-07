@@ -86,6 +86,8 @@ class GUIMeshCLI:
         self.geometry_translation = [0.0, 0.0, 0.0]  # Translation to center geometry (in mm, CAD coordinates)
         self.copynumber_prefix = None  # If set, emit crystal physvol name/copynumber (prefix identifies crystal volumes)
         self.world_material_name = None  # Name of world fill material (read from mappings JSON, looked up in Material_List at write time)
+        self.hier = False  # Also emit mother_hier.gdml (native hierarchical geometry, wedge envelopes)
+        self.check_overlaps = False  # Check exported parts for mutual interpenetration
 
     def load_materials(self, material_path):
         """Load material(s) from a file or directory.
@@ -652,6 +654,24 @@ class GUIMeshCLI:
             # Normalize base volumes at the end (keeping original names)
             WriteGDML.normalize_base_volumes(str(volumes_path))
 
+            # Hierarchical export: mother_hier.gdml alongside the flat mother
+            # (which stays the visual/debug reference). Runs after the flat
+            # export so world-side tessellated parts can file-include the
+            # already-written Volumes/*.gdml. Gate failures abort the export.
+            if self.hier:
+                from GUIMeshLibs import HierGDML
+                HierGDML.write_hier_gdml(str(output_path), self.list_of_objects,
+                                         self.world_dimensions, world_pos,
+                                         world_material=world_material_obj,
+                                         copynumber_prefix=self.copynumber_prefix,
+                                         verbose=self.verbose)
+
+            overlap_pairs = []
+            if self.check_overlaps:
+                from GUIMeshLibs import OverlapCheck
+                overlap_pairs = OverlapCheck.check_overlaps(
+                    self.list_of_objects, verbose=self.verbose)
+
             # Save transformation info to JSON file
             if self.center_geometry:
                 # Note: world_pos is negated version of translation (due to WriteGDML logic)
@@ -686,6 +706,11 @@ class GUIMeshCLI:
             print(f"Transformation info saved to {transform_file}")
 
             print(f"GDML files written to {output_dir}")
+            if overlap_pairs:
+                print("ERROR: overlap check failed — the exported geometry "
+                      "contains interpenetrating parts (see report above). "
+                      "Files were still written for inspection.")
+                return False
             return True
 
         except Exception as e:
@@ -705,7 +730,9 @@ def main():
     parser.add_argument('--center-geometry', action='store_true', help='Translate and center geometry at origin (0,0,0) by centering the bounding box. This minimizes world size and transforms crystal coordinates.')
     parser.add_argument('--dump-parts', metavar='OUTPUT_FILE', help='Load STEP file and write all part labels to a plain-text file (one per line), then exit. Useful for discovering part names before writing material_mappings.json.')
     parser.add_argument('--add-copynumbers', nargs='?', const=WriteGDML.DEFAULT_COPYNUMBER_PREFIX, default=None, metavar='PREFIX', help="Emit name/copynumber attributes on crystal <physvol> tags in mother.gdml (crystal number taken from the '<prefix><N>' volume label). Optional PREFIX identifies crystal volumes (default: '_detector_lyso_'). Equivalent to running gPET-sim's add_copynumbers.py afterwards; g4ring readout needs these copy numbers.")
-    
+    parser.add_argument('--hier', action='store_true', help="Also emit mother_hier.gdml: an all-native hierarchical geometry with one G4Trd wedge envelope per flat panel containing the panel's parts as native boxes (crystal copy numbers always emitted; cover trays decomposed into 5 box slabs clipped to the crystals). Needs a uniform ring of >=3 equally spaced panels; export aborts if any correctness gate fails. ~1.6-2.1x faster to simulate in gPET-sim than the flat mother.")
+    parser.add_argument('--check-overlaps', action='store_true', help="Check all exported parts for mutual interpenetration (separating-axis test on native boxes, CAD boolean intersection for pairs involving tessellated parts). Overlapping parts are reported and the export exits non-zero; touching faces are fine.")
+
     args = parser.parse_args()
 
     if not any(vars(args).values()):
@@ -716,9 +743,15 @@ def main():
     mesh.verbose = bool(args.verbose)
     mesh.center_geometry = bool(args.center_geometry)
     mesh.copynumber_prefix = args.add_copynumbers
+    mesh.hier = bool(args.hier)
+    mesh.check_overlaps = bool(args.check_overlaps)
 
     # Set output directory for files
     mesh.output_dir = args.output_dir
+
+    if (mesh.hier or mesh.check_overlaps) and not args.output_dir:
+        print("Error: --hier/--check-overlaps require --output-dir")
+        return 1
 
     # --dump-parts requires a STEP file
     if args.dump_parts and not args.step:
