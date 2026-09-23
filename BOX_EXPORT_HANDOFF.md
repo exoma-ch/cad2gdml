@@ -1,6 +1,6 @@
 # Handoff: native `<box>` export for cuboid parts (CADtoGeant4)
 
-**For a fresh chat working in `/home/icortino/irene_playground/CADtoGeant4`.**
+**For a fresh chat working in `/home/icortino/irene_playground/cad2gdml`.**
 Goal: make the CAD→GDML exporter emit a native GDML `<box>` (plus a placement
 transform) for parts that are cuboids, instead of always emitting a
 `<tessellated>` triangle mesh. Non-cuboid parts stay tessellated. This is a
