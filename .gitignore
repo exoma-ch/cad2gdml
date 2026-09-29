@@ -38,3 +38,5 @@ htmlcov/
 # But still ignore cache files in tests
 tests/**/__pycache__/
 tests/**/*.pyc
+# Run logs
+logs/
