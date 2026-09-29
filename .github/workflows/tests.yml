@@ -27,3 +27,34 @@ jobs:
       run: |
         export PYTHONPATH="$GITHUB_WORKSPACE:$PYTHONPATH"
         pytest tests/ -v
+
+  summary:
+    name: CI Summary
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    needs: [test]
+    if: always()
+
+    steps:
+      - name: Check results
+        run: |
+          echo "CI Results Summary"
+          echo "==================="
+          echo ""
+          echo "Test: ${{ needs.test.result }}"
+          echo ""
+
+          # This aggregate is the required status check for main, so it must
+          # fail on 'cancelled' as well as 'failure': a cancelled job (timeout,
+          # concurrency cancel, runner eviction) produced no verdict, and
+          # treating that as green would let an unfinished run merge.
+          # 'skipped' stays tolerated, the way the sibling repositories treat
+          # jobs that skip legitimately.
+          if [ "${{ needs.test.result }}" = "failure" ] || [ "${{ needs.test.result }}" = "cancelled" ]; then
+            echo "ERROR: Tests failed or were cancelled"
+            echo ""
+            echo "One or more checks failed"
+            exit 1
+          fi
+
+          echo "All executed checks passed"
