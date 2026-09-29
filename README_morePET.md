@@ -1,4 +1,4 @@
-# CADtoGeant4 – morePET Workflow
+# cad2gdml – morePET Workflow
 
 This document covers the morePET-specific usage of GUIMeshCLI. For general setup, flags, and material format, see `README.md`.
 
@@ -28,13 +28,13 @@ Parts that don't match any pattern get the fallback material. Run `--dump-parts`
 
 ```bash
 # 1. Inspect part names
-podman run --rm -v /path/to/CADtoGeant4:/mnt/guimesh cadtogeant4:slim \
+podman run --rm -v /path/to/cad2gdml:/mnt/guimesh cad2gdml:slim \
   python3 src/GUIMeshCLI.py \
     --step data/STEPfiles/ring_12x1.step \
     --dump-parts output/parts.txt
 
 # 2. Convert with material assignment and crystal extraction
-podman run --rm -v /path/to/CADtoGeant4:/mnt/guimesh cadtogeant4:slim \
+podman run --rm -v /path/to/cad2gdml:/mnt/guimesh cad2gdml:slim \
   python3 src/GUIMeshCLI.py \
     --step data/STEPfiles/ring_12x1.step \
     --assign-materials src/material_mappings/pet_ring.json \

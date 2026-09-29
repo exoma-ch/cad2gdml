@@ -13,7 +13,7 @@ git tag -a v1.1.0 -m "Release version 1.1.0"
 git push origin v1.1.0
 ```
 
-GitHub Actions builds the image and pushes it to `ghcr.io/morepet/cadtogeant4/cadtogeant4` with the version tag. Monitor progress in the Actions tab.
+GitHub Actions builds the image and pushes it to `ghcr.io/exoma-ch/cad2gdml/cadtogeant4` with the version tag. Monitor progress in the Actions tab.
 
 ## Project Architecture
 
