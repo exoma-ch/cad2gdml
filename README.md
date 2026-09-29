@@ -1,4 +1,4 @@
-# CAD2Geant4: STEP to GDML Converter
+# cad2gdml: STEP to GDML Converter
 
 Converts CAD geometry (STEP format) to GDML for use in Geant4 Monte Carlo simulations. Based on [GUIMesh3](https://github.com/MPintoSpace/GUIMesh3).
 
@@ -10,7 +10,7 @@ Converts CAD geometry (STEP format) to GDML for use in Geant4 Monte Carlo simula
 
 ```bash
 git clone <repository-url>
-cd CADtoGeant4
+cd cad2gdml
 ```
 
 ### 2. Get the container image
@@ -34,7 +34,7 @@ podman build -f Containerfile.slim -t docker.io/pipsin/cad2geant4:latest .
 
 ```bash
 podman run --rm \
-  -v /path/to/CADtoGeant4:/mnt/guimesh \
+  -v /path/to/cad2gdml:/mnt/guimesh \
   docker.io/pipsin/cad2geant4:latest \
   python3 src/GUIMeshCLI.py \
     --step data/STEPfiles/your_geometry.step \
@@ -43,11 +43,11 @@ podman run --rm \
     --verbose
 ```
 
-Replace `/path/to/CADtoGeant4` with the absolute path to your cloned repository. The container mounts it at `/mnt/guimesh`; all paths in the examples below are relative to that root.
+Replace `/path/to/cad2gdml` with the absolute path to your cloned repository. The container mounts it at `/mnt/guimesh`; all paths in the examples below are relative to that root.
 
 ### Working with files outside the repo
 
-The container can only see what you explicitly bind-mount with `-v`. Files outside `/path/to/CADtoGeant4` (or whatever you mounted) are invisible — passing a path the container can't reach produces a "file not found" error, not a permission error, which can be confusing.
+The container can only see what you explicitly bind-mount with `-v`. Files outside `/path/to/cad2gdml` (or whatever you mounted) are invisible — passing a path the container can't reach produces a "file not found" error, not a permission error, which can be confusing.
 
 Two ways to handle inputs/outputs that don't live in the repo:
 
@@ -57,7 +57,7 @@ Two ways to handle inputs/outputs that don't live in the repo:
 
 ```bash
 podman run --rm \
-  -v /path/to/CADtoGeant4:/mnt/guimesh \
+  -v /path/to/cad2gdml:/mnt/guimesh \
   -v /home/me/cad_projects:/data \
   docker.io/pipsin/cad2geant4:latest \
   python3 src/GUIMeshCLI.py \
@@ -120,7 +120,7 @@ If you don't know the part names in your STEP file, dump them first:
 
 ```bash
 podman run --rm \
-  -v /path/to/CADtoGeant4:/mnt/guimesh \
+  -v /path/to/cad2gdml:/mnt/guimesh \
   docker.io/pipsin/cad2geant4:latest \
   python3 src/GUIMeshCLI.py \
     --step data/STEPfiles/your_geometry.step \

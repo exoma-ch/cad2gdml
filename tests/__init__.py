@@ -1,2 +1,2 @@
-# Tests package for CADtoGeant4
+# Tests package for cad2gdml
 

@@ -1,4 +1,4 @@
-# Handoff: native `<box>` export for cuboid parts (CADtoGeant4)
+# Handoff: native `<box>` export for cuboid parts (cad2gdml)
 
 **For a fresh chat working in `/home/icortino/irene_playground/cad2gdml`.**
 Goal: make the CAD→GDML exporter emit a native GDML `<box>` (plus a placement
@@ -20,7 +20,7 @@ slow triangle-by-triangle way. Swapping them to native `G4Box` measured
 That win was prototyped in gPET-sim with a **downstream patch** that reads the
 tessellated triangles back and re-fits a box (`gPET-sim/scripts/issue110/gen_box_gdml.py`
 on branch `feature/issue110-native-solids`). That's backwards: the tessellation
-is *born here*, in CADtoGeant4. The right fix is to **not tessellate cuboids in
+is *born here*, in cad2gdml. The right fix is to **not tessellate cuboids in
 the first place** — do it at export. Then gPET-sim receives clean native GDML,
 no patch, bit-exact, for every scanner ever exported.
 

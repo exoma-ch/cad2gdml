@@ -1,6 +1,6 @@
 # Slim runtime image — CAD-to-Geant4 conversion only, no Jupyter or test deps.
-# Build:  podman build -f Containerfile.slim -t cadtogeant4:slim .
-# Run:    podman run --rm -v /your/files:/mnt/guimesh cadtogeant4:slim python GUIMeshCLI.py ...
+# Build:  podman build -f Containerfile.slim -t cad2gdml:slim .
+# Run:    podman run --rm -v /your/files:/mnt/guimesh cad2gdml:slim python GUIMeshCLI.py ...
 FROM python:3.11-slim
 
 # Runtime X11/OpenGL libs FreeCAD needs; wget+fuse only for the AppImage download
