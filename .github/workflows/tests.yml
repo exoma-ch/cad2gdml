@@ -15,7 +15,7 @@ jobs:
       packages: read
 
     container:
-      image: ghcr.io/${{ github.repository }}/cadtogeant4:dev
+      image: ghcr.io/${{ github.repository }}/cad2gdml:dev
       credentials:
         username: ${{ github.actor }}
         password: ${{ secrets.GITHUB_TOKEN }}
