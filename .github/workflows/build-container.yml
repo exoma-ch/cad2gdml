@@ -39,12 +39,12 @@ jobs:
         run: |
           docker build \
             -f ./build/Podman/Containerfile.slim \
-            -t pipsin/cad2geant4:latest \
+            -t pipsin/cad2gdml:latest \
             ./build/Podman
 
       - name: Push slim image
         if: github.event_name != 'pull_request'
-        run: docker push pipsin/cad2geant4:latest
+        run: docker push pipsin/cad2gdml:latest
 
   build-dev:
     runs-on: ubuntu-latest
@@ -70,7 +70,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ghcr.io/${{ github.repository }}/cadtogeant4
+          images: ghcr.io/${{ github.repository }}/cad2gdml
           tags: type=raw,value=dev
 
       - name: Build and push dev image
